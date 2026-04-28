@@ -1,6 +1,7 @@
 # .NET
 backend/bin/
 backend/obj/
+backend/.build/
 backend/**/*.user
 backend/.vs/
 *.suo

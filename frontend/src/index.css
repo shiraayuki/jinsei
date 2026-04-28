@@ -1,9 +1,20 @@
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@import "tailwindcss";
+
+:root {
+  --bottom-nav-height: 64px;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  font-family: system-ui, sans-serif;
+  background-color: #0f0f0f;
+  color: #f5f5f5;
+  font-family: system-ui, -apple-system, sans-serif;
+  overscroll-behavior: none;
+}
+
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }

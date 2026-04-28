@@ -1,5 +1,4 @@
-function App() {
-  return <div>Jinsei</div>
+// App entry — routing handled in main.tsx via AppRouter
+export default function App() {
+  return null
 }
-
-export default App
