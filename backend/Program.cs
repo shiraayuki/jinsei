@@ -44,6 +44,8 @@ if (builder.Environment.IsDevelopment())
                   .AllowAnyMethod()));
 }
 
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<OpenFoodFactsClient>();
 builder.Services.AddControllers();
 
 var app = builder.Build();
