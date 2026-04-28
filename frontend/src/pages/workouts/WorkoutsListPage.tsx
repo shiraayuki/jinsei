@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
-import { Plus, Dumbbell, Play } from 'lucide-react'
+import { Plus, Dumbbell, Play, ChevronRight } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
-import { Card } from '../../components/ui/Card'
 import { useWorkouts } from '../../features/workouts/hooks'
 import type { WorkoutSummary } from '../../features/workouts/api'
 
@@ -14,18 +13,28 @@ function WorkoutRow({ w }: { w: WorkoutSummary }) {
 
   return (
     <Link to={`/workouts/${w.id}`}>
-      <Card className="flex items-center gap-3 px-4 py-3 hover:border-zinc-700 transition-colors">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-900/30 text-indigo-400">
-          <Dumbbell size={20} />
+      <div className="flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3.5 transition-colors hover:border-zinc-700 hover:bg-zinc-800/60">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
+          <Dumbbell size={20} strokeWidth={1.8} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-medium text-zinc-100">{w.name ?? 'Workout'}</p>
-          <p className="text-xs text-zinc-500">
-            {date} · {w.exerciseCount} Übung{w.exerciseCount !== 1 ? 'en' : ''} · {w.setCount} Sets
-            {w.durationMinutes ? ` · ${w.durationMinutes} min` : ''}
+          <p className="font-semibold text-zinc-100">{w.name ?? 'Workout'}</p>
+          <p className="mt-0.5 text-xs text-zinc-500">
+            {date}
+            <span className="mx-1.5 text-zinc-700">·</span>
+            {w.exerciseCount} Übung{w.exerciseCount !== 1 ? 'en' : ''}
+            <span className="mx-1.5 text-zinc-700">·</span>
+            {w.setCount} Sets
+            {w.durationMinutes ? (
+              <>
+                <span className="mx-1.5 text-zinc-700">·</span>
+                {w.durationMinutes} min
+              </>
+            ) : null}
           </p>
         </div>
-      </Card>
+        <ChevronRight size={16} className="shrink-0 text-zinc-600" />
+      </div>
     </Link>
   )
 }
@@ -39,44 +48,66 @@ export function WorkoutsListPage() {
       <PageHeader
         title="Workouts"
         action={
-          <Link to="/workouts/new" className="text-indigo-400 hover:text-indigo-300">
-            <Plus size={24} />
+          <Link to="/workouts/new" className="flex items-center gap-1.5 rounded-lg bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-700">
+            <Plus size={14} />
+            Loggen
           </Link>
         }
       />
 
-      <div className="px-4 pt-2 pb-1">
+      <div className="space-y-3 px-4 pt-1 pb-4">
+        {/* Start session CTA */}
         <Link
           to="/workouts/session"
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-sm font-medium text-white hover:bg-indigo-500 transition-colors"
+          className="relative flex w-full items-center justify-between overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-800 px-5 py-4 shadow-lg shadow-indigo-900/30 transition-opacity hover:opacity-90"
         >
-          <Play size={16} />
-          {hasActiveSession ? 'Session fortsetzen' : 'Workout starten'}
+          <div>
+            <p className="font-bold text-white">
+              {hasActiveSession ? 'Session fortsetzen' : 'Workout starten'}
+            </p>
+            <p className="mt-0.5 text-xs text-indigo-200">
+              {hasActiveSession ? 'Dein Training läuft noch' : 'Timer starten, Übungen tracken'}
+            </p>
+          </div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/15">
+            <Play size={22} className="text-white" fill="white" />
+          </div>
+          {/* Decorative blob */}
+          <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-white/5" />
+          <div className="absolute -left-2 -bottom-6 h-16 w-16 rounded-full bg-indigo-500/20" />
         </Link>
-      </div>
 
-      <div className="space-y-2 p-4">
-        {isLoading && <p className="py-8 text-center text-sm text-zinc-500">Laden…</p>}
-
-        {!isLoading && workouts?.length === 0 && (
-          <div className="flex flex-col items-center gap-3 py-16 text-center">
-            <p className="text-zinc-400">Noch keine Workouts.</p>
-            <Link
-              to="/workouts/new"
-              className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
-            >
-              Erstes Workout loggen
-            </Link>
+        {/* Workout list */}
+        {isLoading && (
+          <div className="space-y-2 pt-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-16 rounded-2xl bg-zinc-800/50 animate-pulse" />
+            ))}
           </div>
         )}
 
-        {workouts?.map(w => <WorkoutRow key={w.id} w={w} />)}
-      </div>
+        {!isLoading && workouts?.length === 0 && (
+          <div className="flex flex-col items-center gap-2 py-12 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-800">
+              <Dumbbell size={28} className="text-zinc-600" />
+            </div>
+            <p className="mt-2 font-medium text-zinc-400">Noch keine Workouts</p>
+            <p className="text-sm text-zinc-600">Starte deine erste Session oben.</p>
+          </div>
+        )}
 
-      <div className="px-4 pb-2">
-        <Link to="/exercises" className="text-sm text-zinc-500 hover:text-zinc-300 underline">
-          Übungs-Bibliothek verwalten →
-        </Link>
+        {workouts && workouts.length > 0 && (
+          <div className="space-y-2 pt-1">
+            <p className="text-xs font-medium uppercase tracking-wider text-zinc-600">Verlauf</p>
+            {workouts.map(w => <WorkoutRow key={w.id} w={w} />)}
+          </div>
+        )}
+
+        <div className="pt-1">
+          <Link to="/exercises" className="text-xs text-zinc-600 hover:text-zinc-400 underline underline-offset-2">
+            Übungs-Bibliothek →
+          </Link>
+        </div>
       </div>
     </div>
   )
