@@ -24,12 +24,27 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
-    ports:
-      - "80:80"
-      - "443:443"
     depends_on:
       - backend
     restart: unless-stopped
 
+  caddy:
+    image: caddy:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      JINSEI_DOMAIN: ${JINSEI_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:
