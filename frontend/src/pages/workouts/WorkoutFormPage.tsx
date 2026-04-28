@@ -179,8 +179,8 @@ export function WorkoutFormPage() {
         {rows.map((row, exIdx) => (
           <Card key={exIdx} className="p-4">
             <div className="mb-3 flex items-center justify-between">
-              <p className="font-medium text-zinc-100">{row.exerciseName}</p>
-              <button onClick={() => removeExercise(exIdx)} className="text-zinc-600 hover:text-red-400">
+              <p className="font-medium text-gray-800 dark:text-zinc-100">{row.exerciseName}</p>
+              <button onClick={() => removeExercise(exIdx)} className="text-gray-400 dark:text-zinc-600 hover:text-red-400">
                 <Trash2 size={16} />
               </button>
             </div>
@@ -188,7 +188,7 @@ export function WorkoutFormPage() {
             {/* Set rows */}
             <div className="space-y-2">
               {/* Header */}
-              <div className="grid grid-cols-[2rem_1fr_1fr_2rem] gap-2 text-xs text-zinc-500">
+              <div className="grid grid-cols-[2rem_1fr_1fr_2rem] gap-2 text-xs text-gray-400 dark:text-zinc-500">
                 <span className="text-center">Set</span>
                 <span className="text-center">kg</span>
                 <span className="text-center">Wdh.</span>
@@ -197,25 +197,25 @@ export function WorkoutFormPage() {
 
               {row.sets.map((s, sIdx) => (
                 <div key={sIdx} className="grid grid-cols-[2rem_1fr_1fr_2rem] items-center gap-2">
-                  <span className="text-center text-sm text-zinc-500">{s.setNumber}</span>
+                  <span className="text-center text-sm text-gray-400 dark:text-zinc-500">{s.setNumber}</span>
                   <input
                     type="number"
                     step="0.5"
                     placeholder="0"
                     value={s.weightKg}
                     onChange={e => updateSet(exIdx, sIdx, 'weightKg', e.target.value)}
-                    className="h-10 rounded-lg border border-zinc-700 bg-zinc-800 px-2 text-center text-zinc-100 outline-none focus:border-indigo-500"
+                    className="h-10 rounded-lg border border-gray-300 dark:border-zinc-700 bg-gray-100 dark:bg-zinc-800 px-2 text-center text-gray-800 dark:text-zinc-100 outline-none focus:border-indigo-500"
                   />
                   <input
                     type="number"
                     placeholder="0"
                     value={s.reps}
                     onChange={e => updateSet(exIdx, sIdx, 'reps', e.target.value)}
-                    className="h-10 rounded-lg border border-zinc-700 bg-zinc-800 px-2 text-center text-zinc-100 outline-none focus:border-indigo-500"
+                    className="h-10 rounded-lg border border-gray-300 dark:border-zinc-700 bg-gray-100 dark:bg-zinc-800 px-2 text-center text-gray-800 dark:text-zinc-100 outline-none focus:border-indigo-500"
                   />
                   <button
                     onClick={() => removeSet(exIdx, sIdx)}
-                    className="text-zinc-600 hover:text-red-400"
+                    className="text-gray-400 dark:text-zinc-600 hover:text-red-400"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -225,7 +225,7 @@ export function WorkoutFormPage() {
 
             <button
               onClick={() => addSet(exIdx)}
-              className="mt-3 w-full rounded-lg border border-dashed border-zinc-700 py-1.5 text-sm text-zinc-500 hover:border-indigo-500 hover:text-indigo-400"
+              className="mt-3 w-full rounded-lg border border-dashed border-gray-300 dark:border-zinc-700 py-1.5 text-sm text-gray-400 dark:text-zinc-500 hover:border-indigo-500 hover:text-indigo-400"
             >
               + Set
             </button>
@@ -256,21 +256,21 @@ export function WorkoutFormPage() {
                 <button
                   key={ex.id}
                   onClick={() => addExercise(ex.id, ex.name)}
-                  className="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-zinc-800"
+                  className="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100 dark:bg-zinc-800"
                 >
-                  <span className="text-zinc-100">{ex.name}</span>
-                  <span className="ml-2 text-xs text-zinc-500">
+                  <span className="text-gray-800 dark:text-zinc-100">{ex.name}</span>
+                  <span className="ml-2 text-xs text-gray-400 dark:text-zinc-500">
                     {ex.muscles.filter(m => m.isPrimary).map(m => m.name).join(', ')}
                   </span>
                 </button>
               ))}
               {filteredEx?.length === 0 && (
-                <p className="py-4 text-center text-sm text-zinc-500">Keine Übungen gefunden.</p>
+                <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">Keine Übungen gefunden.</p>
               )}
             </div>
             <button
               onClick={() => setShowExPicker(false)}
-              className="mt-2 w-full text-center text-sm text-zinc-500"
+              className="mt-2 w-full text-center text-sm text-gray-400 dark:text-zinc-500"
             >
               Abbrechen
             </button>

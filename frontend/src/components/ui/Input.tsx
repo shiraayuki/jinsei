@@ -11,13 +11,13 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
 ) {
   return (
     <div className="flex flex-col gap-1">
-      {label && <label className="text-sm text-zinc-400">{label}</label>}
+      {label && <label className="text-sm text-gray-600 dark:text-zinc-400">{label}</label>}
       <input
         ref={ref}
         {...props}
-        className={`h-11 rounded-xl border border-zinc-700 bg-zinc-800/60 px-3 text-zinc-100 placeholder-zinc-500 outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 ${className}`}
+        className={`h-11 rounded-xl border border-gray-300 bg-white px-3 text-gray-900 placeholder-gray-400 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-100 dark:placeholder-zinc-500 outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 ${className}`}
       />
-      {error && <span className="text-xs text-red-400">{error}</span>}
+      {error && <span className="text-xs text-red-500 dark:text-red-400">{error}</span>}
     </div>
   )
 })

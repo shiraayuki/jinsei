@@ -36,10 +36,10 @@ function WeightChart({ entries }: { entries: WeightEntry[] }) {
   const delta = latest.weightKg - prev.weightKg
 
   return (
-    <div className="rounded-2xl bg-zinc-900 p-4">
+    <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4">
       <div className="mb-3 flex items-baseline justify-between">
-        <span className="text-2xl font-bold text-white">{latest.weightKg} <span className="text-sm font-normal text-zinc-400">kg</span></span>
-        <span className={`text-sm font-medium ${delta > 0 ? 'text-rose-400' : delta < 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
+        <span className="text-2xl font-bold text-gray-900 dark:text-white">{latest.weightKg} <span className="text-sm font-normal text-gray-500 dark:text-zinc-400">kg</span></span>
+        <span className={`text-sm font-medium ${delta > 0 ? 'text-rose-400' : delta < 0 ? 'text-emerald-400' : 'text-gray-400 dark:text-zinc-500'}`}>
           {delta > 0 ? '+' : ''}{delta.toFixed(1)} kg
         </span>
       </div>
@@ -59,7 +59,7 @@ function WeightChart({ entries }: { entries: WeightEntry[] }) {
           )
         })}
       </svg>
-      <div className="mt-1 flex justify-between text-[10px] text-zinc-600">
+      <div className="mt-1 flex justify-between text-[10px] text-gray-400 dark:text-zinc-600">
         <span>{formatDate(sorted[0].date)}</span>
         <span>{formatDate(sorted[sorted.length - 1].date)}</span>
       </div>
@@ -91,20 +91,20 @@ export function WeightPage() {
 
       <WeightChart entries={entries} />
 
-      <form onSubmit={handleSubmit} className="rounded-2xl bg-zinc-900 p-4 space-y-3">
-        <h2 className="text-sm font-semibold text-zinc-300">Eintragen</h2>
+      <form onSubmit={handleSubmit} className="rounded-2xl bg-white dark:bg-zinc-900 p-4 space-y-3">
+        <h2 className="text-sm font-semibold text-gray-600 dark:text-zinc-300">Eintragen</h2>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-xs text-zinc-500">Datum</label>
+            <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">Datum</label>
             <input
               type="date"
               value={date}
               onChange={e => setDate(e.target.value)}
-              className="w-full rounded-xl bg-zinc-800 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs text-zinc-500">Gewicht (kg)</label>
+            <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">Gewicht (kg)</label>
             <input
               type="number"
               step="0.1"
@@ -113,7 +113,7 @@ export function WeightPage() {
               placeholder="75.0"
               value={weight}
               onChange={e => setWeight(e.target.value)}
-              className="w-full rounded-xl bg-zinc-800 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
         </div>
@@ -122,7 +122,7 @@ export function WeightPage() {
           placeholder="Notiz (optional)"
           value={notes}
           onChange={e => setNotes(e.target.value)}
-          className="w-full rounded-xl bg-zinc-800 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <button
           type="submit"
@@ -135,18 +135,18 @@ export function WeightPage() {
 
       {entries.length > 0 && (
         <div className="space-y-2">
-          <h2 className="text-sm font-semibold text-zinc-400">Verlauf</h2>
+          <h2 className="text-sm font-semibold text-gray-500 dark:text-zinc-400">Verlauf</h2>
           {entries.map(entry => (
-            <div key={entry.id} className="flex items-center justify-between rounded-xl bg-zinc-900 px-4 py-3">
+            <div key={entry.id} className="flex items-center justify-between rounded-xl bg-white dark:bg-zinc-900 px-4 py-3">
               <div>
-                <span className="text-sm font-semibold text-white">{entry.weightKg} kg</span>
-                {entry.notes && <p className="text-xs text-zinc-500">{entry.notes}</p>}
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{entry.weightKg} kg</span>
+                {entry.notes && <p className="text-xs text-gray-400 dark:text-zinc-500">{entry.notes}</p>}
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xs text-zinc-500">{formatDate(entry.date)}</span>
+                <span className="text-xs text-gray-400 dark:text-zinc-500">{formatDate(entry.date)}</span>
                 <button
                   onClick={() => del.mutate(entry.id)}
-                  className="text-zinc-600 hover:text-rose-400 transition-colors"
+                  className="text-gray-400 dark:text-zinc-600 hover:text-rose-400 transition-colors"
                 >
                   <Trash2 size={15} />
                 </button>

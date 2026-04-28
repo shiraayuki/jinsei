@@ -62,13 +62,13 @@ export function ExercisesPage() {
         {/* Create form */}
         {showForm && (
           <Card className="space-y-3 p-4">
-            <p className="font-medium text-zinc-200">Neue Übung</p>
+            <p className="font-medium text-gray-700 dark:text-zinc-200">Neue Übung</p>
             <Input label="Name" placeholder="Bankdrücken" value={name} onChange={e => setName(e.target.value)} />
             <Input label="Equipment" placeholder="Langhantel" value={equipment} onChange={e => setEquipment(e.target.value)} />
 
             {/* Muscle group picker */}
             <div>
-              <p className="mb-2 text-sm text-zinc-400">Muskelgruppen</p>
+              <p className="mb-2 text-sm text-gray-500 dark:text-zinc-400">Muskelgruppen</p>
               <div className="flex flex-wrap gap-1.5">
                 {muscleGroups?.map(mg => {
                   const sel = selectedMuscles.find(m => m.id === mg.id)
@@ -81,7 +81,7 @@ export function ExercisesPage() {
                           ? sel.primary
                             ? 'bg-indigo-600 text-white'
                             : 'bg-indigo-900/50 text-indigo-300'
-                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                          : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:bg-gray-200 dark:bg-zinc-700'
                       }`}
                     >
                       {mg.name}
@@ -90,7 +90,7 @@ export function ExercisesPage() {
                   )
                 })}
               </div>
-              <p className="mt-1 text-xs text-zinc-600">Einmal = primär, nochmal = sekundär, nochmal = entfernen</p>
+              <p className="mt-1 text-xs text-gray-400 dark:text-zinc-600">Einmal = primär, nochmal = sekundär, nochmal = entfernen</p>
             </div>
 
             <div className="flex gap-2">
@@ -109,20 +109,20 @@ export function ExercisesPage() {
           </Card>
         )}
 
-        {isLoading && <p className="py-8 text-center text-sm text-zinc-500">Laden…</p>}
+        {isLoading && <p className="py-8 text-center text-sm text-gray-400 dark:text-zinc-500">Laden…</p>}
 
         {exercises?.map(ex => (
           <Card key={ex.id} className="flex items-start gap-3 px-4 py-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <p className="font-medium text-zinc-100">{ex.name}</p>
+                <p className="font-medium text-gray-800 dark:text-zinc-100">{ex.name}</p>
                 {ex.isCustom && (
-                  <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-500">
+                  <span className="rounded-full bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 text-xs text-gray-400 dark:text-zinc-500">
                     Custom
                   </span>
                 )}
               </div>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-gray-400 dark:text-zinc-500">
                 {ex.muscles.map(m => `${m.name}${!m.isPrimary ? ' (sek.)' : ''}`).join(', ')}
                 {ex.equipment && ` · ${ex.equipment}`}
               </p>
@@ -131,7 +131,7 @@ export function ExercisesPage() {
               <button
                 onClick={() => deleteMut.mutate(ex.id)}
                 disabled={deleteMut.isPending}
-                className="text-zinc-600 hover:text-red-400"
+                className="text-gray-400 dark:text-zinc-600 hover:text-red-400"
               >
                 <Trash2 size={16} />
               </button>
@@ -140,7 +140,7 @@ export function ExercisesPage() {
         ))}
 
         {!isLoading && exercises?.length === 0 && (
-          <p className="py-8 text-center text-sm text-zinc-500">
+          <p className="py-8 text-center text-sm text-gray-400 dark:text-zinc-500">
             Noch keine Übungen. Erstelle deine erste!
           </p>
         )}

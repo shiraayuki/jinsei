@@ -13,13 +13,13 @@ function WorkoutRow({ w }: { w: WorkoutSummary }) {
 
   return (
     <Link to={`/workouts/${w.id}`}>
-      <div className="flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3.5 transition-colors hover:border-zinc-700 hover:bg-zinc-800/60">
+      <div className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3.5 transition-colors hover:border-gray-300 dark:hover:border-zinc-700 hover:bg-gray-100/60 dark:hover:bg-zinc-800/60">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
           <Dumbbell size={20} strokeWidth={1.8} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-semibold text-zinc-100">{w.name ?? 'Workout'}</p>
-          <p className="mt-0.5 text-xs text-zinc-500">
+          <p className="font-semibold text-gray-800 dark:text-zinc-100">{w.name ?? 'Workout'}</p>
+          <p className="mt-0.5 text-xs text-gray-400 dark:text-zinc-500">
             {date}
             <span className="mx-1.5 text-zinc-700">·</span>
             {w.exerciseCount} Übung{w.exerciseCount !== 1 ? 'en' : ''}
@@ -33,7 +33,7 @@ function WorkoutRow({ w }: { w: WorkoutSummary }) {
             ) : null}
           </p>
         </div>
-        <ChevronRight size={16} className="shrink-0 text-zinc-600" />
+        <ChevronRight size={16} className="shrink-0 text-gray-400 dark:text-zinc-600" />
       </div>
     </Link>
   )
@@ -48,7 +48,7 @@ export function WorkoutsListPage() {
       <PageHeader
         title="Workouts"
         action={
-          <Link to="/workouts/new" className="flex items-center gap-1.5 rounded-lg bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-700">
+          <Link to="/workouts/new" className="flex items-center gap-1.5 rounded-lg bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:bg-zinc-700">
             <Plus size={14} />
             Loggen
           </Link>
@@ -81,30 +81,30 @@ export function WorkoutsListPage() {
         {isLoading && (
           <div className="space-y-2 pt-2">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-16 rounded-2xl bg-zinc-800/50 animate-pulse" />
+              <div key={i} className="h-16 rounded-2xl bg-gray-100/50 dark:bg-zinc-800/50 animate-pulse" />
             ))}
           </div>
         )}
 
         {!isLoading && workouts?.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-12 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-800">
-              <Dumbbell size={28} className="text-zinc-600" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 dark:bg-zinc-800">
+              <Dumbbell size={28} className="text-gray-400 dark:text-zinc-600" />
             </div>
-            <p className="mt-2 font-medium text-zinc-400">Noch keine Workouts</p>
-            <p className="text-sm text-zinc-600">Starte deine erste Session oben.</p>
+            <p className="mt-2 font-medium text-gray-500 dark:text-zinc-400">Noch keine Workouts</p>
+            <p className="text-sm text-gray-400 dark:text-zinc-600">Starte deine erste Session oben.</p>
           </div>
         )}
 
         {workouts && workouts.length > 0 && (
           <div className="space-y-2 pt-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-zinc-600">Verlauf</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-zinc-600">Verlauf</p>
             {workouts.map(w => <WorkoutRow key={w.id} w={w} />)}
           </div>
         )}
 
         <div className="pt-1">
-          <Link to="/exercises" className="text-xs text-zinc-600 hover:text-zinc-400 underline underline-offset-2">
+          <Link to="/exercises" className="text-xs text-gray-400 dark:text-zinc-600 hover:text-gray-500 dark:text-zinc-400 underline underline-offset-2">
             Übungs-Bibliothek →
           </Link>
         </div>

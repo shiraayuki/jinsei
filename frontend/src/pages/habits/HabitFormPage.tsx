@@ -114,7 +114,7 @@ export function HabitFormPage() {
 
         {/* Color picker */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm text-zinc-400">Farbe</label>
+          <label className="text-sm text-gray-500 dark:text-zinc-400">Farbe</label>
           <div className="flex gap-2 flex-wrap">
             {COLORS.map(c => (
               <button
@@ -139,7 +139,7 @@ export function HabitFormPage() {
 
         {/* Schedule type */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm text-zinc-400">Frequenz</label>
+          <label className="text-sm text-gray-500 dark:text-zinc-400">Frequenz</label>
           <div className="grid grid-cols-3 gap-2">
             {(['daily', 'weekly', 'interval'] as const).map(t => (
               <label
@@ -147,7 +147,7 @@ export function HabitFormPage() {
                 className={`flex cursor-pointer items-center justify-center rounded-xl border py-2 text-sm transition-colors ${
                   scheduleType === t
                     ? 'border-indigo-500 bg-indigo-600/20 text-indigo-300'
-                    : 'border-zinc-700 text-zinc-400'
+                    : 'border-gray-300 dark:border-zinc-700 text-gray-500 dark:text-zinc-400'
                 }`}
               >
                 <input type="radio" value={t} {...register('scheduleType')} className="sr-only" />
@@ -160,7 +160,7 @@ export function HabitFormPage() {
         {/* Weekly: day selector */}
         {scheduleType === 'weekly' && (
           <div className="flex flex-col gap-2">
-            <label className="text-sm text-zinc-400">Tage</label>
+            <label className="text-sm text-gray-500 dark:text-zinc-400">Tage</label>
             <Controller
               name="daysOfWeek"
               control={control}
@@ -182,7 +182,7 @@ export function HabitFormPage() {
                         className={`flex-1 rounded-lg py-1.5 text-xs font-medium transition-colors ${
                           selected
                             ? 'bg-indigo-600 text-white'
-                            : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                            : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:bg-gray-200 dark:bg-zinc-700'
                         }`}
                       >
                         {d}

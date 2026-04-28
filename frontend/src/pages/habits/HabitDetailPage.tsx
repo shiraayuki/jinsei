@@ -56,7 +56,7 @@ export function HabitDetailPage() {
     return (
       <div>
         <PageHeader title="Habit" back />
-        <p className="p-4 text-zinc-500">Nicht gefunden.</p>
+        <p className="p-4 text-gray-400 dark:text-zinc-500">Nicht gefunden.</p>
       </div>
     )
   }
@@ -67,7 +67,7 @@ export function HabitDetailPage() {
         title={habit.name}
         back
         action={
-          <Link to={`/habits/${id}/edit`} className="text-zinc-400 hover:text-zinc-200">
+          <Link to={`/habits/${id}/edit`} className="text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:text-zinc-200">
             <Pencil size={18} />
           </Link>
         }
@@ -90,13 +90,13 @@ export function HabitDetailPage() {
                 {habit.streak} Tag{habit.streak !== 1 ? 'e' : ''} Streak
               </p>
             )}
-            {habit.description && <p className="text-sm text-zinc-500">{habit.description}</p>}
+            {habit.description && <p className="text-sm text-gray-400 dark:text-zinc-500">{habit.description}</p>}
           </div>
         </div>
 
         {/* 90-day grid */}
         <div>
-          <p className="mb-2 text-xs text-zinc-500">Letzte 90 Tage</p>
+          <p className="mb-2 text-xs text-gray-400 dark:text-zinc-500">Letzte 90 Tage</p>
           <div className="grid grid-cols-13 gap-1" style={{ gridTemplateColumns: 'repeat(13, 1fr)' }}>
             {days.map(day => {
               const done = completedDates.has(day)
@@ -111,8 +111,8 @@ export function HabitDetailPage() {
                     done
                       ? 'opacity-100'
                       : isToday
-                        ? 'border border-dashed border-zinc-600 bg-transparent'
-                        : 'bg-zinc-800'
+                        ? 'border border-dashed border-gray-300 dark:border-zinc-600 bg-transparent'
+                        : 'bg-gray-100 dark:bg-zinc-800'
                   }`}
                   style={done ? { backgroundColor: habit.color } : undefined}
                 />
@@ -123,7 +123,7 @@ export function HabitDetailPage() {
 
         {/* Schedule info */}
         {habit.schedule && (
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-sm text-zinc-400">
+          <div className="rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 text-sm text-gray-500 dark:text-zinc-400">
             {habit.schedule.type === 'daily' && `Täglich, Ziel: ${habit.schedule.targetCount}×`}
             {habit.schedule.type === 'weekly' &&
               `Wöchentlich an: ${habit.schedule.daysOfWeek?.map(d => ['So','Mo','Di','Mi','Do','Fr','Sa'][d]).join(', ') ?? '–'}`}

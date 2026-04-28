@@ -55,7 +55,7 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="min-h-dvh" style={{ background: 'radial-gradient(ellipse at 50% -10%, rgba(99,102,241,0.07) 0%, transparent 55%), #090909' }}>
+    <div className="min-h-dvh app-bg" style={{ backgroundImage: 'radial-gradient(ellipse at 50% -10%, rgba(99,102,241,0.07) 0%, transparent 55%)' }}>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
@@ -134,7 +134,7 @@ export function DashboardPage() {
                         <Check size={13} strokeWidth={2.5} />
                       </motion.div>
                     </motion.button>
-                    <span className={`flex-1 text-sm ${habit.completedToday ? 'text-zinc-600 line-through' : 'text-zinc-200'}`}>
+                    <span className={`flex-1 text-sm ${habit.completedToday ? 'text-gray-400 dark:text-zinc-600 line-through' : 'text-gray-800 dark:text-zinc-200'}`}>
                       {habit.name}
                     </span>
                     {habit.streak > 0 && !habit.completedToday && (
@@ -197,9 +197,9 @@ export function DashboardPage() {
                 <Dumbbell size={18} strokeWidth={1.8} className="text-indigo-400" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs text-zinc-600">Letztes Workout</p>
-                <p className="text-sm font-semibold text-zinc-200">{lastWorkout.name ?? 'Workout'}</p>
-                <p className="text-xs text-zinc-600">
+                <p className="text-xs text-gray-400 dark:text-zinc-600">Letztes Workout</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-zinc-200">{lastWorkout.name ?? 'Workout'}</p>
+                <p className="text-xs text-gray-400 dark:text-zinc-600">
                   {new Date(lastWorkout.date + 'T00:00:00').toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}
                   {lastWorkout.durationMinutes ? ` · ${lastWorkout.durationMinutes} min` : ''}
                   {` · ${lastWorkout.setCount} Sets`}

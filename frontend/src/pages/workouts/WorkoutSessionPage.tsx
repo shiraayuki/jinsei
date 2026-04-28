@@ -196,10 +196,10 @@ export function WorkoutSessionPage() {
   const filteredEx = exercises?.filter(e => e.name.toLowerCase().includes(exSearch.toLowerCase()))
 
   return (
-    <div className="min-h-dvh bg-zinc-950 pb-8">
+    <div className="min-h-dvh bg-gray-50 dark:bg-zinc-950 pb-8">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-safe-or-4 pb-2 pt-4">
-        <p className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Workout Session</p>
+        <p className="text-sm font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Workout Session</p>
         <button
           onClick={() => setShowCancelConfirm(true)}
           className="flex items-center gap-1.5 rounded-lg bg-red-500/10 px-3 py-1.5 text-sm font-medium text-red-400 hover:bg-red-500/20 transition-colors"
@@ -216,10 +216,10 @@ export function WorkoutSessionPage() {
             <div className="absolute inset-0 rounded-full bg-indigo-500/10 animate-ping" style={{ animationDuration: '3s' }} />
           )}
           <div className={`relative flex h-40 w-40 items-center justify-center rounded-full border-2 transition-colors ${
-            isPaused ? 'border-zinc-700 bg-zinc-900' : 'border-indigo-500/40 bg-indigo-500/5'
+            isPaused ? 'border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900' : 'border-indigo-500/40 bg-indigo-500/5'
           }`}>
             <span className={`font-mono text-4xl font-bold tabular-nums transition-colors ${
-              isPaused ? 'text-zinc-500' : 'text-white'
+              isPaused ? 'text-gray-400 dark:text-zinc-500' : 'text-white'
             }`}>
               {formatTime(elapsed)}
             </span>
@@ -231,7 +231,7 @@ export function WorkoutSessionPage() {
           className={`mt-6 flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold transition-all ${
             isPaused
               ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50 hover:bg-indigo-500'
-              : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+              : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:bg-zinc-700'
           }`}
         >
           {isPaused ? <Play size={16} fill="white" /> : <Pause size={16} />}
@@ -240,13 +240,13 @@ export function WorkoutSessionPage() {
 
         {totalSets > 0 && (
           <div className="mt-4 flex items-center gap-2">
-            <div className="h-1.5 w-32 rounded-full bg-zinc-800 overflow-hidden">
+            <div className="h-1.5 w-32 rounded-full bg-gray-100 dark:bg-zinc-800 overflow-hidden">
               <div
                 className="h-full rounded-full bg-green-500 transition-all duration-300"
                 style={{ width: `${(doneSets / totalSets) * 100}%` }}
               />
             </div>
-            <span className="text-xs text-zinc-500">{doneSets}/{totalSets}</span>
+            <span className="text-xs text-gray-400 dark:text-zinc-500">{doneSets}/{totalSets}</span>
           </div>
         )}
       </div>
@@ -255,24 +255,24 @@ export function WorkoutSessionPage() {
         {/* Exercise cards */}
         {rows.length === 0 && (
           <div className="flex flex-col items-center gap-3 py-8 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-800">
-              <Dumbbell size={24} className="text-zinc-600" strokeWidth={1.5} />
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 dark:bg-zinc-800">
+              <Dumbbell size={24} className="text-gray-400 dark:text-zinc-600" strokeWidth={1.5} />
             </div>
-            <p className="text-sm text-zinc-500">Füge deine erste Übung hinzu</p>
+            <p className="text-sm text-gray-400 dark:text-zinc-500">Füge deine erste Übung hinzu</p>
           </div>
         )}
 
         {rows.map((row, exIdx) => (
-          <div key={exIdx} className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+          <div key={exIdx} className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
             <div className="mb-4 flex items-center justify-between">
-              <p className="font-semibold text-zinc-100">{row.exerciseName}</p>
-              <button onClick={() => removeExercise(exIdx)} className="text-zinc-600 hover:text-red-400 transition-colors">
+              <p className="font-semibold text-gray-800 dark:text-zinc-100">{row.exerciseName}</p>
+              <button onClick={() => removeExercise(exIdx)} className="text-gray-400 dark:text-zinc-600 hover:text-red-400 transition-colors">
                 <Trash2 size={16} />
               </button>
             </div>
 
             <div className="space-y-2">
-              <div className="grid grid-cols-[2.5rem_1fr_1fr_2.5rem_2rem] gap-2 px-1 text-xs font-medium text-zinc-600">
+              <div className="grid grid-cols-[2.5rem_1fr_1fr_2.5rem_2rem] gap-2 px-1 text-xs font-medium text-gray-400 dark:text-zinc-600">
                 <span className="text-center">Set</span>
                 <span className="text-center">kg</span>
                 <span className="text-center">Wdh.</span>
@@ -285,7 +285,7 @@ export function WorkoutSessionPage() {
                   key={sIdx}
                   className={`grid grid-cols-[2.5rem_1fr_1fr_2.5rem_2rem] items-center gap-2 transition-opacity ${s.done ? 'opacity-50' : ''}`}
                 >
-                  <span className="text-center text-sm font-medium text-zinc-500">{sIdx + 1}</span>
+                  <span className="text-center text-sm font-medium text-gray-400 dark:text-zinc-500">{sIdx + 1}</span>
                   <input
                     type="number"
                     step="0.5"
@@ -293,7 +293,7 @@ export function WorkoutSessionPage() {
                     value={s.weightKg}
                     onChange={e => updateSet(exIdx, sIdx, 'weightKg', e.target.value)}
                     disabled={s.done}
-                    className="h-10 rounded-xl border border-zinc-700/80 bg-zinc-800/80 px-2 text-center text-sm text-zinc-100 outline-none focus:border-indigo-500 focus:bg-zinc-800 disabled:cursor-not-allowed"
+                    className="h-10 rounded-xl border border-gray-300/80 dark:border-zinc-700/80 bg-gray-100/80 dark:bg-zinc-800/80 px-2 text-center text-sm text-gray-800 dark:text-zinc-100 outline-none focus:border-indigo-500 focus:bg-gray-100 dark:focus:bg-zinc-800 disabled:cursor-not-allowed"
                   />
                   <input
                     type="number"
@@ -301,14 +301,14 @@ export function WorkoutSessionPage() {
                     value={s.reps}
                     onChange={e => updateSet(exIdx, sIdx, 'reps', e.target.value)}
                     disabled={s.done}
-                    className="h-10 rounded-xl border border-zinc-700/80 bg-zinc-800/80 px-2 text-center text-sm text-zinc-100 outline-none focus:border-indigo-500 focus:bg-zinc-800 disabled:cursor-not-allowed"
+                    className="h-10 rounded-xl border border-gray-300/80 dark:border-zinc-700/80 bg-gray-100/80 dark:bg-zinc-800/80 px-2 text-center text-sm text-gray-800 dark:text-zinc-100 outline-none focus:border-indigo-500 focus:bg-gray-100 dark:focus:bg-zinc-800 disabled:cursor-not-allowed"
                   />
                   <button
                     onClick={() => toggleSetDone(exIdx, sIdx)}
                     className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all ${
                       s.done
                         ? 'bg-green-500 text-white shadow-md shadow-green-900/40'
-                        : 'border border-zinc-700 text-zinc-600 hover:border-green-500 hover:text-green-400'
+                        : 'border border-gray-300 dark:border-zinc-700 text-gray-400 dark:text-zinc-600 hover:border-green-500 hover:text-green-400'
                     }`}
                   >
                     <Check size={15} strokeWidth={2.5} />
@@ -322,7 +322,7 @@ export function WorkoutSessionPage() {
 
             <button
               onClick={() => addSet(exIdx)}
-              className="mt-3 w-full rounded-xl border border-dashed border-zinc-700/60 py-2 text-sm text-zinc-600 hover:border-indigo-500/60 hover:text-indigo-400 transition-colors"
+              className="mt-3 w-full rounded-xl border border-dashed border-gray-300/60 dark:border-zinc-700/60 py-2 text-sm text-gray-400 dark:text-zinc-600 hover:border-indigo-500/60 hover:text-indigo-400 transition-colors"
             >
               + Set hinzufügen
             </button>
@@ -332,20 +332,20 @@ export function WorkoutSessionPage() {
         {/* Add exercise */}
         <button
           onClick={() => { setShowExPicker(v => !v); setShowCreateEx(false) }}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-zinc-700 py-3.5 text-sm font-medium text-zinc-400 hover:border-indigo-500/60 hover:text-indigo-400 transition-colors"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-gray-300 dark:border-zinc-700 py-3.5 text-sm font-medium text-gray-500 dark:text-zinc-400 hover:border-indigo-500/60 hover:text-indigo-400 transition-colors"
         >
           <Plus size={18} />
           Übung hinzufügen
         </button>
 
         {showExPicker && (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 space-y-3">
+          <div className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 space-y-3">
             <input
               autoFocus
               value={exSearch}
               onChange={e => setExSearch(e.target.value)}
               placeholder="Übung suchen…"
-              className="h-11 w-full rounded-xl border border-zinc-700 bg-zinc-800 px-3 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-indigo-500"
+              className="h-11 w-full rounded-xl border border-gray-300 dark:border-zinc-700 bg-gray-100 dark:bg-zinc-800 px-3 text-sm text-gray-800 dark:text-zinc-100 placeholder-gray-400 dark:placeholder-zinc-500 outline-none focus:border-indigo-500"
             />
 
             {!showCreateEx ? (
@@ -355,23 +355,23 @@ export function WorkoutSessionPage() {
                     <button
                       key={ex.id}
                       onClick={() => addExercise(ex.id, ex.name)}
-                      className="w-full rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-zinc-800"
+                      className="w-full rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-gray-100 dark:bg-zinc-800"
                     >
-                      <span className="text-sm font-medium text-zinc-100">{ex.name}</span>
+                      <span className="text-sm font-medium text-gray-800 dark:text-zinc-100">{ex.name}</span>
                       {ex.muscles.some(m => m.isPrimary) && (
-                        <span className="ml-2 text-xs text-zinc-500">
+                        <span className="ml-2 text-xs text-gray-400 dark:text-zinc-500">
                           {ex.muscles.filter(m => m.isPrimary).map(m => m.name).join(', ')}
                         </span>
                       )}
                     </button>
                   ))}
                   {filteredEx?.length === 0 && (
-                    <p className="py-3 text-center text-sm text-zinc-600">Nichts gefunden.</p>
+                    <p className="py-3 text-center text-sm text-gray-400 dark:text-zinc-600">Nichts gefunden.</p>
                   )}
                 </div>
                 <button
                   onClick={() => setShowCreateEx(true)}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-700 py-2.5 text-sm text-zinc-500 hover:border-indigo-500/60 hover:text-indigo-400 transition-colors"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 dark:border-zinc-700 py-2.5 text-sm text-gray-400 dark:text-zinc-500 hover:border-indigo-500/60 hover:text-indigo-400 transition-colors"
                 >
                   <Plus size={15} />
                   Neue Übung erstellen
@@ -379,19 +379,19 @@ export function WorkoutSessionPage() {
               </>
             ) : (
               <div className="space-y-3">
-                <p className="text-sm font-medium text-zinc-300">Neue Übung</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-zinc-300">Neue Übung</p>
                 <input
                   autoFocus
                   value={newExName}
                   onChange={e => setNewExName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleCreateExercise()}
                   placeholder="Name der Übung"
-                  className="h-11 w-full rounded-xl border border-zinc-700 bg-zinc-800 px-3 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-indigo-500"
+                  className="h-11 w-full rounded-xl border border-gray-300 dark:border-zinc-700 bg-gray-100 dark:bg-zinc-800 px-3 text-sm text-gray-800 dark:text-zinc-100 placeholder-gray-400 dark:placeholder-zinc-500 outline-none focus:border-indigo-500"
                 />
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowCreateEx(false)}
-                    className="flex-1 rounded-xl border border-zinc-700 py-2.5 text-sm text-zinc-400 hover:bg-zinc-800 transition-colors"
+                    className="flex-1 rounded-xl border border-gray-300 dark:border-zinc-700 py-2.5 text-sm text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:bg-zinc-800 transition-colors"
                   >
                     Zurück
                   </button>
@@ -408,7 +408,7 @@ export function WorkoutSessionPage() {
 
             <button
               onClick={() => { setShowExPicker(false); setShowCreateEx(false) }}
-              className="w-full text-center text-sm text-zinc-600 hover:text-zinc-400"
+              className="w-full text-center text-sm text-gray-400 dark:text-zinc-600 hover:text-gray-500 dark:text-zinc-400"
             >
               Schließen
             </button>
@@ -425,15 +425,15 @@ export function WorkoutSessionPage() {
             Workout beenden
           </button>
         ) : (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 space-y-3">
-            <p className="text-center text-sm text-zinc-300">
+          <div className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 space-y-3">
+            <p className="text-center text-sm text-gray-600 dark:text-zinc-300">
               Workout speichern?
-              <span className="ml-1 font-bold text-white">{formatTime(elapsed)}</span>
+              <span className="ml-1 font-bold text-gray-900 dark:text-white">{formatTime(elapsed)}</span>
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowFinishConfirm(false)}
-                className="flex-1 rounded-xl border border-zinc-700 py-3 text-sm text-zinc-400 hover:bg-zinc-800 transition-colors"
+                className="flex-1 rounded-xl border border-gray-300 dark:border-zinc-700 py-3 text-sm text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:bg-zinc-800 transition-colors"
               >
                 Zurück
               </button>
@@ -451,11 +451,11 @@ export function WorkoutSessionPage() {
         {/* Cancel confirm */}
         {showCancelConfirm && (
           <div className="rounded-2xl border border-red-900/40 bg-red-950/30 p-4 space-y-3">
-            <p className="text-center text-sm text-zinc-300">Session wirklich abbrechen?<br /><span className="text-xs text-zinc-500">Alle Daten gehen verloren.</span></p>
+            <p className="text-center text-sm text-gray-600 dark:text-zinc-300">Session wirklich abbrechen?<br /><span className="text-xs text-gray-400 dark:text-zinc-500">Alle Daten gehen verloren.</span></p>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowCancelConfirm(false)}
-                className="flex-1 rounded-xl border border-zinc-700 py-3 text-sm text-zinc-400 hover:bg-zinc-800 transition-colors"
+                className="flex-1 rounded-xl border border-gray-300 dark:border-zinc-700 py-3 text-sm text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:bg-zinc-800 transition-colors"
               >
                 Weiter trainieren
               </button>

@@ -13,13 +13,13 @@ const NAV = [
 
 export function AppShell() {
   return (
-    <div className="flex h-dvh flex-col" style={{ background: '#090909' }}>
+    <div className="flex h-dvh flex-col app-bg">
       <main className="flex-1 overflow-y-auto pb-16">
         <Outlet />
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-white/[0.04]"
-        style={{ background: 'rgba(9,9,9,0.92)', backdropFilter: 'blur(20px)' }}>
+      <nav className="fixed inset-x-0 bottom-0 z-50 nav-bg border-t border-black/[0.06] dark:border-white/[0.04]"
+        style={{ backdropFilter: 'blur(20px)' }}>
         <div className="mx-auto grid max-w-lg grid-cols-6">
           {NAV.map(({ to, icon: Icon, label }) => (
             <NavLink
@@ -46,9 +46,9 @@ export function AppShell() {
                     <Icon
                       size={19}
                       strokeWidth={isActive ? 2.2 : 1.7}
-                      className={isActive ? 'text-indigo-400' : 'text-zinc-600'}
+                      className={isActive ? 'text-indigo-400' : 'text-gray-400 dark:text-zinc-600'}
                     />
-                    <span className={`text-[10px] font-semibold tracking-wide ${isActive ? 'text-indigo-400' : 'text-zinc-600'}`}>
+                    <span className={`text-[10px] font-semibold tracking-wide ${isActive ? 'text-indigo-400' : 'text-gray-400 dark:text-zinc-600'}`}>
                       {label}
                     </span>
                   </motion.div>

@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
 
+@custom-variant dark (&:is(.dark, .dark *));
+
 :root {
   --bottom-nav-height: 64px;
 }
@@ -10,10 +12,15 @@
 }
 
 body {
-  background-color: #090909;
-  color: #f0f0f0;
+  background-color: #f8f9fa;
+  color: #111827;
   font-family: 'DM Sans', system-ui, sans-serif;
   overscroll-behavior: none;
+}
+
+html.dark body {
+  background-color: #090909;
+  color: #f0f0f0;
 }
 
 h1, h2, h3, .font-display {
@@ -24,8 +31,47 @@ h1, h2, h3, .font-display {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
+/* Glassmorphism card */
 .card {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+html.dark .card {
   background: linear-gradient(135deg, rgba(39,39,42,0.8) 0%, rgba(24,24,27,0.9) 100%);
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(8px);
+  box-shadow: none;
+}
+
+/* App-level backgrounds */
+.app-bg {
+  background-color: #f8f9fa;
+}
+html.dark .app-bg {
+  background-color: #090909;
+}
+
+.nav-bg {
+  background: rgba(248, 249, 250, 0.92);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+html.dark .nav-bg {
+  background: rgba(9, 9, 9, 0.92);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.surface {
+  background: white;
+}
+html.dark .surface {
+  background: #18181b;
+}
+
+.surface-raised {
+  background: #f3f4f6;
+}
+html.dark .surface-raised {
+  background: #27272a;
 }

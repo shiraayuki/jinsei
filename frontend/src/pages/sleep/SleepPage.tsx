@@ -30,18 +30,18 @@ function SleepStats({ entries }: { entries: SleepEntry[] }) {
 
   return (
     <div className="grid grid-cols-3 gap-3">
-      <div className="rounded-2xl bg-zinc-900 p-4 text-center">
+      <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4 text-center">
         <Moon size={16} className="mx-auto mb-1 text-indigo-400" />
-        <div className="text-lg font-bold text-white">{formatDuration(latest.durationMinutes)}</div>
-        <div className="text-xs text-zinc-500">Letzte Nacht</div>
+        <div className="text-lg font-bold text-gray-900 dark:text-white">{formatDuration(latest.durationMinutes)}</div>
+        <div className="text-xs text-gray-400 dark:text-zinc-500">Letzte Nacht</div>
       </div>
-      <div className="rounded-2xl bg-zinc-900 p-4 text-center">
-        <div className="text-lg font-bold text-white">{formatDuration(avgDuration)}</div>
-        <div className="text-xs text-zinc-500">Ø Dauer</div>
+      <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4 text-center">
+        <div className="text-lg font-bold text-gray-900 dark:text-white">{formatDuration(avgDuration)}</div>
+        <div className="text-xs text-gray-400 dark:text-zinc-500">Ø Dauer</div>
       </div>
-      <div className="rounded-2xl bg-zinc-900 p-4 text-center">
-        <div className="text-lg font-bold text-white">{avgQuality}</div>
-        <div className="text-xs text-zinc-500">Ø Qualität</div>
+      <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4 text-center">
+        <div className="text-lg font-bold text-gray-900 dark:text-white">{avgQuality}</div>
+        <div className="text-xs text-gray-400 dark:text-zinc-500">Ø Qualität</div>
       </div>
     </div>
   )
@@ -82,50 +82,50 @@ export function SleepPage() {
 
       <SleepStats entries={entries} />
 
-      <form onSubmit={handleSubmit} className="rounded-2xl bg-zinc-900 p-4 space-y-4">
-        <h2 className="text-sm font-semibold text-zinc-300">Eintragen</h2>
+      <form onSubmit={handleSubmit} className="rounded-2xl bg-white dark:bg-zinc-900 p-4 space-y-4">
+        <h2 className="text-sm font-semibold text-gray-600 dark:text-zinc-300">Eintragen</h2>
 
         <div>
-          <label className="mb-1 block text-xs text-zinc-500">Aufwachtag</label>
+          <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">Aufwachtag</label>
           <input
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
-            className="w-full rounded-xl bg-zinc-800 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 flex items-center gap-1 text-xs text-zinc-500">
+            <label className="mb-1 flex items-center gap-1 text-xs text-gray-400 dark:text-zinc-500">
               <Moon size={11} /> Einschlafen
             </label>
             <input
               type="time"
               value={bedTime}
               onChange={e => setBedTime(e.target.value)}
-              className="w-full rounded-xl bg-zinc-800 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label className="mb-1 flex items-center gap-1 text-xs text-zinc-500">
+            <label className="mb-1 flex items-center gap-1 text-xs text-gray-400 dark:text-zinc-500">
               <Sun size={11} /> Aufwachen
             </label>
             <input
               type="time"
               value={wakeTime}
               onChange={e => setWakeTime(e.target.value)}
-              className="w-full rounded-xl bg-zinc-800 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
         </div>
 
-        <div className="text-center text-sm text-zinc-400">
-          Schlafdauer: <span className="font-semibold text-white">{formatDuration(previewDuration)}</span>
+        <div className="text-center text-sm text-gray-500 dark:text-zinc-400">
+          Schlafdauer: <span className="font-semibold text-gray-900 dark:text-white">{formatDuration(previewDuration)}</span>
         </div>
 
         <div>
-          <label className="mb-2 block text-xs text-zinc-500">Schlafqualität</label>
+          <label className="mb-2 block text-xs text-gray-400 dark:text-zinc-500">Schlafqualität</label>
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map(q => (
               <button
@@ -135,14 +135,14 @@ export function SleepPage() {
                 className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
                   quality === q
                     ? 'bg-indigo-600 text-white'
-                    : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                    : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:bg-gray-200 dark:bg-zinc-700'
                 }`}
               >
                 {q}
               </button>
             ))}
           </div>
-          <p className="mt-1 text-center text-xs text-zinc-500">{QUALITY_LABELS[quality]}</p>
+          <p className="mt-1 text-center text-xs text-gray-400 dark:text-zinc-500">{QUALITY_LABELS[quality]}</p>
         </div>
 
         <input
@@ -150,7 +150,7 @@ export function SleepPage() {
           placeholder="Notiz (optional)"
           value={notes}
           onChange={e => setNotes(e.target.value)}
-          className="w-full rounded-xl bg-zinc-800 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
         />
 
         <button
@@ -164,22 +164,22 @@ export function SleepPage() {
 
       {entries.length > 0 && (
         <div className="space-y-2">
-          <h2 className="text-sm font-semibold text-zinc-400">Verlauf</h2>
+          <h2 className="text-sm font-semibold text-gray-500 dark:text-zinc-400">Verlauf</h2>
           {entries.map(entry => (
-            <div key={entry.id} className="flex items-center justify-between rounded-xl bg-zinc-900 px-4 py-3">
+            <div key={entry.id} className="flex items-center justify-between rounded-xl bg-white dark:bg-zinc-900 px-4 py-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-white">{formatDuration(entry.durationMinutes)}</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{formatDuration(entry.durationMinutes)}</span>
                   <span className={`text-xs font-medium ${QUALITY_COLORS[entry.quality]}`}>{QUALITY_LABELS[entry.quality]}</span>
                 </div>
-                <p className="text-xs text-zinc-500">{entry.bedTime} → {entry.wakeTime}</p>
-                {entry.notes && <p className="text-xs text-zinc-600">{entry.notes}</p>}
+                <p className="text-xs text-gray-400 dark:text-zinc-500">{entry.bedTime} → {entry.wakeTime}</p>
+                {entry.notes && <p className="text-xs text-gray-400 dark:text-zinc-600">{entry.notes}</p>}
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xs text-zinc-500">{formatDate(entry.date)}</span>
+                <span className="text-xs text-gray-400 dark:text-zinc-500">{formatDate(entry.date)}</span>
                 <button
                   onClick={() => del.mutate(entry.id)}
-                  className="text-zinc-600 hover:text-rose-400 transition-colors"
+                  className="text-gray-400 dark:text-zinc-600 hover:text-rose-400 transition-colors"
                 >
                   <Trash2 size={15} />
                 </button>
