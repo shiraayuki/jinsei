@@ -393,6 +393,88 @@ namespace backend.Data.Migrations
                     b.ToTable("meal_entries", (string)null);
                 });
 
+            modelBuilder.Entity("SleepEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<TimeOnly>("BedTime")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("bed_time");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<DateTimeOffset>("LoggedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("logged_at");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
+
+                    b.Property<int>("Quality")
+                        .HasColumnType("integer")
+                        .HasColumnName("quality");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("user_id");
+
+                    b.Property<TimeOnly>("WakeTime")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("wake_time");
+
+                    b.HasKey("Id")
+                        .HasName("pk_sleep_entries");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_sleep_entries_user_id");
+
+                    b.ToTable("sleep_entries", (string)null);
+                });
+
+            modelBuilder.Entity("WeightEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<DateTimeOffset>("LoggedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("logged_at");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("user_id");
+
+                    b.Property<decimal>("WeightKg")
+                        .HasColumnType("numeric")
+                        .HasColumnName("weight_kg");
+
+                    b.HasKey("Id")
+                        .HasName("pk_weight_entries");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_weight_entries_user_id");
+
+                    b.ToTable("weight_entries", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -901,6 +983,30 @@ namespace backend.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_asp_net_user_tokens_asp_net_users_user_id");
+                });
+
+            modelBuilder.Entity("SleepEntry", b =>
+                {
+                    b.HasOne("AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_sleep_entries_users_user_id");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("WeightEntry", b =>
+                {
+                    b.HasOne("AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_weight_entries_users_user_id");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Workout", b =>

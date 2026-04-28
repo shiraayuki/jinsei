@@ -12,6 +12,8 @@ import { WorkoutFormPage } from '../pages/workouts/WorkoutFormPage'
 import { WorkoutSessionPage } from '../pages/workouts/WorkoutSessionPage'
 import { ExercisesPage } from '../pages/workouts/ExercisesPage'
 import { ProfilePage } from '../pages/ProfilePage'
+import { WeightPage } from '../pages/weight/WeightPage'
+import { SleepPage } from '../pages/sleep/SleepPage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -46,6 +48,8 @@ export function AppRouter() {
         <Route path="/workouts/:id" element={<WorkoutDetailPage />} />
         <Route path="/workouts/:id/edit" element={<WorkoutFormPage />} />
         <Route path="/exercises" element={<ExercisesPage />} />
+        <Route path="/weight" element={<WeightPage />} />
+        <Route path="/sleep" element={<SleepPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

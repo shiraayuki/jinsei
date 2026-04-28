@@ -1,10 +1,12 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutDashboard, CheckSquare, Dumbbell, UserCircle } from 'lucide-react'
+import { LayoutDashboard, CheckSquare, Dumbbell, Scale, Moon, UserCircle } from 'lucide-react'
 
 const NAV = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/', icon: LayoutDashboard, label: 'Home' },
   { to: '/habits', icon: CheckSquare, label: 'Habits' },
-  { to: '/workouts', icon: Dumbbell, label: 'Workout' },
+  { to: '/workouts', icon: Dumbbell, label: 'Sport' },
+  { to: '/weight', icon: Scale, label: 'Gewicht' },
+  { to: '/sleep', icon: Moon, label: 'Schlaf' },
   { to: '/profile', icon: UserCircle, label: 'Profil' },
 ]
 
@@ -16,7 +18,7 @@ export function AppShell() {
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-50 bg-zinc-950/95 backdrop-blur-xl">
-        <div className="mx-auto grid max-w-lg grid-cols-4">
+        <div className="mx-auto grid max-w-lg grid-cols-6">
           {NAV.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
