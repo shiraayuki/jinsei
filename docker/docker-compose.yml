@@ -29,13 +29,15 @@ services:
     restart: unless-stopped
 
   caddy:
-    image: caddy:alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.caddy
     ports:
-      - "80:80"
       - "443:443"
       - "443:443/udp"
     environment:
       JINSEI_DOMAIN: ${JINSEI_DOMAIN}
+      DUCKDNS_TOKEN: ${DUCKDNS_TOKEN}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
