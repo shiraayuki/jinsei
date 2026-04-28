@@ -9,9 +9,11 @@ import { HabitFormPage } from '../pages/habits/HabitFormPage'
 import { WorkoutsListPage } from '../pages/workouts/WorkoutsListPage'
 import { WorkoutDetailPage } from '../pages/workouts/WorkoutDetailPage'
 import { WorkoutFormPage } from '../pages/workouts/WorkoutFormPage'
+import { WorkoutSessionPage } from '../pages/workouts/WorkoutSessionPage'
 import { ExercisesPage } from '../pages/workouts/ExercisesPage'
 import { FoodLogPage } from '../pages/food/FoodLogPage'
 import { FoodSearchPage } from '../pages/food/FoodSearchPage'
+import { ProfilePage } from '../pages/ProfilePage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -42,11 +44,13 @@ export function AppRouter() {
         <Route path="/habits/:id/edit" element={<HabitFormPage />} />
         <Route path="/workouts" element={<WorkoutsListPage />} />
         <Route path="/workouts/new" element={<WorkoutFormPage />} />
+        <Route path="/workouts/session" element={<WorkoutSessionPage />} />
         <Route path="/workouts/:id" element={<WorkoutDetailPage />} />
         <Route path="/workouts/:id/edit" element={<WorkoutFormPage />} />
         <Route path="/exercises" element={<ExercisesPage />} />
         <Route path="/food" element={<FoodLogPage />} />
         <Route path="/food/search" element={<FoodSearchPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

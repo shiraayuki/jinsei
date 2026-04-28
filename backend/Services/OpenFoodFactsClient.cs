@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -9,6 +10,7 @@ public class OpenFoodFactsClient
     public OpenFoodFactsClient(HttpClient http, IMemoryCache cache)
     {
         _http = http;
+        _http.DefaultRequestHeaders.UserAgent.ParseAdd("Jinsei/1.0 (wegerernikolas@gmail.com)");
         _cache = cache;
     }
 
@@ -17,7 +19,7 @@ public class OpenFoodFactsClient
         var key = $"off:search:{query.ToLower()}";
         if (_cache.TryGetValue(key, out List<OffProduct>? cached)) return cached!;
 
-        var url = $"https://world.openfoodfacts.org/cgi/search.pl?search_terms={Uri.EscapeDataString(query)}&json=1&page_size=20&fields=code,product_name,brands,nutriments,serving_size";
+        var url = $"https://world.openfoodfacts.org/api/v2/search?search_terms={Uri.EscapeDataString(query)}&page_size=20&fields=code,product_name,brands,nutriments,serving_size&sort_by=unique_scans_n";
         using var res = await _http.GetAsync(url);
         if (!res.IsSuccessStatusCode) return [];
 
@@ -80,7 +82,7 @@ public class OpenFoodFactsClient
         return val.ValueKind switch
         {
             JsonValueKind.Number => val.GetDecimal(),
-            JsonValueKind.String => decimal.TryParse(val.GetString(), out var d) ? d : null,
+            JsonValueKind.String => decimal.TryParse(val.GetString(), NumberStyles.Number, CultureInfo.InvariantCulture, out var d) ? d : null,
             _ => null,
         };
     }
@@ -89,7 +91,7 @@ public class OpenFoodFactsClient
     {
         if (s is null) return null;
         var match = System.Text.RegularExpressions.Regex.Match(s, @"(\d+(?:\.\d+)?)\s*g");
-        return match.Success ? decimal.Parse(match.Groups[1].Value) : null;
+        return match.Success ? decimal.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) : null;
     }
 }
 

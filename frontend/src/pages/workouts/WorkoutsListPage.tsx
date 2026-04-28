@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
-import { Plus, Dumbbell } from 'lucide-react'
+import { Plus, Dumbbell, Play } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Card } from '../../components/ui/Card'
 import { useWorkouts } from '../../features/workouts/hooks'
 import type { WorkoutSummary } from '../../features/workouts/api'
+
+const SESSION_KEY = 'jinsei:workout-session'
 
 function WorkoutRow({ w }: { w: WorkoutSummary }) {
   const date = new Date(w.date + 'T00:00:00').toLocaleDateString('de-DE', {
@@ -30,6 +32,7 @@ function WorkoutRow({ w }: { w: WorkoutSummary }) {
 
 export function WorkoutsListPage() {
   const { data: workouts, isLoading } = useWorkouts()
+  const hasActiveSession = !!localStorage.getItem(SESSION_KEY)
 
   return (
     <div>
@@ -41,6 +44,16 @@ export function WorkoutsListPage() {
           </Link>
         }
       />
+
+      <div className="px-4 pt-2 pb-1">
+        <Link
+          to="/workouts/session"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-sm font-medium text-white hover:bg-indigo-500 transition-colors"
+        >
+          <Play size={16} />
+          {hasActiveSession ? 'Session fortsetzen' : 'Workout starten'}
+        </Link>
+      </div>
 
       <div className="space-y-2 p-4">
         {isLoading && <p className="py-8 text-center text-sm text-zinc-500">Laden…</p>}

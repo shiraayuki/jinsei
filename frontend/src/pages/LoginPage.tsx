@@ -1,17 +1,18 @@
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useAuth } from '../app/auth/AuthProvider'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 
-const schema = z.object({
+const loginSchema = z.object({
   email: z.string().email('Ungültige E-Mail'),
   password: z.string().min(8, 'Mind. 8 Zeichen'),
+  displayName: z.string().optional(),
 })
 
-type Fields = z.infer<typeof schema>
+type Fields = z.infer<typeof loginSchema>
 
 export function LoginPage() {
   const { login, register } = useAuth()
@@ -22,13 +23,19 @@ export function LoginPage() {
     register: field,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<Fields>({ resolver: zodResolver(schema) })
+  } = useForm<Fields>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(loginSchema) as Resolver<Fields>,
+  })
 
   async function onSubmit(data: Fields) {
     setError('')
     try {
-      if (mode === 'login') await login(data.email, data.password)
-      else await register(data.email, data.password)
+      if (mode === 'login') {
+        await login(data.email, data.password)
+      } else {
+        await register(data.email, data.password, data.displayName)
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Fehler')
     }
@@ -43,6 +50,15 @@ export function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          {mode === 'register' && (
+            <Input
+              label="Anzeigename"
+              placeholder="Dein Name"
+              autoComplete="name"
+              error={errors.displayName?.message}
+              {...field('displayName')}
+            />
+          )}
           <Input
             label="E-Mail"
             type="email"

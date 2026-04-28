@@ -23,14 +23,19 @@ public class AuthController : ControllerBase
         if (!_config.GetValue<bool>("Auth:AllowRegistration"))
             return StatusCode(403, "Registration is disabled.");
 
-        var user = new AppUser { Email = req.Email, UserName = req.Email };
+        var user = new AppUser
+        {
+            Email = req.Email,
+            UserName = req.Email,
+            DisplayName = req.DisplayName?.Trim(),
+        };
         var result = await _userManager.CreateAsync(user, req.Password);
 
         if (!result.Succeeded)
             return BadRequest(result.Errors.Select(e => e.Description));
 
         await _signInManager.SignInAsync(user, isPersistent: true);
-        return Ok(new { user.Id, user.Email });
+        return Ok(ToDto(user));
     }
 
     [HttpPost("login")]
@@ -42,7 +47,7 @@ public class AuthController : ControllerBase
             return Unauthorized("Invalid credentials.");
 
         var user = await _userManager.FindByEmailAsync(req.Email);
-        return Ok(new { user!.Id, user.Email });
+        return Ok(ToDto(user!));
     }
 
     [Authorize]
@@ -59,9 +64,24 @@ public class AuthController : ControllerBase
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return Unauthorized();
-        return Ok(new { user.Id, user.Email });
+        return Ok(ToDto(user));
     }
+
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest req)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+
+        user.DisplayName = req.DisplayName?.Trim();
+        await _userManager.UpdateAsync(user);
+        return Ok(ToDto(user));
+    }
+
+    private static object ToDto(AppUser u) => new { u.Id, u.Email, u.DisplayName };
 }
 
-public record RegisterRequest(string Email, string Password);
+public record RegisterRequest(string Email, string Password, string? DisplayName);
 public record LoginRequest(string Email, string Password);
+public record UpdateProfileRequest(string? DisplayName);
