@@ -330,7 +330,7 @@ export function WorkoutSessionPage() {
               </div>
 
               <div className="space-y-2">
-                <div className="grid grid-cols-[2.5rem_1fr_1fr_2.5rem_2rem] gap-2 px-1 text-xs font-medium text-gray-400 dark:text-zinc-600">
+                <div className="grid grid-cols-[1.75rem_1fr_1fr_2.25rem_1.5rem] gap-1.5 px-1 text-xs font-medium text-gray-400 dark:text-zinc-600">
                   <span className="text-center">Set</span>
                   <span className="text-center">kg</span>
                   <span className="text-center">Wdh.</span>
@@ -343,7 +343,7 @@ export function WorkoutSessionPage() {
                   return (
                     <div
                       key={sIdx}
-                      className={`grid grid-cols-[2.5rem_1fr_1fr_2.5rem_2rem] items-center gap-2 transition-opacity ${s.done ? 'opacity-50' : ''}`}
+                      className={`grid grid-cols-[1.75rem_1fr_1fr_2.25rem_1.5rem] items-center gap-1.5 transition-opacity ${s.done ? 'opacity-50' : ''}`}
                     >
                       <span className="text-center text-sm font-medium text-gray-400 dark:text-zinc-500">{sIdx + 1}</span>
                       <input
@@ -365,16 +365,16 @@ export function WorkoutSessionPage() {
                       />
                       <button
                         onClick={() => toggleSetDone(exIdx, sIdx)}
-                        className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all ${
+                        className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all ${
                           s.done
                             ? 'bg-green-500 text-white shadow-md shadow-green-900/40'
                             : 'border border-gray-300 dark:border-zinc-700 text-gray-400 dark:text-zinc-600 hover:border-green-500 hover:text-green-400'
                         }`}
                       >
-                        <Check size={15} strokeWidth={2.5} />
+                        <Check size={14} strokeWidth={2.5} />
                       </button>
-                      <button onClick={() => removeSet(exIdx, sIdx)} className="text-zinc-700 hover:text-red-400 transition-colors">
-                        <Trash2 size={13} />
+                      <button onClick={() => removeSet(exIdx, sIdx)} className="flex items-center justify-center text-zinc-600 hover:text-red-400 transition-colors">
+                        <Trash2 size={12} />
                       </button>
                     </div>
                   )

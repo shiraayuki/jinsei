@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Plus, Trash2, Pencil, X, Search, GripVertical } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
-import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import {
@@ -139,39 +138,44 @@ export function RoutinesPage() {
         }
       />
 
-      <div className="space-y-3 p-4">
+      <div className="p-4">
         {isLoading && <p className="py-8 text-center text-sm text-gray-400 dark:text-zinc-500">Laden…</p>}
-
-        {routines?.map(r => (
-          <Card key={r.id} className="px-4 py-3">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-gray-800 dark:text-zinc-100">{r.name}</p>
-                <p className="mt-0.5 text-xs text-gray-400 dark:text-zinc-500">
-                  {r.exercises.map(e => `${e.exerciseName} ×${e.setCount}`).join(' · ')}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <button onClick={() => openEdit(r)} className="text-gray-400 dark:text-zinc-600 hover:text-indigo-400">
-                  <Pencil size={15} />
-                </button>
-                <button
-                  onClick={() => deleteMut.mutate(r.id)}
-                  disabled={deleteMut.isPending}
-                  className="text-gray-400 dark:text-zinc-600 hover:text-red-400"
-                >
-                  <Trash2 size={15} />
-                </button>
-              </div>
-            </div>
-          </Card>
-        ))}
 
         {!isLoading && routines?.length === 0 && (
           <p className="py-8 text-center text-sm text-gray-400 dark:text-zinc-500">
             Noch keine Routinen. Erstelle deine erste!
           </p>
         )}
+
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {routines?.map(r => (
+            <div
+              key={r.id}
+              className="flex flex-col justify-between rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 min-h-[120px]"
+            >
+              <div>
+                <p className="font-semibold text-gray-800 dark:text-zinc-100 leading-snug">{r.name}</p>
+                <p className="mt-1 text-sm text-gray-400 dark:text-zinc-500">{r.exercises.length} Übungen</p>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  onClick={() => openEdit(r)}
+                  className="flex items-center gap-1 text-xs text-gray-400 dark:text-zinc-500 hover:text-indigo-400 transition-colors"
+                >
+                  <Pencil size={13} />
+                  Bearbeiten
+                </button>
+                <button
+                  onClick={() => deleteMut.mutate(r.id)}
+                  disabled={deleteMut.isPending}
+                  className="ml-auto text-gray-300 dark:text-zinc-700 hover:text-red-400 transition-colors"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Routine create/edit modal */}
