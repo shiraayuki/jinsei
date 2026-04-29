@@ -18,6 +18,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<MealEntry> MealEntries => Set<MealEntry>();
     public DbSet<WeightEntry> WeightEntries => Set<WeightEntry>();
     public DbSet<SleepEntry> SleepEntries => Set<SleepEntry>();
+    public DbSet<Routine> Routines => Set<Routine>();
+    public DbSet<RoutineExercise> RoutineExercises => Set<RoutineExercise>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

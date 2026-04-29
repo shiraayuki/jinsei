@@ -1,5 +1,7 @@
 import { api } from '../../lib/api'
 
+// exercisesApi extended with last-performance
+
 export interface MuscleGroupRef {
   id: number
   name: string
@@ -84,6 +86,46 @@ export const exercisesApi = {
     api.put<Exercise>(`/exercises/${id}`, data),
   delete: (id: string) => api.delete(`/exercises/${id}`),
   muscleGroups: () => api.get<MuscleGroup[]>('/muscle-groups'),
+  lastPerformance: (id: string) => api.get<LastPerformance | null>(`/exercises/${id}/last-performance`),
+}
+
+export interface LastSet {
+  setNumber: number
+  reps?: number
+  weightKg?: number
+}
+
+export interface LastPerformance {
+  date: string
+  sets: LastSet[]
+}
+
+export interface RoutineExercise {
+  id: string
+  exerciseId: string
+  exerciseName: string
+  muscles: MuscleGroupRef[]
+  setCount: number
+  order: number
+}
+
+export interface Routine {
+  id: string
+  name: string
+  createdAt: string
+  exercises: RoutineExercise[]
+}
+
+export interface UpsertRoutinePayload {
+  name: string
+  exercises: { exerciseId: string; setCount: number }[]
+}
+
+export const routinesApi = {
+  list: () => api.get<Routine[]>('/routines'),
+  create: (data: UpsertRoutinePayload) => api.post<Routine>('/routines', data),
+  update: (id: string, data: UpsertRoutinePayload) => api.put<Routine>(`/routines/${id}`, data),
+  delete: (id: string) => api.delete(`/routines/${id}`),
 }
 
 export const workoutsApi = {

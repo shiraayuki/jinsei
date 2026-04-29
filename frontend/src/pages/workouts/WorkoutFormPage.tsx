@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Search, X } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
@@ -44,8 +45,11 @@ export function WorkoutFormPage() {
   const [notes, setNotes] = useState('')
   const [duration, setDuration] = useState('')
   const [rows, setRows] = useState<ExerciseRow[]>([])
-  const [showExPicker, setShowExPicker] = useState(false)
+
+  const [showPicker, setShowPicker] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
   const [exSearch, setExSearch] = useState('')
+  const [confirmClosePicker, setConfirmClosePicker] = useState(false)
 
   useEffect(() => {
     if (existing) {
@@ -67,13 +71,30 @@ export function WorkoutFormPage() {
     }
   }, [existing])
 
+  function openPicker() {
+    setShowPicker(true)
+    setShowSearch(false)
+    setExSearch('')
+    setConfirmClosePicker(false)
+  }
+
+  function tryClosePicker() {
+    setConfirmClosePicker(true)
+  }
+
+  function closePicker() {
+    setShowPicker(false)
+    setShowSearch(false)
+    setExSearch('')
+    setConfirmClosePicker(false)
+  }
+
   function addExercise(exId: string, exName: string) {
     setRows(prev => [
       ...prev,
       { exerciseId: exId, exerciseName: exName, sets: [{ setNumber: 1, reps: '', weightKg: '' }] },
     ])
-    setShowExPicker(false)
-    setExSearch('')
+    closePicker()
   }
 
   function removeExercise(idx: number) {
@@ -185,9 +206,7 @@ export function WorkoutFormPage() {
               </button>
             </div>
 
-            {/* Set rows */}
             <div className="space-y-2">
-              {/* Header */}
               <div className="grid grid-cols-[2rem_1fr_1fr_2rem] gap-2 text-xs text-gray-400 dark:text-zinc-500">
                 <span className="text-center">Set</span>
                 <span className="text-center">kg</span>
@@ -232,55 +251,100 @@ export function WorkoutFormPage() {
           </Card>
         ))}
 
-        {/* Add exercise */}
-        <Button
-          variant="secondary"
-          className="w-full"
-          onClick={() => setShowExPicker(true)}
-        >
+        <Button variant="secondary" className="w-full" onClick={openPicker}>
           <Plus size={18} />
           Übung hinzufügen
         </Button>
 
-        {/* Exercise picker */}
-        {showExPicker && (
-          <Card className="p-3">
-            <Input
-              placeholder="Suchen…"
-              value={exSearch}
-              onChange={e => setExSearch(e.target.value)}
-              autoFocus
-            />
-            <div className="mt-2 max-h-56 overflow-y-auto space-y-1">
+        <Button size="lg" loading={isPending} className="w-full" onClick={save} disabled={rows.length === 0}>
+          {isEdit ? 'Speichern' : 'Workout speichern'}
+        </Button>
+      </div>
+
+      {/* Exercise picker — portal to body */}
+      {showPicker && createPortal(
+        <div
+          className="fixed inset-0 z-[60] flex flex-col justify-end bg-black/60 backdrop-blur-sm"
+          onClick={tryClosePicker}
+        >
+          <div
+            className="flex flex-col rounded-t-2xl bg-white dark:bg-zinc-900 mb-16"
+            style={{ maxHeight: 'calc(85vh - 4rem)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-zinc-800 flex-shrink-0">
+              <h3 className="font-semibold text-gray-800 dark:text-zinc-100">Übung hinzufügen</h3>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setShowSearch(s => !s)}
+                  className={`rounded-lg p-2 transition-colors ${
+                    showSearch
+                      ? 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30'
+                      : 'text-gray-400 hover:text-indigo-500'
+                  }`}
+                >
+                  <Search size={18} />
+                </button>
+                <button
+                  onClick={tryClosePicker}
+                  className="rounded-lg p-2 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {showSearch && (
+              <div className="px-4 py-2 border-b border-gray-100 dark:border-zinc-800 flex-shrink-0">
+                <Input
+                  placeholder="Suchen…"
+                  value={exSearch}
+                  onChange={e => setExSearch(e.target.value)}
+                  autoFocus
+                />
+              </div>
+            )}
+
+            <div className="overflow-y-auto flex-1 p-2">
               {filteredEx?.map(ex => (
                 <button
                   key={ex.id}
                   onClick={() => addExercise(ex.id, ex.name)}
-                  className="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100 dark:bg-zinc-800"
+                  className="w-full rounded-xl px-3 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
                 >
-                  <span className="text-gray-800 dark:text-zinc-100">{ex.name}</span>
+                  <span className="font-medium text-gray-800 dark:text-zinc-100">{ex.name}</span>
                   <span className="ml-2 text-xs text-gray-400 dark:text-zinc-500">
                     {ex.muscles.filter(m => m.isPrimary).map(m => m.name).join(', ')}
                   </span>
                 </button>
               ))}
               {filteredEx?.length === 0 && (
-                <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">Keine Übungen gefunden.</p>
+                <p className="py-8 text-center text-sm text-gray-400 dark:text-zinc-500">Keine Übungen gefunden.</p>
               )}
             </div>
-            <button
-              onClick={() => setShowExPicker(false)}
-              className="mt-2 w-full text-center text-sm text-gray-400 dark:text-zinc-500"
-            >
-              Abbrechen
-            </button>
-          </Card>
-        )}
+          </div>
+        </div>,
+        document.body
+      )}
 
-        <Button size="lg" loading={isPending} className="w-full" onClick={save} disabled={rows.length === 0}>
-          {isEdit ? 'Speichern' : 'Workout speichern'}
-        </Button>
-      </div>
+      {/* Confirm close picker — portal to body */}
+      {confirmClosePicker && createPortal(
+        <div className="fixed inset-0 z-[65] flex items-center justify-center bg-black/60 backdrop-blur-sm px-6">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-xl">
+            <p className="font-semibold text-gray-800 dark:text-zinc-100">Auswahl abbrechen?</p>
+            <p className="mt-1 text-sm text-gray-400 dark:text-zinc-500">Die Suche wird zurückgesetzt.</p>
+            <div className="mt-4 flex gap-2">
+              <Button variant="secondary" className="flex-1" onClick={() => setConfirmClosePicker(false)}>
+                Weiter suchen
+              </Button>
+              <Button className="flex-1 !bg-red-500 hover:!bg-red-600" onClick={closePicker}>
+                Schließen
+              </Button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   )
 }

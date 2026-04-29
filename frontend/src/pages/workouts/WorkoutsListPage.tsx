@@ -103,9 +103,12 @@ export function WorkoutsListPage() {
           </div>
         )}
 
-        <div className="pt-1">
+        <div className="flex gap-4 pt-1">
           <Link to="/exercises" className="text-xs text-gray-400 dark:text-zinc-600 hover:text-gray-500 dark:text-zinc-400 underline underline-offset-2">
             Übungs-Bibliothek →
+          </Link>
+          <Link to="/routines" className="text-xs text-gray-400 dark:text-zinc-600 hover:text-gray-500 dark:text-zinc-400 underline underline-offset-2">
+            Routinen →
           </Link>
         </div>
       </div>

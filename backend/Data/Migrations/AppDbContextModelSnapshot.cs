@@ -732,6 +732,71 @@ namespace backend.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Routine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_routines");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_routines_user_id");
+
+                    b.ToTable("routines", (string)null);
+                });
+
+            modelBuilder.Entity("RoutineExercise", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("RoutineId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("routine_id");
+
+                    b.Property<Guid>("ExerciseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("exercise_id");
+
+                    b.Property<int>("SetCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("set_count");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer")
+                        .HasColumnName("order");
+
+                    b.HasKey("Id")
+                        .HasName("pk_routine_exercises");
+
+                    b.HasIndex("RoutineId")
+                        .HasDatabaseName("ix_routine_exercises_routine_id");
+
+                    b.HasIndex("ExerciseId")
+                        .HasDatabaseName("ix_routine_exercises_exercise_id");
+
+                    b.ToTable("routine_exercises", (string)null);
+                });
+
             modelBuilder.Entity("Workout", b =>
                 {
                     b.Property<Guid>("Id")
@@ -985,6 +1050,39 @@ namespace backend.Data.Migrations
                         .HasConstraintName("fk_asp_net_user_tokens_asp_net_users_user_id");
                 });
 
+            modelBuilder.Entity("Routine", b =>
+                {
+                    b.HasOne("AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_routines_users_user_id");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RoutineExercise", b =>
+                {
+                    b.HasOne("Routine", "Routine")
+                        .WithMany("Exercises")
+                        .HasForeignKey("RoutineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_routine_exercises_routines_routine_id");
+
+                    b.HasOne("Exercise", "Exercise")
+                        .WithMany()
+                        .HasForeignKey("ExerciseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_routine_exercises_exercises_exercise_id");
+
+                    b.Navigation("Routine");
+
+                    b.Navigation("Exercise");
+                });
+
             modelBuilder.Entity("SleepEntry", b =>
                 {
                     b.HasOne("AppUser", "User")
@@ -1059,6 +1157,11 @@ namespace backend.Data.Migrations
                     b.Navigation("ExerciseMuscles");
 
                     b.Navigation("WorkoutExercises");
+                });
+
+            modelBuilder.Entity("Routine", b =>
+                {
+                    b.Navigation("Exercises");
                 });
 
             modelBuilder.Entity("FoodItem", b =>

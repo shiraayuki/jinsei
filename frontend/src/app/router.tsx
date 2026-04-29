@@ -11,6 +11,7 @@ import { WorkoutDetailPage } from '../pages/workouts/WorkoutDetailPage'
 import { WorkoutFormPage } from '../pages/workouts/WorkoutFormPage'
 import { WorkoutSessionPage } from '../pages/workouts/WorkoutSessionPage'
 import { ExercisesPage } from '../pages/workouts/ExercisesPage'
+import { RoutinesPage } from '../pages/workouts/RoutinesPage'
 import { ProfilePage } from '../pages/ProfilePage'
 import { WeightPage } from '../pages/weight/WeightPage'
 import { SleepPage } from '../pages/sleep/SleepPage'
@@ -48,6 +49,7 @@ export function AppRouter() {
         <Route path="/workouts/:id" element={<WorkoutDetailPage />} />
         <Route path="/workouts/:id/edit" element={<WorkoutFormPage />} />
         <Route path="/exercises" element={<ExercisesPage />} />
+        <Route path="/routines" element={<RoutinesPage />} />
         <Route path="/weight" element={<WeightPage />} />
         <Route path="/sleep" element={<SleepPage />} />
         <Route path="/profile" element={<ProfilePage />} />

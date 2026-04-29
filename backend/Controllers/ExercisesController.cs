@@ -114,6 +114,26 @@ public class ExercisesController : ControllerBase
         return Ok(ToDto(loaded));
     }
 
+    // GET /api/exercises/{id}/last-performance
+    [HttpGet("exercises/{id:guid}/last-performance")]
+    public async Task<IActionResult> LastPerformance(Guid id)
+    {
+        var lastWorkoutExercise = await _db.WorkoutExercises
+            .Include(we => we.Sets.OrderBy(s => s.SetNumber))
+            .Include(we => we.Workout)
+            .Where(we => we.ExerciseId == id && we.Workout.UserId == UserId)
+            .OrderByDescending(we => we.Workout.Date)
+            .ThenByDescending(we => we.Workout.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        if (lastWorkoutExercise is null) return Ok(null);
+
+        return Ok(new LastPerformanceDto(
+            lastWorkoutExercise.Workout.Date,
+            lastWorkoutExercise.Sets.Select(s => new LastSetDto(s.SetNumber, s.Reps, s.WeightKg)).ToList()
+        ));
+    }
+
     // DELETE /api/exercises/{id}
     [HttpDelete("exercises/{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
@@ -144,3 +164,5 @@ public record MuscleGroupRef(int Id, string Name, string Slug, bool IsPrimary);
 public record ExerciseDto(Guid Id, string Name, string? Description, string? Equipment, bool IsCustom, List<MuscleGroupRef> Muscles);
 public record UpsertExerciseRequest(string Name, string? Description, string? Equipment, List<ExerciseMuscleRef> Muscles);
 public record ExerciseMuscleRef(int MuscleGroupId, bool IsPrimary);
+public record LastPerformanceDto(DateOnly Date, List<LastSetDto> Sets);
+public record LastSetDto(int SetNumber, int? Reps, decimal? WeightKg);
