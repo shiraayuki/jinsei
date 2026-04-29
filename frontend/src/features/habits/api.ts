@@ -57,4 +57,20 @@ export const habitsApi = {
   logEntry: (id: string, date: string, completedCount: number, notes?: string) =>
     api.post(`/habits/${id}/entries`, { date, completedCount, notes }),
   deleteEntry: (entryId: string) => api.delete(`/habits/entries/${entryId}`),
+  getStats: (id: string, days = 90) => api.get<HabitStats>(`/habits/${id}/stats?days=${days}`),
+}
+
+export interface WeeklyHabitStat {
+  weekStart: string
+  completedCount: number
+}
+
+export interface HabitStats {
+  days: number
+  completedCount: number
+  compliancePercent: number
+  currentStreak: number
+  longestStreak: number
+  weekdayCounts: number[]
+  completionByWeek: WeeklyHabitStat[]
 }

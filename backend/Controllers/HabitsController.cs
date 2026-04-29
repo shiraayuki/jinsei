@@ -148,6 +148,51 @@ public class HabitsController : ControllerBase
         return Ok();
     }
 
+    // GET /api/habits/{id}/stats?days=90
+    [HttpGet("{id:guid}/stats")]
+    public async Task<IActionResult> GetStats(Guid id, [FromQuery] int days = 90)
+    {
+        var habit = await _db.Habits
+            .Include(h => h.Schedule)
+            .Include(h => h.Entries)
+            .FirstOrDefaultAsync(h => h.Id == id && h.UserId == UserId);
+
+        if (habit is null) return NotFound();
+
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var cutoff = today.AddDays(-(days - 1));
+        var schedule = habit.Schedule;
+        var targetCount = schedule?.TargetCount ?? 1;
+
+        var completedDates = habit.Entries
+            .Where(e => e.Date >= cutoff && e.Date <= today && e.CompletedCount >= targetCount)
+            .Select(e => e.Date)
+            .ToHashSet();
+
+        var start = (schedule?.ActiveFrom > cutoff ? schedule.ActiveFrom : cutoff);
+        var scheduledCount = CountScheduledDays(schedule, start, today);
+        var compliancePercent = scheduledCount > 0
+            ? Math.Round((double)completedDates.Count / scheduledCount * 100, 1) : 0.0;
+
+        var allEntries = habit.Entries.ToList();
+        var currentStreak = schedule is null ? 0 : CalcStreak(schedule, allEntries, today);
+        var longestStreak = CalcLongestStreak(completedDates);
+
+        var weekdayCounts = new int[7];
+        foreach (var d in completedDates)
+            weekdayCounts[(int)d.DayOfWeek]++;
+
+        var byWeek = completedDates.GroupBy(GetMondayOf).ToDictionary(g => g.Key, g => g.Count());
+        var weeklyStats = new List<WeeklyHabitDto>();
+        for (var ws = GetMondayOf(cutoff); ws <= today; ws = ws.AddDays(7))
+            weeklyStats.Add(new WeeklyHabitDto(ws, byWeek.TryGetValue(ws, out var c) ? c : 0));
+
+        return Ok(new HabitStatsDto(
+            days, completedDates.Count, compliancePercent,
+            currentStreak, longestStreak, weekdayCounts, weeklyStats
+        ));
+    }
+
     // DELETE /api/habits/entries/{entryId}
     [HttpDelete("entries/{entryId:guid}")]
     public async Task<IActionResult> DeleteEntry(Guid entryId)
@@ -262,6 +307,41 @@ public class HabitsController : ControllerBase
 
     private static HabitEntryDto ToEntryDto(HabitEntry e) =>
         new(e.Id, e.Date, e.CompletedCount, e.Notes, e.LoggedAt);
+
+    private static int CountScheduledDays(HabitSchedule? schedule, DateOnly from, DateOnly to)
+    {
+        int totalDays = to.DayNumber - from.DayNumber + 1;
+        if (schedule is null) return totalDays;
+        return schedule.ScheduleType switch
+        {
+            ScheduleType.Daily => totalDays,
+            ScheduleType.Weekly when schedule.DaysOfWeek is { Length: > 0 } =>
+                Enumerable.Range(0, totalDays)
+                    .Count(i => schedule.DaysOfWeek.Contains((int)from.AddDays(i).DayOfWeek)),
+            ScheduleType.Interval when schedule.IntervalDays is > 0 =>
+                totalDays / schedule.IntervalDays.Value + 1,
+            _ => totalDays,
+        };
+    }
+
+    private static int CalcLongestStreak(HashSet<DateOnly> done)
+    {
+        if (done.Count == 0) return 0;
+        var sorted = done.OrderBy(d => d).ToList();
+        int longest = 1, current = 1;
+        for (int i = 1; i < sorted.Count; i++)
+        {
+            current = sorted[i].DayNumber == sorted[i - 1].DayNumber + 1 ? current + 1 : 1;
+            if (current > longest) longest = current;
+        }
+        return longest;
+    }
+
+    private static DateOnly GetMondayOf(DateOnly date)
+    {
+        int daysBack = ((int)date.DayOfWeek + 6) % 7;
+        return date.AddDays(-daysBack);
+    }
 }
 
 // ── DTOs / Request records ────────────────────────────────────────────────
@@ -303,4 +383,16 @@ public record HabitEntryDto(
     int CompletedCount,
     string? Notes,
     DateTimeOffset LoggedAt
+);
+
+public record WeeklyHabitDto(DateOnly WeekStart, int CompletedCount);
+
+public record HabitStatsDto(
+    int Days,
+    int CompletedCount,
+    double CompliancePercent,
+    int CurrentStreak,
+    int LongestStreak,
+    int[] WeekdayCounts,
+    List<WeeklyHabitDto> CompletionByWeek
 );

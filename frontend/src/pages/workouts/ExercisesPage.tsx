@@ -174,7 +174,7 @@ export function ExercisesPage() {
                 onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
               />
               <Input
-                label="Equipment"
+                label="Ausrüstung"
                 placeholder="Langhantel"
                 value={form.equipment}
                 onChange={e => setForm(p => ({ ...p, equipment: e.target.value }))}

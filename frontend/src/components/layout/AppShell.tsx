@@ -3,7 +3,7 @@ import { LayoutDashboard, CheckSquare, Dumbbell, Scale, Moon, UserCircle } from 
 import { motion } from 'motion/react'
 
 const NAV = [
-  { to: '/', icon: LayoutDashboard, label: 'Home' },
+  { to: '/', icon: LayoutDashboard, label: 'Start' },
   { to: '/habits', icon: CheckSquare, label: 'Habits' },
   { to: '/workouts', icon: Dumbbell, label: 'Sport' },
   { to: '/weight', icon: Scale, label: 'Gewicht' },

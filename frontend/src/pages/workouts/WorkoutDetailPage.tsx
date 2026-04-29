@@ -76,7 +76,7 @@ export function WorkoutDetailPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-xs text-gray-400 dark:text-zinc-500">
-                        <th className="pb-1 text-left">Set</th>
+                        <th className="pb-1 text-left">Satz</th>
                         <th className="pb-1 text-right">kg</th>
                         <th className="pb-1 text-right">Wdh.</th>
                         {we.sets.some(s => s.rpe) && <th className="pb-1 text-right">RPE</th>}

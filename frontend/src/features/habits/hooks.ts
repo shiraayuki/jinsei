@@ -3,6 +3,14 @@ import { habitsApi, type UpsertHabitPayload } from './api'
 
 const KEY = 'habits'
 
+export function useHabitStats(id: string, days = 90) {
+  return useQuery({
+    queryKey: [KEY, id, 'stats', days],
+    queryFn: () => habitsApi.getStats(id, days),
+    enabled: !!id,
+  })
+}
+
 export function useHabits() {
   return useQuery({ queryKey: [KEY], queryFn: habitsApi.list })
 }

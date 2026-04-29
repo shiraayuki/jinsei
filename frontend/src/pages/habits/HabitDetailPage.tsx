@@ -3,10 +3,82 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Flame, Pencil, Trash2 } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Button } from '../../components/ui/Button'
-import { useHabits, useHabitEntries, useLogEntry, useArchiveHabit } from '../../features/habits/hooks'
+import { useHabits, useHabitEntries, useLogEntry, useArchiveHabit, useHabitStats } from '../../features/habits/hooks'
+import type { HabitStats } from '../../features/habits/api'
 
 function isoDate(d: Date) {
   return d.toISOString().slice(0, 10)
+}
+
+const WEEKDAY_LABELS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
+
+function HabitStatsSection({ stats, color }: { stats: HabitStats; color: string }) {
+  const maxWeekday = Math.max(...stats.weekdayCounts, 1)
+  const maxWeekly = Math.max(...stats.completionByWeek.map(w => w.completedCount), 1)
+
+  return (
+    <div className="space-y-4">
+      {/* KPI row */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="rounded-2xl bg-white dark:bg-zinc-900 p-3 text-center">
+          <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.compliancePercent}%</p>
+          <p className="text-[11px] text-gray-400 dark:text-zinc-500">Einhaltung</p>
+        </div>
+        <div className="rounded-2xl bg-white dark:bg-zinc-900 p-3 text-center">
+          <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.longestStreak}</p>
+          <p className="text-[11px] text-gray-400 dark:text-zinc-500">Längster Streak</p>
+        </div>
+        <div className="rounded-2xl bg-white dark:bg-zinc-900 p-3 text-center">
+          <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.completedCount}</p>
+          <p className="text-[11px] text-gray-400 dark:text-zinc-500">Mal erledigt</p>
+        </div>
+      </div>
+
+      {/* Weekday pattern */}
+      <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4">
+        <p className="mb-3 text-xs font-semibold text-gray-500 dark:text-zinc-400">Wochentag-Muster</p>
+        <div className="flex items-end gap-1.5" style={{ height: 56 }}>
+          {stats.weekdayCounts.map((count, i) => {
+            const barH = Math.max((count / maxWeekday) * 44, count > 0 ? 4 : 0)
+            return (
+              <div key={i} className="flex flex-1 flex-col items-center gap-1">
+                <div
+                  className="w-full rounded-t-sm transition-all"
+                  style={{ height: barH, backgroundColor: count > 0 ? color : undefined }}
+                  aria-hidden
+                />
+                {count === 0 && (
+                  <div className="w-full rounded-t-sm bg-gray-100 dark:bg-zinc-800" style={{ height: 4 }} />
+                )}
+                <span className="text-[10px] text-gray-400 dark:text-zinc-600">{WEEKDAY_LABELS[i]}</span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Weekly history */}
+      <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4">
+        <p className="mb-3 text-xs font-semibold text-gray-500 dark:text-zinc-400">Wöchentlicher Verlauf</p>
+        <div className="flex items-end gap-0.5" style={{ height: 48 }}>
+          {stats.completionByWeek.map(w => {
+            const barH = Math.max((w.completedCount / maxWeekly) * 36, w.completedCount > 0 ? 3 : 0)
+            return (
+              <div
+                key={w.weekStart}
+                className="flex-1 rounded-t-sm"
+                style={{
+                  height: barH || 3,
+                  backgroundColor: w.completedCount > 0 ? color : undefined,
+                }}
+                title={`KW ${new Date(w.weekStart + 'T00:00:00').toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}: ${w.completedCount}×`}
+              />
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function last90Days() {
@@ -31,6 +103,7 @@ export function HabitDetailPage() {
 
   const log = useLogEntry()
   const archive = useArchiveHabit()
+  const { data: stats } = useHabitStats(id!)
 
   const completedDates = useMemo(
     () => new Set(entries?.filter(e => e.completedCount > 0).map(e => e.date) ?? []),
@@ -120,6 +193,9 @@ export function HabitDetailPage() {
             })}
           </div>
         </div>
+
+        {/* Stats */}
+        {stats && <HabitStatsSection stats={stats} color={habit.color} />}
 
         {/* Schedule info */}
         {habit.schedule && (

@@ -1,9 +1,25 @@
 import { Link } from 'react-router-dom'
-import { Flame, Check, Dumbbell, Play, ChevronRight } from 'lucide-react'
+import { Flame, Check, Dumbbell, Play, ChevronRight, Moon, Scale } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useAuth } from '../app/auth/AuthProvider'
 import { useHabits, useLogEntry } from '../features/habits/hooks'
 import { useWorkouts } from '../features/workouts/hooks'
+import { useSleep } from '../features/sleep/hooks'
+import { useWeight } from '../features/weight/hooks'
+
+function getWeekStart(): string {
+  const today = new Date()
+  const daysBack = (today.getDay() + 6) % 7
+  const monday = new Date(today)
+  monday.setDate(today.getDate() - daysBack)
+  return monday.toISOString().slice(0, 10)
+}
+
+function formatDuration(minutes: number) {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  return m > 0 ? `${h}h ${m}m` : `${h}h`
+}
 
 function greeting() {
   const h = new Date().getHours()
@@ -36,6 +52,8 @@ export function DashboardPage() {
   const name = user?.displayName ?? user?.email?.split('@')[0] ?? 'du'
   const { data: habits } = useHabits()
   const { data: workouts } = useWorkouts()
+  const { data: sleepEntries = [] } = useSleep(7)
+  const { data: weightEntries = [] } = useWeight(14)
   const log = useLogEntry()
 
   const today = todayIso()
@@ -43,6 +61,17 @@ export function DashboardPage() {
   const doneToday = activeHabits.filter(h => h.completedToday).length
   const totalHabits = activeHabits.length
   const lastWorkout = workouts?.[0]
+
+  const weekStart = getWeekStart()
+  const workoutsThisWeek = workouts?.filter(w => w.date >= weekStart).length ?? 0
+  const avgSleepMinutes = sleepEntries.length > 0
+    ? Math.round(sleepEntries.reduce((s, e) => s + e.durationMinutes, 0) / sleepEntries.length)
+    : null
+  const latestWeight = weightEntries[0]
+  const prevWeight = weightEntries.find((_e, i) => i > 0)
+  const weightDelta = latestWeight && prevWeight
+    ? +(latestWeight.weightKg - prevWeight.weightKg).toFixed(1)
+    : null
 
   const SESSION_KEY = 'jinsei:workout-session'
   const hasSession = !!localStorage.getItem(SESSION_KEY)
@@ -163,6 +192,57 @@ export function DashboardPage() {
             </Link>
           </motion.div>
         )}
+
+        {/* Weekly summary */}
+        <motion.div variants={fadeUp} transition={{ duration: 0.35 }}>
+          <div className="card rounded-2xl p-4 shadow-xl shadow-black/30">
+            <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Diese Woche</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Link to="/workouts" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
+                <Dumbbell size={15} className="shrink-0 text-indigo-400" strokeWidth={1.8} />
+                <div>
+                  <p className="text-base font-bold text-zinc-100 leading-none">{workoutsThisWeek}</p>
+                  <p className="text-[10px] text-zinc-500 mt-0.5">Workouts</p>
+                </div>
+              </Link>
+
+              <Link to="/habits" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
+                <Check size={15} className="shrink-0 text-emerald-400" strokeWidth={2.5} />
+                <div>
+                  <p className="text-base font-bold text-zinc-100 leading-none">
+                    {totalHabits > 0 ? `${doneToday}/${totalHabits}` : '–'}
+                  </p>
+                  <p className="text-[10px] text-zinc-500 mt-0.5">Habits heute</p>
+                </div>
+              </Link>
+
+              <Link to="/sleep" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
+                <Moon size={15} className="shrink-0 text-violet-400" strokeWidth={1.8} />
+                <div>
+                  <p className="text-base font-bold text-zinc-100 leading-none">
+                    {avgSleepMinutes != null ? formatDuration(avgSleepMinutes) : '–'}
+                  </p>
+                  <p className="text-[10px] text-zinc-500 mt-0.5">Ø Schlaf</p>
+                </div>
+              </Link>
+
+              <Link to="/weight" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
+                <Scale size={15} className="shrink-0 text-sky-400" strokeWidth={1.8} />
+                <div>
+                  <p className="text-base font-bold text-zinc-100 leading-none">
+                    {latestWeight ? `${latestWeight.weightKg} kg` : '–'}
+                  </p>
+                  {weightDelta != null && (
+                    <p className={`text-[10px] mt-0.5 ${weightDelta > 0 ? 'text-rose-400' : weightDelta < 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                      {weightDelta > 0 ? '+' : ''}{weightDelta} kg
+                    </p>
+                  )}
+                  {weightDelta == null && <p className="text-[10px] text-zinc-500 mt-0.5">Gewicht</p>}
+                </div>
+              </Link>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Workout section */}
         <motion.div variants={fadeUp} transition={{ duration: 0.35 }} className="space-y-2">

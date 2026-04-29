@@ -21,27 +21,69 @@ function formatDuration(minutes: number) {
 const QUALITY_LABELS = ['', 'Schlecht', 'Mäßig', 'Ok', 'Gut', 'Super']
 const QUALITY_COLORS = ['', 'text-rose-400', 'text-orange-400', 'text-yellow-400', 'text-emerald-400', 'text-indigo-400']
 
+function parseBedMinutes(time: string) {
+  const [h, m] = time.split(':').map(Number)
+  const mins = h * 60 + m
+  // Normalize: times before 6am belong to "next day" cycle
+  return mins < 360 ? mins + 1440 : mins
+}
+
+const QUALITY_COLORS_BG = ['', 'bg-rose-400', 'bg-orange-400', 'bg-yellow-400', 'bg-emerald-400', 'bg-indigo-400']
+
 function SleepStats({ entries }: { entries: SleepEntry[] }) {
   if (entries.length === 0) return null
 
+  const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date))
   const avgDuration = Math.round(entries.reduce((s, e) => s + e.durationMinutes, 0) / entries.length)
   const avgQuality = (entries.reduce((s, e) => s + e.quality, 0) / entries.length).toFixed(1)
   const latest = entries[0]
 
+  // Bedtime consistency: stdev of bed time in minutes
+  const bedMins = entries.map(e => parseBedMinutes(e.bedTime))
+  const meanBed = bedMins.reduce((s, v) => s + v, 0) / bedMins.length
+  const stdevBed = Math.round(Math.sqrt(bedMins.reduce((s, v) => s + (v - meanBed) ** 2, 0) / bedMins.length))
+  const consistencyLabel = stdevBed <= 15 ? 'Sehr konstant' : stdevBed <= 30 ? 'Konstant' : stdevBed <= 60 ? 'Variabel' : 'Unregelmäßig'
+
   return (
-    <div className="grid grid-cols-3 gap-3">
-      <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4 text-center">
-        <Moon size={16} className="mx-auto mb-1 text-indigo-400" />
-        <div className="text-lg font-bold text-gray-900 dark:text-white">{formatDuration(latest.durationMinutes)}</div>
-        <div className="text-xs text-gray-400 dark:text-zinc-500">Letzte Nacht</div>
+    <div className="space-y-4">
+      {/* KPI row */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4 text-center">
+          <Moon size={16} className="mx-auto mb-1 text-indigo-400" />
+          <div className="text-lg font-bold text-gray-900 dark:text-white">{formatDuration(latest.durationMinutes)}</div>
+          <div className="text-xs text-gray-400 dark:text-zinc-500">Letzte Nacht</div>
+        </div>
+        <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4 text-center">
+          <div className="text-lg font-bold text-gray-900 dark:text-white">{formatDuration(avgDuration)}</div>
+          <div className="text-xs text-gray-400 dark:text-zinc-500">Ø Dauer</div>
+        </div>
+        <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4 text-center">
+          <div className="text-lg font-bold text-gray-900 dark:text-white">{avgQuality}</div>
+          <div className="text-xs text-gray-400 dark:text-zinc-500">Ø Qualität</div>
+        </div>
+        <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4 text-center">
+          <div className="text-sm font-bold text-gray-900 dark:text-white">±{stdevBed}min</div>
+          <div className="text-xs text-gray-400 dark:text-zinc-500">{consistencyLabel}</div>
+        </div>
       </div>
-      <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4 text-center">
-        <div className="text-lg font-bold text-gray-900 dark:text-white">{formatDuration(avgDuration)}</div>
-        <div className="text-xs text-gray-400 dark:text-zinc-500">Ø Dauer</div>
-      </div>
-      <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4 text-center">
-        <div className="text-lg font-bold text-gray-900 dark:text-white">{avgQuality}</div>
-        <div className="text-xs text-gray-400 dark:text-zinc-500">Ø Qualität</div>
+
+      {/* Quality trend chart */}
+      <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4">
+        <p className="mb-3 text-xs font-semibold text-gray-500 dark:text-zinc-400">Schlafqualität</p>
+        <div className="flex items-end gap-0.5" style={{ height: 48 }}>
+          {sorted.map(e => (
+            <div
+              key={e.id}
+              className={`flex-1 rounded-t-sm ${QUALITY_COLORS_BG[e.quality]}`}
+              style={{ height: (e.quality / 5) * 40 + 4 }}
+              title={`${formatDate(e.date)}: ${QUALITY_LABELS[e.quality]}`}
+            />
+          ))}
+        </div>
+        <div className="mt-1 flex justify-between text-[10px] text-gray-400 dark:text-zinc-600">
+          <span>{formatDate(sorted[0].date)}</span>
+          <span>{formatDate(sorted[sorted.length - 1].date)}</span>
+        </div>
       </div>
     </div>
   )

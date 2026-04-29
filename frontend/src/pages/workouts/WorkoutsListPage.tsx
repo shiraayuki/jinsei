@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Plus, Dumbbell, Play, ChevronRight, BookOpen, Library } from 'lucide-react'
+import { Plus, Dumbbell, Play, ChevronRight, BookOpen, Library, BarChart2 } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { useWorkouts } from '../../features/workouts/hooks'
 import type { WorkoutSummary } from '../../features/workouts/api'
@@ -77,21 +77,28 @@ export function WorkoutsListPage() {
           <div className="absolute -left-2 -bottom-6 h-16 w-16 rounded-full bg-indigo-500/20" />
         </Link>
 
-        {/* Quick nav: Library + Routines */}
-        <div className="grid grid-cols-2 gap-2">
+        {/* Quick nav: Library + Routines + Stats */}
+        <div className="grid grid-cols-3 gap-2">
           <Link
             to="/exercises"
-            className="flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3 text-sm font-medium text-gray-600 dark:text-zinc-300 hover:border-gray-300 dark:hover:border-zinc-700 transition-colors"
+            className="flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-3 text-sm font-medium text-gray-600 dark:text-zinc-300 hover:border-gray-300 dark:hover:border-zinc-700 transition-colors"
           >
             <Library size={16} className="text-indigo-400 shrink-0" />
             Bibliothek
           </Link>
           <Link
             to="/routines"
-            className="flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3 text-sm font-medium text-gray-600 dark:text-zinc-300 hover:border-gray-300 dark:hover:border-zinc-700 transition-colors"
+            className="flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-3 text-sm font-medium text-gray-600 dark:text-zinc-300 hover:border-gray-300 dark:hover:border-zinc-700 transition-colors"
           >
             <BookOpen size={16} className="text-indigo-400 shrink-0" />
             Routinen
+          </Link>
+          <Link
+            to="/workouts/stats"
+            className="flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-3 text-sm font-medium text-gray-600 dark:text-zinc-300 hover:border-gray-300 dark:hover:border-zinc-700 transition-colors"
+          >
+            <BarChart2 size={16} className="text-indigo-400 shrink-0" />
+            Statistiken
           </Link>
         </div>
 

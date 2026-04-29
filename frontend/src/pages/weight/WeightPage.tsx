@@ -12,56 +12,89 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })
 }
 
+function movingAvg(values: number[], window: number): number[] {
+  return values.map((_, i) => {
+    const slice = values.slice(Math.max(0, i - window + 1), i + 1)
+    return slice.reduce((s, v) => s + v, 0) / slice.length
+  })
+}
+
 function WeightChart({ entries }: { entries: WeightEntry[] }) {
   if (entries.length < 2) return null
 
   const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date))
   const values = sorted.map(e => e.weightKg)
-  const min = Math.min(...values)
-  const max = Math.max(...values)
+  const maValues = movingAvg(values, 7)
+
+  const allVals = [...values, ...maValues]
+  const min = Math.min(...allVals)
+  const max = Math.max(...allVals)
   const range = max - min || 1
 
   const W = 300
   const H = 80
   const PAD = 8
 
-  const points = sorted.map((e, i) => {
+  const toPoint = (val: number, i: number) => {
     const x = PAD + (i / (sorted.length - 1)) * (W - PAD * 2)
-    const y = PAD + ((max - e.weightKg) / range) * (H - PAD * 2)
+    const y = PAD + ((max - val) / range) * (H - PAD * 2)
     return `${x},${y}`
-  })
+  }
+
+  const rawPoints = sorted.map((e, i) => toPoint(e.weightKg, i))
+  const maPoints = maValues.map((v, i) => toPoint(v, i))
 
   const latest = sorted[sorted.length - 1]
-  const prev = sorted[sorted.length - 2]
-  const delta = latest.weightKg - prev.weightKg
+  const totalChange = latest.weightKg - sorted[0].weightKg
+  const daySpan = (new Date(latest.date).getTime() - new Date(sorted[0].date).getTime()) / 86400000
+  const weeklyRate = daySpan > 0 ? (totalChange / daySpan) * 7 : 0
 
   return (
     <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4">
       <div className="mb-3 flex items-baseline justify-between">
-        <span className="text-2xl font-bold text-gray-900 dark:text-white">{latest.weightKg} <span className="text-sm font-normal text-gray-500 dark:text-zinc-400">kg</span></span>
-        <span className={`text-sm font-medium ${delta > 0 ? 'text-rose-400' : delta < 0 ? 'text-emerald-400' : 'text-gray-400 dark:text-zinc-500'}`}>
-          {delta > 0 ? '+' : ''}{delta.toFixed(1)} kg
+        <span className="text-2xl font-bold text-gray-900 dark:text-white">
+          {latest.weightKg} <span className="text-sm font-normal text-gray-500 dark:text-zinc-400">kg</span>
         </span>
+        <div className="text-right">
+          <p className={`text-sm font-medium ${totalChange > 0 ? 'text-rose-400' : totalChange < 0 ? 'text-emerald-400' : 'text-gray-400 dark:text-zinc-500'}`}>
+            {totalChange > 0 ? '+' : ''}{totalChange.toFixed(1)} kg gesamt
+          </p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500">
+            {weeklyRate > 0 ? '+' : ''}{weeklyRate.toFixed(2)} kg/Woche
+          </p>
+        </div>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full overflow-visible">
+        {/* Raw data — faint */}
         <polyline
-          points={points.join(' ')}
+          points={rawPoints.join(' ')}
           fill="none"
           stroke="#6366f1"
-          strokeWidth="2"
+          strokeWidth="1.5"
+          strokeOpacity="0.3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        {/* 7-point moving average */}
+        <polyline
+          points={maPoints.join(' ')}
+          fill="none"
+          stroke="#6366f1"
+          strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         {sorted.map((e, i) => {
-          const [x, y] = points[i].split(',').map(Number)
-          return (
-            <circle key={e.id} cx={x} cy={y} r="3" fill="#6366f1" />
-          )
+          const [x, y] = rawPoints[i].split(',').map(Number)
+          return <circle key={e.id} cx={x} cy={y} r="2.5" fill="#6366f1" fillOpacity="0.4" />
         })}
       </svg>
-      <div className="mt-1 flex justify-between text-[10px] text-gray-400 dark:text-zinc-600">
+      <div className="mt-2 flex items-center justify-between text-[10px] text-gray-400 dark:text-zinc-600">
         <span>{formatDate(sorted[0].date)}</span>
-        <span>{formatDate(sorted[sorted.length - 1].date)}</span>
+        <span className="flex items-center gap-1">
+          <span className="inline-block h-0.5 w-4 rounded bg-indigo-500" />7T MA
+        </span>
+        <span>{formatDate(latest.date)}</span>
       </div>
     </div>
   )

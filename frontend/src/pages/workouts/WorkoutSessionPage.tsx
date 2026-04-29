@@ -331,7 +331,7 @@ export function WorkoutSessionPage() {
 
               <div className="space-y-2">
                 <div className="grid grid-cols-[1.75rem_1fr_1fr_2.25rem_1.5rem] gap-1.5 px-1 text-xs font-medium text-gray-400 dark:text-zinc-600">
-                  <span className="text-center">Set</span>
+                  <span className="text-center">Satz</span>
                   <span className="text-center">kg</span>
                   <span className="text-center">Wdh.</span>
                   <span />
@@ -385,7 +385,7 @@ export function WorkoutSessionPage() {
                 onClick={() => addSet(exIdx)}
                 className="mt-3 w-full rounded-xl border border-dashed border-gray-300/60 dark:border-zinc-700/60 py-2 text-sm text-gray-400 dark:text-zinc-600 hover:border-indigo-500/60 hover:text-indigo-400 transition-colors"
               >
-                + Set hinzufügen
+                + Satz hinzufügen
               </button>
             </div>
           )
