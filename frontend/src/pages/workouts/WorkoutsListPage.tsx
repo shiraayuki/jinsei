@@ -12,7 +12,7 @@ function WorkoutRow({ w }: { w: WorkoutSummary }) {
   })
 
   return (
-    <Link to={`/workouts/${w.id}`}>
+    <Link to={`/workouts/${w.id}`} className="block">
       <div className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3.5 transition-colors hover:border-gray-300 dark:hover:border-zinc-700 hover:bg-gray-100/60 dark:hover:bg-zinc-800/60">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
           <Dumbbell size={20} strokeWidth={1.8} />
@@ -115,9 +115,11 @@ export function WorkoutsListPage() {
         )}
 
         {workouts && workouts.length > 0 && (
-          <div className="space-y-4 pt-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-zinc-600">Verlauf</p>
-            {workouts.map(w => <WorkoutRow key={w.id} w={w} />)}
+          <div className="pt-1">
+            <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-zinc-600">Verlauf</p>
+            <div className="flex flex-col gap-4">
+              {workouts.map(w => <WorkoutRow key={w.id} w={w} />)}
+            </div>
           </div>
         )}
       </div>
