@@ -353,7 +353,7 @@ export function WorkoutSessionPage() {
                         value={s.weightKg}
                         onChange={e => updateSet(exIdx, sIdx, 'weightKg', e.target.value)}
                         disabled={s.done}
-                        className="h-10 rounded-xl border border-gray-300/80 dark:border-zinc-700/80 bg-gray-100/80 dark:bg-zinc-800/80 px-2 text-center text-sm text-gray-800 dark:text-zinc-100 outline-none focus:border-indigo-500 focus:bg-gray-100 dark:focus:bg-zinc-800 disabled:cursor-not-allowed placeholder:text-indigo-400/60 dark:placeholder:text-indigo-500/50"
+                        className="min-w-0 w-full h-10 rounded-xl border border-gray-300/80 dark:border-zinc-700/80 bg-gray-100/80 dark:bg-zinc-800/80 px-2 text-center text-sm text-gray-800 dark:text-zinc-100 outline-none focus:border-indigo-500 focus:bg-gray-100 dark:focus:bg-zinc-800 disabled:cursor-not-allowed placeholder:text-indigo-400/60 dark:placeholder:text-indigo-500/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <input
                         type="number"
@@ -361,7 +361,7 @@ export function WorkoutSessionPage() {
                         value={s.reps}
                         onChange={e => updateSet(exIdx, sIdx, 'reps', e.target.value)}
                         disabled={s.done}
-                        className="h-10 rounded-xl border border-gray-300/80 dark:border-zinc-700/80 bg-gray-100/80 dark:bg-zinc-800/80 px-2 text-center text-sm text-gray-800 dark:text-zinc-100 outline-none focus:border-indigo-500 focus:bg-gray-100 dark:focus:bg-zinc-800 disabled:cursor-not-allowed placeholder:text-indigo-400/60 dark:placeholder:text-indigo-500/50"
+                        className="min-w-0 w-full h-10 rounded-xl border border-gray-300/80 dark:border-zinc-700/80 bg-gray-100/80 dark:bg-zinc-800/80 px-2 text-center text-sm text-gray-800 dark:text-zinc-100 outline-none focus:border-indigo-500 focus:bg-gray-100 dark:focus:bg-zinc-800 disabled:cursor-not-allowed placeholder:text-indigo-400/60 dark:placeholder:text-indigo-500/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <button
                         onClick={() => toggleSetDone(exIdx, sIdx)}
