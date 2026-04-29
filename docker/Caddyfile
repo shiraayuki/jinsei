@@ -1,3 +1,6 @@
 {$JINSEI_DOMAIN} {
+    tls {
+        dns duckdns {env.DUCKDNS_TOKEN}
+    }
     reverse_proxy frontend:80
 }

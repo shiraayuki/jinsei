@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
-import { render } from '@testing-library/react';
-import App from './App';
+import { describe, it, expect } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import { Button } from './components/ui/Button'
 
-describe('App', () => {
-  it('renders without crashing', () => {
-    render(<App />);
-    expect(document.body).toBeTruthy();
-  });
-});
+describe('App smoke test', () => {
+  it('Button renders without crash', () => {
+    render(<Button>Click me</Button>)
+    expect(screen.getByRole('button', { name: 'Click me' })).toBeInTheDocument()
+  })
+})

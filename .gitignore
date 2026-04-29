@@ -1,7 +1,8 @@
 # .NET
 backend/bin/
 backend/obj/
-backend.Tests/
+backend.Tests/bin/
+backend.Tests/obj/
 *.slnx
 backend/.build/
 backend/**/*.user
