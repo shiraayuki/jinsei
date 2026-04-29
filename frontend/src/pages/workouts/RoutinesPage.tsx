@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Plus, Trash2, Pencil, X, Search, GripVertical } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Plus, Trash2, Pencil, X, Search, GripVertical, Play } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
@@ -158,6 +159,13 @@ export function RoutinesPage() {
                 <p className="mt-1 text-sm text-gray-400 dark:text-zinc-500">{r.exercises.length} Übungen</p>
               </div>
               <div className="mt-3 flex items-center gap-2">
+                <Link
+                  to={`/workouts/session?routine=${r.id}`}
+                  className="flex items-center gap-1 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-indigo-500 transition-colors"
+                >
+                  <Play size={11} fill="white" />
+                  Starten
+                </Link>
                 <button
                   onClick={() => openEdit(r)}
                   className="flex items-center gap-1 text-xs text-gray-400 dark:text-zinc-500 hover:text-indigo-400 transition-colors"

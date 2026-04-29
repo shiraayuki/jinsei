@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Play, Pause, Plus, Trash2, Check, X, Dumbbell, Search, BookOpen } from 'lucide-react'
 import { useExercises, useCreateWorkout, useCreateExercise, useRoutines } from '../../features/workouts/hooks'
 import { exercisesApi } from '../../features/workouts/api'
@@ -57,6 +57,7 @@ function formatTime(ms: number) {
 
 export function WorkoutSessionPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { data: exercises } = useExercises()
   const { data: routines } = useRoutines()
   const createWorkout = useCreateWorkout()
@@ -73,6 +74,27 @@ export function WorkoutSessionPage() {
       ? s.pausedAt - s.startedAt - s.totalPausedMs
       : Date.now() - s.startedAt - s.totalPausedMs
   })
+
+  // Auto-load routine from ?routine=<id> if no existing session
+  const autoRoutineId = searchParams.get('routine')
+  const autoLoadedRef = useRef(false)
+
+  useEffect(() => {
+    if (!autoRoutineId || autoLoadedRef.current || !routines) return
+    const stored = loadSession()
+    if (stored && stored.exercises.length > 0) return
+    autoLoadedRef.current = true
+    const routine = routines.find(r => r.id === autoRoutineId)
+    if (!routine) return
+    const newExercises: SessionExercise[] = routine.exercises.map(re => ({
+      exerciseId: re.exerciseId,
+      exerciseName: re.exerciseName,
+      sets: Array.from({ length: re.setCount }, () => ({ reps: '', weightKg: '', done: false })),
+    }))
+    setRows(newExercises)
+    newExercises.forEach(ex => fetchLastPerf(ex.exerciseId))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routines])
 
   // Last performance cache: exerciseId → sets
   const [lastPerf, setLastPerf] = useState<Record<string, LastPerformance>>({})
