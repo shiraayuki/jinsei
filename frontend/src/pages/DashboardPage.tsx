@@ -64,7 +64,7 @@ export function DashboardPage() {
         className="px-5 pb-5 pt-12"
       >
         <p className="text-xs font-medium tracking-widest text-zinc-600 uppercase">{formatDate()}</p>
-        <h1 className="mt-1 font-display text-[1.65rem] font-bold leading-tight text-zinc-50">
+        <h1 className="mt-1 font-display text-[1.65rem] font-bold leading-tight text-zinc-800 dark:text-zinc-50">
           {greeting()}, <span className="text-indigo-400">{name}</span>
         </h1>
       </motion.div>
@@ -82,7 +82,7 @@ export function DashboardPage() {
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Heute</p>
-                  <p className="mt-0.5 font-display text-xl font-bold text-zinc-50">
+                  <p className="mt-0.5 font-display text-xl font-bold text-zinc-800 dark:text-zinc-50">
                     {doneToday}
                     <span className="text-zinc-500 font-normal text-base">/{totalHabits} Habits</span>
                   </p>
@@ -108,7 +108,7 @@ export function DashboardPage() {
                       </linearGradient>
                     </defs>
                   </svg>
-                  <span className="relative font-display text-xs font-bold text-zinc-300">
+                  <span className="relative font-display text-xs font-bold text-zinc-600 dark:text-zinc-300">
                     {Math.round(pct * 100)}%
                   </span>
                 </div>
