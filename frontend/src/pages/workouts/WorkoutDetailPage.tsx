@@ -72,33 +72,23 @@ export function WorkoutDetailPage() {
                 </div>
 
                 {/* Sets table */}
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-xs text-gray-400 dark:text-zinc-500">
-                        <th className="pb-1 text-left">Satz</th>
-                        <th className="pb-1 text-right">kg</th>
-                        <th className="pb-1 text-right">Wdh.</th>
-                        {we.sets.some(s => s.rpe) && <th className="pb-1 text-right">RPE</th>}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {we.sets.map(s => (
-                        <tr key={s.id} className="border-t border-gray-200 dark:border-zinc-800">
-                          <td className="py-1.5 text-gray-500 dark:text-zinc-400">{s.setNumber}</td>
-                          <td className="py-1.5 text-right font-mono text-gray-700 dark:text-zinc-200">
-                            {s.weightKg ?? '—'}
-                          </td>
-                          <td className="py-1.5 text-right font-mono text-gray-700 dark:text-zinc-200">
-                            {s.reps ?? '—'}
-                          </td>
-                          {we.sets.some(set => set.rpe) && (
-                            <td className="py-1.5 text-right text-gray-500 dark:text-zinc-400">{s.rpe ?? ''}</td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="text-sm">
+                  <div className={`grid pb-1 text-xs text-gray-400 dark:text-zinc-500 ${we.sets.some(s => s.rpe) ? 'grid-cols-[2rem_1fr_3rem_3rem]' : 'grid-cols-[2rem_1fr_3rem]'}`}>
+                    <span>Satz</span>
+                    <span className="text-center">kg</span>
+                    <span className="text-right">Wdh.</span>
+                    {we.sets.some(s => s.rpe) && <span className="text-right">RPE</span>}
+                  </div>
+                  {we.sets.map(s => (
+                    <div key={s.id} className={`grid items-center border-t border-gray-200 dark:border-zinc-800 py-1.5 ${we.sets.some(set => set.rpe) ? 'grid-cols-[2rem_1fr_3rem_3rem]' : 'grid-cols-[2rem_1fr_3rem]'}`}>
+                      <span className="text-gray-500 dark:text-zinc-400">{s.setNumber}</span>
+                      <span className="text-center font-mono text-gray-700 dark:text-zinc-200">{s.weightKg ?? '—'}</span>
+                      <span className="text-right font-mono text-gray-700 dark:text-zinc-200">{s.reps ?? '—'}</span>
+                      {we.sets.some(set => set.rpe) && (
+                        <span className="text-right text-gray-500 dark:text-zinc-400">{s.rpe ?? ''}</span>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </Card>
             ))}
