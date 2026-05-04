@@ -33,6 +33,7 @@ const QUALITY_COLORS_BG = ['', 'bg-rose-400', 'bg-orange-400', 'bg-yellow-400', 
 
 function SleepStats({ entries }: { entries: SleepEntry[] }) {
   const { t } = useTranslation()
+  const qualityLabels = t('sleep.qualityLabels', { returnObjects: true }) as string[]
   if (entries.length === 0) return null
 
   const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date))
@@ -77,7 +78,7 @@ function SleepStats({ entries }: { entries: SleepEntry[] }) {
               key={e.id}
               className={`flex-1 rounded-t-sm ${QUALITY_COLORS_BG[e.quality]}`}
               style={{ height: (e.quality / 5) * 40 + 4 }}
-              title={`${formatDate(e.date)}: ${QUALITY_LABELS[e.quality]}`}
+              title={`${formatDate(e.date)}: ${qualityLabels[e.quality]}`}
             />
           ))}
         </div>
