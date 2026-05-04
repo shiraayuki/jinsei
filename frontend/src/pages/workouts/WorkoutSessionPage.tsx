@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Play, Pause, Plus, Trash2, Check, X, Dumbbell, Search, BookOpen } from 'lucide-react'
+import { Play, Pause, Plus, Trash2, Check, X, Dumbbell, Search, BookOpen, Timer } from 'lucide-react'
 import { useExercises, useCreateWorkout, useCreateExercise, useRoutines } from '../../features/workouts/hooks'
 import { exercisesApi } from '../../features/workouts/api'
 import type { LastPerformance } from '../../features/workouts/api'
@@ -20,6 +20,13 @@ interface SessionExercise {
   exerciseId: string
   exerciseName: string
   sets: SessionSet[]
+  restSeconds: number
+}
+
+interface RestTimer {
+  remaining: number
+  total: number
+  exerciseName: string
 }
 
 interface PersistedSession {
@@ -66,7 +73,9 @@ export function WorkoutSessionPage() {
   const [startedAt] = useState<number>(() => loadSession()?.startedAt ?? Date.now())
   const [totalPausedMs, setTotalPausedMs] = useState(() => loadSession()?.totalPausedMs ?? 0)
   const [pausedAt, setPausedAt] = useState<number | null>(() => loadSession()?.pausedAt ?? null)
-  const [rows, setRows] = useState<SessionExercise[]>(() => loadSession()?.exercises ?? [])
+  const [rows, setRows] = useState<SessionExercise[]>(() =>
+    (loadSession()?.exercises ?? []).map(e => ({ ...e, restSeconds: e.restSeconds ?? 90 }))
+  )
   const [elapsed, setElapsed] = useState(() => {
     const s = loadSession()
     if (!s) return 0
@@ -89,6 +98,7 @@ export function WorkoutSessionPage() {
     const newExercises: SessionExercise[] = routine.exercises.map(re => ({
       exerciseId: re.exerciseId,
       exerciseName: re.exerciseName,
+      restSeconds: 90,
       sets: Array.from({ length: re.setCount }, () => ({ reps: '', weightKg: '', done: false })),
     }))
     setRows(newExercises)
@@ -98,6 +108,10 @@ export function WorkoutSessionPage() {
 
   // Last performance cache: exerciseId → sets
   const [lastPerf, setLastPerf] = useState<Record<string, LastPerformance>>({})
+
+  const [restTimer, setRestTimer] = useState<RestTimer | null>(null)
+  const [editingRestIdx, setEditingRestIdx] = useState<number | null>(null)
+  const [editingRestVal, setEditingRestVal] = useState('')
 
   const [showExPicker, setShowExPicker] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
@@ -126,6 +140,15 @@ export function WorkoutSessionPage() {
   useEffect(() => {
     saveSession({ startedAt, totalPausedMs, pausedAt, exercises: rows })
   }, [startedAt, totalPausedMs, pausedAt, rows])
+
+  useEffect(() => {
+    if (!restTimer) return
+    if (restTimer.remaining <= 0) { setRestTimer(null); return }
+    const id = setTimeout(() => {
+      setRestTimer(prev => prev ? { ...prev, remaining: prev.remaining - 1 } : null)
+    }, 1000)
+    return () => clearTimeout(id)
+  }, [restTimer])
 
   async function fetchLastPerf(exerciseId: string) {
     if (lastPerf[exerciseId]) return
@@ -163,11 +186,13 @@ export function WorkoutSessionPage() {
   }
 
   function addExercise(id: string, name: string, setCount = 1) {
+    const restSeconds = exercises?.find(e => e.id === id)?.restSeconds ?? 90
     setRows(prev => [
       ...prev,
       {
         exerciseId: id,
         exerciseName: name,
+        restSeconds,
         sets: Array.from({ length: setCount }, () => ({ reps: '', weightKg: '', done: false })),
       },
     ])
@@ -176,12 +201,16 @@ export function WorkoutSessionPage() {
     setShowRoutinePicker(false)
   }
 
+  async function updateRestSeconds(exIdx: number, seconds: number) {
+    const exerciseId = rows[exIdx].exerciseId
+    setRows(prev => prev.map((row, i) => i === exIdx ? { ...row, restSeconds: seconds } : row))
+    try { await exercisesApi.setRestSeconds(exerciseId, seconds) } catch { /* silent */ }
+  }
+
   function loadRoutine(routineId: string) {
     const routine = routines?.find(r => r.id === routineId)
     if (!routine) return
-    routine.exercises.forEach(re => {
-      addExercise(re.exerciseId, re.exerciseName, re.setCount)
-    })
+    routine.exercises.forEach(re => addExercise(re.exerciseId, re.exerciseName, re.setCount))
     setShowRoutinePicker(false)
   }
 
@@ -230,13 +259,19 @@ export function WorkoutSessionPage() {
   }
 
   function toggleSetDone(exIdx: number, setIdx: number) {
-    setRows(prev =>
-      prev.map((row, i) =>
+    setRows(prev => {
+      const wasDone = prev[exIdx].sets[setIdx].done
+      const updated = prev.map((row, i) =>
         i === exIdx
           ? { ...row, sets: row.sets.map((s, si) => (si === setIdx ? { ...s, done: !s.done } : s)) }
           : row,
-      ),
-    )
+      )
+      if (!wasDone && updated[exIdx].restSeconds > 0) {
+        const total = updated[exIdx].restSeconds
+        setRestTimer({ remaining: total, total, exerciseName: updated[exIdx].exerciseName })
+      }
+      return updated
+    })
   }
 
   async function finishWorkout() {
@@ -338,7 +373,7 @@ export function WorkoutSessionPage() {
           return (
             <div key={exIdx} className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
               <div className="mb-3 flex items-center justify-between">
-                <div>
+                <div className="flex-1 min-w-0">
                   <p className="font-semibold text-gray-800 dark:text-zinc-100">{row.exerciseName}</p>
                   {perf && (
                     <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
@@ -346,9 +381,37 @@ export function WorkoutSessionPage() {
                     </p>
                   )}
                 </div>
-                <button onClick={() => removeExercise(exIdx)} className="text-gray-400 dark:text-zinc-600 hover:text-red-400 transition-colors">
-                  <Trash2 size={16} />
-                </button>
+                <div className="flex items-center gap-2 ml-2">
+                  {editingRestIdx === exIdx ? (
+                    <input
+                      autoFocus
+                      type="number"
+                      value={editingRestVal}
+                      onChange={e => setEditingRestVal(e.target.value)}
+                      onBlur={() => {
+                        const v = parseInt(editingRestVal)
+                        if (!isNaN(v) && v >= 0) updateRestSeconds(exIdx, v)
+                        setEditingRestIdx(null)
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                        if (e.key === 'Escape') setEditingRestIdx(null)
+                      }}
+                      className="w-14 h-7 rounded-lg border border-indigo-500 bg-gray-100 dark:bg-zinc-800 px-1.5 text-center text-xs text-gray-800 dark:text-zinc-100 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => { setEditingRestIdx(exIdx); setEditingRestVal(String(row.restSeconds)) }}
+                      className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-400 dark:text-zinc-500 hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                    >
+                      <Timer size={11} />
+                      {row.restSeconds}s
+                    </button>
+                  )}
+                  <button onClick={() => removeExercise(exIdx)} className="text-gray-400 dark:text-zinc-600 hover:text-red-400 transition-colors">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -611,6 +674,36 @@ export function WorkoutSessionPage() {
               </Button>
             </div>
           </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Rest timer overlay */}
+      {restTimer && createPortal(
+        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md">
+          <p className="mb-2 text-sm font-medium text-zinc-400 uppercase tracking-widest">Pause</p>
+          <p className="mb-8 text-base font-semibold text-zinc-300">{restTimer.exerciseName}</p>
+          <div className="relative flex items-center justify-center">
+            <svg width="200" height="200" className="-rotate-90">
+              <circle cx="100" cy="100" r="88" fill="none" stroke="#27272a" strokeWidth="8" />
+              <circle
+                cx="100" cy="100" r="88" fill="none"
+                stroke="#6366f1" strokeWidth="8" strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 88}`}
+                strokeDashoffset={`${2 * Math.PI * 88 * (1 - restTimer.remaining / restTimer.total)}`}
+                className="transition-all duration-1000 ease-linear"
+              />
+            </svg>
+            <span className="absolute font-mono text-5xl font-bold tabular-nums text-white">
+              {restTimer.remaining}
+            </span>
+          </div>
+          <button
+            onClick={() => setRestTimer(null)}
+            className="mt-10 rounded-full bg-zinc-800 px-8 py-3 text-sm font-semibold text-zinc-300 hover:bg-zinc-700 transition-colors"
+          >
+            Überspringen
+          </button>
         </div>,
         document.body
       )}

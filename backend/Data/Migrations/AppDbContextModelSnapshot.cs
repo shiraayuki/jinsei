@@ -146,6 +146,29 @@ namespace backend.Data.Migrations
                     b.ToTable("exercises", (string)null);
                 });
 
+            modelBuilder.Entity("ExerciseRestPreference", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid>("ExerciseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("exercise_id");
+
+                    b.Property<int>("RestSeconds")
+                        .HasColumnType("integer")
+                        .HasColumnName("rest_seconds");
+
+                    b.HasKey("UserId", "ExerciseId")
+                        .HasName("pk_exercise_rest_preferences");
+
+                    b.HasIndex("ExerciseId")
+                        .HasDatabaseName("ix_exercise_rest_preferences_exercise_id");
+
+                    b.ToTable("exercise_rest_preferences", (string)null);
+                });
+
             modelBuilder.Entity("ExerciseMuscle", b =>
                 {
                     b.Property<Guid>("ExerciseId")
@@ -913,6 +936,26 @@ namespace backend.Data.Migrations
                         .HasConstraintName("fk_exercises_users_user_id");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ExerciseRestPreference", b =>
+                {
+                    b.HasOne("AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_exercise_rest_preferences_users_user_id");
+
+                    b.HasOne("Exercise", "Exercise")
+                        .WithMany()
+                        .HasForeignKey("ExerciseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_exercise_rest_preferences_exercises_exercise_id");
+
+                    b.Navigation("User");
+                    b.Navigation("Exercise");
                 });
 
             modelBuilder.Entity("ExerciseMuscle", b =>

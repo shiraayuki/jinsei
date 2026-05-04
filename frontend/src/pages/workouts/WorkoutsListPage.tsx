@@ -1,10 +1,71 @@
-import { Link } from 'react-router-dom'
-import { Plus, Dumbbell, Play, ChevronRight, BookOpen, Library, BarChart2 } from 'lucide-react'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Plus, Dumbbell, Play, ChevronRight, BookOpen, Library, BarChart2, Upload } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { useWorkouts } from '../../features/workouts/hooks'
+import { workoutsApi } from '../../features/workouts/api'
+import { useQueryClient } from '@tanstack/react-query'
 import type { WorkoutSummary } from '../../features/workouts/api'
 
 const SESSION_KEY = 'jinsei:workout-session'
+
+function ImportModal({ onClose }: { onClose: () => void }) {
+  const [text, setText] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const qc = useQueryClient()
+
+  async function handleImport() {
+    if (!text.trim()) return
+    setLoading(true)
+    setError(null)
+    try {
+      const workout = await workoutsApi.importText(text.trim())
+      await qc.invalidateQueries({ queryKey: ['workouts'] })
+      navigate(`/workouts/${workout.id}`)
+    } catch {
+      setError('Import fehlgeschlagen. Prüfe das Format.')
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center" onClick={onClose}>
+      <div
+        className="w-full max-w-lg rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-2xl"
+        onClick={e => e.stopPropagation()}
+      >
+        <h2 className="mb-1 text-base font-semibold text-gray-900 dark:text-zinc-100">Workout importieren</h2>
+        <p className="mb-3 text-xs text-gray-400 dark:text-zinc-500">Hevy-Text einfügen (aus Teilen-Funktion kopieren)</p>
+        <textarea
+          className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 p-3 text-xs font-mono text-gray-700 dark:text-zinc-300 placeholder-gray-300 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+          rows={12}
+          value={text}
+          onChange={e => setText(e.target.value)}
+          placeholder={'Push\nDonnerstag, Apr 30, 2026 um 5:54pm\n\nBankdrücken\nSet 1: 80 kg x 8\n...'}
+          autoFocus
+        />
+        {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
+        <div className="mt-3 flex gap-2 justify-end">
+          <button
+            onClick={onClose}
+            className="rounded-lg px-4 py-2 text-sm text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800"
+          >
+            Abbrechen
+          </button>
+          <button
+            onClick={handleImport}
+            disabled={loading || !text.trim()}
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {loading ? 'Importiere…' : 'Importieren'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function WorkoutRow({ w }: { w: WorkoutSummary }) {
   const date = new Date(w.date + 'T00:00:00').toLocaleDateString('de-DE', {
@@ -42,16 +103,27 @@ function WorkoutRow({ w }: { w: WorkoutSummary }) {
 export function WorkoutsListPage() {
   const { data: workouts, isLoading } = useWorkouts()
   const hasActiveSession = !!localStorage.getItem(SESSION_KEY)
+  const [showImport, setShowImport] = useState(false)
 
   return (
     <div>
+      {showImport && <ImportModal onClose={() => setShowImport(false)} />}
       <PageHeader
         title="Workouts"
         action={
-          <Link to="/workouts/new" className="flex items-center gap-1.5 rounded-lg bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:bg-zinc-700">
-            <Plus size={14} />
-            Loggen
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowImport(true)}
+              className="flex items-center gap-1.5 rounded-lg bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700"
+            >
+              <Upload size={14} />
+              Import
+            </button>
+            <Link to="/workouts/new" className="flex items-center gap-1.5 rounded-lg bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700">
+              <Plus size={14} />
+              Loggen
+            </Link>
+          </div>
         }
       />
 

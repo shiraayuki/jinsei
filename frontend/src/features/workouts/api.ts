@@ -21,6 +21,7 @@ export interface Exercise {
   description?: string
   equipment?: string
   isCustom: boolean
+  restSeconds?: number
   muscles: MuscleGroupRef[]
 }
 
@@ -87,6 +88,7 @@ export const exercisesApi = {
   delete: (id: string) => api.delete(`/exercises/${id}`),
   muscleGroups: () => api.get<MuscleGroup[]>('/muscle-groups'),
   lastPerformance: (id: string) => api.get<LastPerformance | null>(`/exercises/${id}/last-performance`),
+  setRestSeconds: (id: string, restSeconds: number) => api.put(`/exercises/${id}/rest-seconds`, { restSeconds }),
 }
 
 export interface LastSet {
@@ -139,4 +141,5 @@ export const workoutsApi = {
   create: (data: UpsertWorkoutPayload) => api.post<WorkoutDetail>('/workouts', data),
   update: (id: string, data: UpsertWorkoutPayload) => api.put<WorkoutDetail>(`/workouts/${id}`, data),
   delete: (id: string) => api.delete(`/workouts/${id}`),
+  importText: (text: string) => api.post<WorkoutDetail>('/workouts/import', { text }),
 }

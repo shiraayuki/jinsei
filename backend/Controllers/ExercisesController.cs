@@ -43,7 +43,12 @@ public class ExercisesController : ControllerBase
             query = query.Where(e => e.ExerciseMuscles.Any(em => em.MuscleGroup.Slug == muscle));
 
         var exercises = await query.OrderBy(e => e.Name).ToListAsync();
-        return Ok(exercises.Select(ToDto));
+        var ids = exercises.Select(e => e.Id).ToList();
+        var prefs = await _db.ExerciseRestPreferences
+            .Where(p => p.UserId == UserId && ids.Contains(p.ExerciseId))
+            .ToDictionaryAsync(p => p.ExerciseId, p => p.RestSeconds);
+
+        return Ok(exercises.Select(e => ToDto(e, prefs.GetValueOrDefault(e.Id))));
     }
 
     // POST /api/exercises
@@ -134,6 +139,31 @@ public class ExercisesController : ControllerBase
         ));
     }
 
+    // PUT /api/exercises/{id}/rest-seconds
+    [HttpPut("exercises/{id:guid}/rest-seconds")]
+    public async Task<IActionResult> SetRestSeconds(Guid id, [FromBody] SetRestSecondsRequest req)
+    {
+        var existing = await _db.ExerciseRestPreferences
+            .FirstOrDefaultAsync(p => p.UserId == UserId && p.ExerciseId == id);
+
+        if (existing is null)
+        {
+            _db.ExerciseRestPreferences.Add(new ExerciseRestPreference
+            {
+                UserId = UserId,
+                ExerciseId = id,
+                RestSeconds = req.RestSeconds,
+            });
+        }
+        else
+        {
+            existing.RestSeconds = req.RestSeconds;
+        }
+
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
     // DELETE /api/exercises/{id}
     [HttpDelete("exercises/{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
@@ -147,12 +177,13 @@ public class ExercisesController : ControllerBase
         return NoContent();
     }
 
-    private static ExerciseDto ToDto(Exercise e) => new(
+    private static ExerciseDto ToDto(Exercise e, int? restSeconds = null) => new(
         e.Id,
         e.Name,
         e.Description,
         e.Equipment,
         e.IsCustom,
+        restSeconds,
         e.ExerciseMuscles.Select(em => new MuscleGroupRef(
             em.MuscleGroupId, em.MuscleGroup.Name, em.MuscleGroup.Slug, em.IsPrimary
         )).ToList()
@@ -161,8 +192,9 @@ public class ExercisesController : ControllerBase
 
 public record MuscleGroupDto(int Id, string Name, string Slug);
 public record MuscleGroupRef(int Id, string Name, string Slug, bool IsPrimary);
-public record ExerciseDto(Guid Id, string Name, string? Description, string? Equipment, bool IsCustom, List<MuscleGroupRef> Muscles);
+public record ExerciseDto(Guid Id, string Name, string? Description, string? Equipment, bool IsCustom, int? RestSeconds, List<MuscleGroupRef> Muscles);
 public record UpsertExerciseRequest(string Name, string? Description, string? Equipment, List<ExerciseMuscleRef> Muscles);
+public record SetRestSecondsRequest(int RestSeconds);
 public record ExerciseMuscleRef(int MuscleGroupId, bool IsPrimary);
 public record LastPerformanceDto(DateOnly Date, List<LastSetDto> Sets);
 public record LastSetDto(int SetNumber, int? Reps, decimal? WeightKg);

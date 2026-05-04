@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -119,6 +120,72 @@ public class WorkoutsController : ControllerBase
         _db.Workouts.Remove(workout);
         await _db.SaveChangesAsync();
         return NoContent();
+    }
+
+    // POST /api/workouts/import
+    [HttpPost("import")]
+    public async Task<IActionResult> ImportFromText([FromBody] ImportWorkoutRequest req)
+    {
+        var parsed = HevyParser.Parse(req.Text);
+        if (parsed is null) return BadRequest("Workout-Text konnte nicht geparst werden.");
+
+        var allExercises = await _db.Exercises
+            .Where(e => e.UserId == null || e.UserId == UserId)
+            .ToListAsync();
+
+        var workout = new Workout
+        {
+            Id = Guid.NewGuid(),
+            UserId = UserId,
+            Date = parsed.Date,
+            Name = parsed.Name,
+        };
+
+        int order = 0;
+        foreach (var pe in parsed.Exercises)
+        {
+            var exercise = allExercises.FirstOrDefault(e =>
+                string.Equals(e.Name, pe.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (exercise is null)
+            {
+                exercise = new Exercise
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = UserId,
+                    Name = pe.Name,
+                    IsCustom = true,
+                };
+                _db.Exercises.Add(exercise);
+                allExercises.Add(exercise);
+            }
+
+            var we = new WorkoutExercise
+            {
+                Id = Guid.NewGuid(),
+                WorkoutId = workout.Id,
+                ExerciseId = exercise.Id,
+                Order = order++,
+            };
+
+            foreach (var ps in pe.Sets)
+            {
+                we.Sets.Add(new WorkoutSet
+                {
+                    Id = Guid.NewGuid(),
+                    SetNumber = ps.SetNumber,
+                    WeightKg = ps.WeightKg,
+                    Reps = ps.Reps,
+                });
+            }
+
+            workout.WorkoutExercises.Add(we);
+        }
+
+        _db.Workouts.Add(workout);
+        await _db.SaveChangesAsync();
+
+        return await GetDetail(workout.Id);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -248,3 +315,81 @@ public record UpsertWorkoutRequest(
 public record UpsertWorkoutExerciseRequest(Guid ExerciseId, int Order, List<UpsertSetRequest> Sets);
 
 public record UpsertSetRequest(int SetNumber, int? Reps, decimal? WeightKg, decimal? Rpe);
+
+public record ImportWorkoutRequest(string Text);
+
+// ── Hevy text parser ──────────────────────────────────────────────────────
+
+file record ParsedWorkout(string? Name, DateOnly Date, List<ParsedExercise> Exercises);
+file record ParsedExercise(string Name) { public List<ParsedSet> Sets { get; } = []; }
+file record ParsedSet(int SetNumber, int Reps, decimal WeightKg);
+
+file static class HevyParser
+{
+    private static readonly Regex SetLine = new(
+        @"^Set\s+(\d+):\s*(\d+(?:[.,]\d+)?)\s*kg\s*x\s*(\d+)",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Dictionary<string, int> MonthMap = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Jan"] = 1, ["Feb"] = 2, ["Mar"] = 3, ["Mär"] = 3, ["Apr"] = 4,
+        ["May"] = 5, ["Mai"] = 5, ["Jun"] = 6, ["Jul"] = 7, ["Aug"] = 8,
+        ["Sep"] = 9, ["Oct"] = 10, ["Okt"] = 10, ["Nov"] = 11, ["Dec"] = 12, ["Dez"] = 12,
+    };
+
+    public static ParsedWorkout? Parse(string text)
+    {
+        var lines = text.Split('\n').Select(l => l.Trim()).ToList();
+        int i = 0;
+
+        while (i < lines.Count && string.IsNullOrEmpty(lines[i])) i++;
+        if (i >= lines.Count) return null;
+
+        var name = lines[i++];
+
+        while (i < lines.Count && string.IsNullOrEmpty(lines[i])) i++;
+        DateOnly date = DateOnly.FromDateTime(DateTime.Today);
+        if (i < lines.Count)
+        {
+            date = ParseDate(lines[i]) ?? date;
+            i++;
+        }
+
+        var exercises = new List<ParsedExercise>();
+        ParsedExercise? current = null;
+
+        while (i < lines.Count)
+        {
+            var line = lines[i++];
+            if (string.IsNullOrEmpty(line)) continue;
+            if (line.StartsWith('@') || line.StartsWith("http", StringComparison.OrdinalIgnoreCase)) break;
+
+            var m = SetLine.Match(line);
+            if (m.Success && current is not null)
+            {
+                var setNum = int.Parse(m.Groups[1].Value);
+                var weight = decimal.Parse(m.Groups[2].Value.Replace(',', '.'), System.Globalization.CultureInfo.InvariantCulture);
+                var reps = int.Parse(m.Groups[3].Value);
+                current.Sets.Add(new ParsedSet(setNum, reps, weight));
+            }
+            else if (!m.Success)
+            {
+                if (current?.Sets.Count > 0) exercises.Add(current);
+                current = new ParsedExercise(line);
+            }
+        }
+
+        if (current?.Sets.Count > 0) exercises.Add(current);
+        if (exercises.Count == 0) return null;
+
+        return new ParsedWorkout(name, date, exercises);
+    }
+
+    private static DateOnly? ParseDate(string line)
+    {
+        var m = Regex.Match(line, @"(\w{3})\s+(\d{1,2}),\s*(\d{4})");
+        if (!m.Success) return null;
+        if (!MonthMap.TryGetValue(m.Groups[1].Value, out var month)) return null;
+        return new DateOnly(int.Parse(m.Groups[3].Value), month, int.Parse(m.Groups[2].Value));
+    }
+}

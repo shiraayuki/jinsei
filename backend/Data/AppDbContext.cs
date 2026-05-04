@@ -20,6 +20,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<SleepEntry> SleepEntries => Set<SleepEntry>();
     public DbSet<Routine> Routines => Set<Routine>();
     public DbSet<RoutineExercise> RoutineExercises => Set<RoutineExercise>();
+    public DbSet<ExerciseRestPreference> ExerciseRestPreferences => Set<ExerciseRestPreference>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -35,6 +36,11 @@ public class AppDbContext : IdentityDbContext<AppUser>
         builder.Entity<ExerciseMuscle>(e =>
         {
             e.HasKey(x => new { x.ExerciseId, x.MuscleGroupId });
+        });
+
+        builder.Entity<ExerciseRestPreference>(e =>
+        {
+            e.HasKey(x => new { x.UserId, x.ExerciseId });
         });
 
         builder.Entity<MuscleGroup>().HasData(
