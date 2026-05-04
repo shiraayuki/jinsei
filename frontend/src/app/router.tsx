@@ -18,6 +18,7 @@ const RoutinesPage      = lazy(() => import('../pages/workouts/RoutinesPage').th
 const WeightPage        = lazy(() => import('../pages/weight/WeightPage').then(m => ({ default: m.WeightPage })))
 const SleepPage         = lazy(() => import('../pages/sleep/SleepPage').then(m => ({ default: m.SleepPage })))
 const ProfilePage       = lazy(() => import('../pages/ProfilePage').then(m => ({ default: m.ProfilePage })))
+const WeeklyReviewPage  = lazy(() => import('../pages/WeeklyReviewPage').then(m => ({ default: m.WeeklyReviewPage })))
 
 const PageFallback = () => (
   <div className="flex h-screen items-center justify-center text-zinc-500">Laden…</div>
@@ -61,6 +62,7 @@ export function AppRouter() {
           <Route path="/routines" element={<RoutinesPage />} />
           <Route path="/weight" element={<WeightPage />} />
           <Route path="/sleep" element={<SleepPage />} />
+          <Route path="/review" element={<WeeklyReviewPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

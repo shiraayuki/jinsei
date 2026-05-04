@@ -44,6 +44,7 @@ export default {
     sessionRunning: 'Your workout is still running',
     addHabits: 'Add habits',
     moreHabits: '+{{count}} more →',
+    weeklyReview: 'Weekly Review',
   },
   workouts: {
     title: 'Workouts',
@@ -233,5 +234,16 @@ export default {
     light: 'Light mode',
     language: 'Language',
     signOut: 'Sign out',
+  },
+  review: {
+    title: 'Weekly Review',
+    today: 'today',
+    sessions: 'sessions',
+    minutes: 'min',
+    latest: 'latest',
+    thisWeek: 'this week',
+    noWorkouts: 'No workouts this week.',
+    noData: 'No data this week.',
+    vsLastWeek: '{{delta}}{{unit}} vs last week',
   },
 } as const

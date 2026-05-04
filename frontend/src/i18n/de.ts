@@ -44,6 +44,7 @@ export default {
     sessionRunning: 'Dein Training läuft noch',
     addHabits: 'Habits hinzufügen',
     moreHabits: '+{{count}} weitere →',
+    weeklyReview: 'Wochenrückblick',
   },
   workouts: {
     title: 'Workouts',
@@ -233,5 +234,16 @@ export default {
     light: 'Helles Design',
     language: 'Sprache',
     signOut: 'Abmelden',
+  },
+  review: {
+    title: 'Wochenrückblick',
+    today: 'heute',
+    sessions: 'Sessions',
+    minutes: 'Min',
+    latest: 'aktuell',
+    thisWeek: 'diese Woche',
+    noWorkouts: 'Kein Training diese Woche.',
+    noData: 'Keine Daten diese Woche.',
+    vsLastWeek: '{{delta}}{{unit}} ggü. Vorwoche',
   },
 } as const

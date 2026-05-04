@@ -244,6 +244,9 @@ export function DashboardPage() {
                 </div>
               </Link>
             </div>
+            <Link to="/review" className="mt-2 flex items-center justify-end gap-1 text-[11px] text-zinc-600 hover:text-indigo-400 transition-colors">
+              {t('dashboard.weeklyReview')} <ChevronRight size={11} />
+            </Link>
           </div>
         </motion.div>
 
