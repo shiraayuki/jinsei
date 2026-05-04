@@ -1,10 +1,12 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { api } from '../../lib/api'
+import i18n from '../../i18n'
 
 export interface User {
   id: string
   email: string
   displayName?: string
+  language: string
 }
 
 interface AuthCtx {
@@ -13,7 +15,7 @@ interface AuthCtx {
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, displayName?: string) => Promise<void>
   logout: () => Promise<void>
-  updateProfile: (displayName: string) => Promise<void>
+  updateProfile: (displayName: string, language?: string) => Promise<void>
 }
 
 const Ctx = createContext<AuthCtx>(null!)
@@ -22,22 +24,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
+  function applyUser(u: User) {
+    setUser(u)
+    i18n.changeLanguage(u.language ?? 'en')
+  }
+
   useEffect(() => {
     api
       .get<User>('/auth/me')
-      .then(setUser)
+      .then(applyUser)
       .catch(() => setUser(null))
       .finally(() => setLoading(false))
   }, [])
 
   async function login(email: string, password: string) {
     const u = await api.post<User>('/auth/login', { email, password })
-    setUser(u)
+    applyUser(u)
   }
 
   async function register(email: string, password: string, displayName?: string) {
     const u = await api.post<User>('/auth/register', { email, password, displayName })
-    setUser(u)
+    applyUser(u)
   }
 
   async function logout() {
@@ -45,9 +52,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
   }
 
-  async function updateProfile(displayName: string) {
-    const u = await api.put<User>('/auth/profile', { displayName })
-    setUser(u)
+  async function updateProfile(displayName: string, language?: string) {
+    const u = await api.put<User>('/auth/profile', { displayName, language })
+    applyUser(u)
   }
 
   return (

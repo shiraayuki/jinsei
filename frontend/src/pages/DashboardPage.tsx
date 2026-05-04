@@ -6,6 +6,8 @@ import { useHabits, useLogEntry } from '../features/habits/hooks'
 import { useWorkouts } from '../features/workouts/hooks'
 import { useSleep } from '../features/sleep/hooks'
 import { useWeight } from '../features/weight/hooks'
+import { useTranslation } from 'react-i18next'
+import { dateLocale } from '../i18n'
 
 function getWeekStart(): string {
   const today = new Date()
@@ -21,20 +23,8 @@ function formatDuration(minutes: number) {
   return m > 0 ? `${h}h ${m}m` : `${h}h`
 }
 
-function greeting() {
-  const h = new Date().getHours()
-  if (h < 5) return 'Gute Nacht'
-  if (h < 12) return 'Guten Morgen'
-  if (h < 17) return 'Guten Tag'
-  return 'Guten Abend'
-}
-
 function todayIso() {
   return new Date().toISOString().slice(0, 10)
-}
-
-function formatDate() {
-  return new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
 const fadeUp = {
@@ -49,7 +39,20 @@ const stagger = {
 
 export function DashboardPage() {
   const { user } = useAuth()
-  const name = user?.displayName ?? user?.email?.split('@')[0] ?? 'du'
+  const { t } = useTranslation()
+  const name = user?.displayName ?? user?.email?.split('@')[0] ?? 'you'
+
+  function greeting() {
+    const h = new Date().getHours()
+    if (h < 5) return t('dashboard.greetings.night')
+    if (h < 12) return t('dashboard.greetings.morning')
+    if (h < 17) return t('dashboard.greetings.afternoon')
+    return t('dashboard.greetings.evening')
+  }
+
+  function formatDate() {
+    return new Date().toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })
+  }
   const { data: habits } = useHabits()
   const { data: workouts } = useWorkouts()
   const { data: sleepEntries = [] } = useSleep(7)
@@ -110,7 +113,7 @@ export function DashboardPage() {
             <div className="card rounded-2xl p-4 shadow-xl shadow-black/30">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Heute</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">{t('dashboard.today')}</p>
                   <p className="mt-0.5 font-display text-xl font-bold text-zinc-800 dark:text-zinc-50">
                     {doneToday}
                     <span className="text-zinc-500 font-normal text-base">/{totalHabits} Habits</span>
@@ -176,7 +179,7 @@ export function DashboardPage() {
                 ))}
                 {activeHabits.length > 4 && (
                   <Link to="/habits" className="block px-2 pt-1.5 text-xs text-zinc-600 hover:text-indigo-400 transition-colors">
-                    +{activeHabits.length - 4} weitere →
+                    {t('dashboard.moreHabits', { count: activeHabits.length - 4 })}
                   </Link>
                 )}
               </div>
@@ -187,7 +190,7 @@ export function DashboardPage() {
         {totalHabits === 0 && (
           <motion.div variants={fadeUp} transition={{ duration: 0.35 }}>
             <Link to="/habits/new" className="flex items-center justify-between rounded-2xl border border-dashed border-zinc-800 px-4 py-4 text-sm text-zinc-600 hover:border-indigo-500/40 hover:text-zinc-400 transition-colors">
-              <span>Habits hinzufügen</span>
+              <span>{t('dashboard.addHabits')}</span>
               <ChevronRight size={16} />
             </Link>
           </motion.div>
@@ -196,13 +199,13 @@ export function DashboardPage() {
         {/* Weekly summary */}
         <motion.div variants={fadeUp} transition={{ duration: 0.35 }}>
           <div className="card rounded-2xl p-4 shadow-xl shadow-black/30">
-            <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Diese Woche</p>
+            <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">{t('dashboard.thisWeek')}</p>
             <div className="grid grid-cols-2 gap-2">
               <Link to="/workouts" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
                 <Dumbbell size={15} className="shrink-0 text-indigo-400" strokeWidth={1.8} />
                 <div>
                   <p className="text-base font-bold text-zinc-100 leading-none">{workoutsThisWeek}</p>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">Workouts</p>
+                  <p className="text-[10px] text-zinc-500 mt-0.5">{t('dashboard.workouts')}</p>
                 </div>
               </Link>
 
@@ -212,7 +215,7 @@ export function DashboardPage() {
                   <p className="text-base font-bold text-zinc-100 leading-none">
                     {totalHabits > 0 ? `${doneToday}/${totalHabits}` : '–'}
                   </p>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">Habits heute</p>
+                  <p className="text-[10px] text-zinc-500 mt-0.5">{t('dashboard.habitsToday')}</p>
                 </div>
               </Link>
 
@@ -222,7 +225,7 @@ export function DashboardPage() {
                   <p className="text-base font-bold text-zinc-100 leading-none">
                     {avgSleepMinutes != null ? formatDuration(avgSleepMinutes) : '–'}
                   </p>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">Ø Schlaf</p>
+                  <p className="text-[10px] text-zinc-500 mt-0.5">{t('dashboard.avgSleep')}</p>
                 </div>
               </Link>
 
@@ -237,7 +240,7 @@ export function DashboardPage() {
                       {weightDelta > 0 ? '+' : ''}{weightDelta} kg
                     </p>
                   )}
-                  {weightDelta == null && <p className="text-[10px] text-zinc-500 mt-0.5">Gewicht</p>}
+                  {weightDelta == null && <p className="text-[10px] text-zinc-500 mt-0.5">{t('dashboard.weight')}</p>}
                 </div>
               </Link>
             </div>
@@ -253,10 +256,10 @@ export function DashboardPage() {
           >
             <div>
               <p className="font-display font-bold text-white text-[15px]">
-                {hasSession ? 'Session fortsetzen' : 'Workout starten'}
+                {hasSession ? t('dashboard.continueSession') : t('dashboard.startWorkout')}
               </p>
               <p className="mt-0.5 text-xs text-indigo-200/80">
-                {hasSession ? 'Dein Training läuft noch' : 'Timer starten & tracken'}
+                {hasSession ? t('dashboard.sessionRunning') : t('dashboard.startTimer')}
               </p>
             </div>
             <motion.div
@@ -277,10 +280,10 @@ export function DashboardPage() {
                 <Dumbbell size={18} strokeWidth={1.8} className="text-indigo-400" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs text-gray-400 dark:text-zinc-600">Letztes Workout</p>
+                <p className="text-xs text-gray-400 dark:text-zinc-600">{t('dashboard.lastWorkout')}</p>
                 <p className="text-sm font-semibold text-gray-800 dark:text-zinc-200">{lastWorkout.name ?? 'Workout'}</p>
                 <p className="text-xs text-gray-400 dark:text-zinc-600">
-                  {new Date(lastWorkout.date + 'T00:00:00').toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  {new Date(lastWorkout.date + 'T00:00:00').toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric', month: 'short' })}
                   {lastWorkout.durationMinutes ? ` · ${lastWorkout.durationMinutes} min` : ''}
                   {` · ${lastWorkout.setCount} Sets`}
                 </p>

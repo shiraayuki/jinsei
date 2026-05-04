@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { useWeight, useUpsertWeight, useDeleteWeight } from '../../features/weight/hooks'
+import { useTranslation } from 'react-i18next'
+import { dateLocale } from '../../i18n'
 import type { WeightEntry } from '../../features/weight/api'
 
 function todayIso() {
@@ -9,7 +11,7 @@ function todayIso() {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })
+  return new Date(iso).toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric', month: 'short' })
 }
 
 function movingAvg(values: number[], window: number): number[] {
@@ -20,6 +22,7 @@ function movingAvg(values: number[], window: number): number[] {
 }
 
 function WeightChart({ entries }: { entries: WeightEntry[] }) {
+  const { t } = useTranslation()
   if (entries.length < 2) return null
 
   const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date))
@@ -57,10 +60,10 @@ function WeightChart({ entries }: { entries: WeightEntry[] }) {
         </span>
         <div className="text-right">
           <p className={`text-sm font-medium ${totalChange > 0 ? 'text-rose-400' : totalChange < 0 ? 'text-emerald-400' : 'text-gray-400 dark:text-zinc-500'}`}>
-            {totalChange > 0 ? '+' : ''}{totalChange.toFixed(1)} kg gesamt
+            {totalChange > 0 ? '+' : ''}{t('weight.totalChange', { value: totalChange.toFixed(1) })}
           </p>
           <p className="text-xs text-gray-400 dark:text-zinc-500">
-            {weeklyRate > 0 ? '+' : ''}{weeklyRate.toFixed(2)} kg/Woche
+            {weeklyRate > 0 ? '+' : ''}{t('weight.weeklyRate', { value: weeklyRate.toFixed(2) })}
           </p>
         </div>
       </div>
@@ -92,7 +95,7 @@ function WeightChart({ entries }: { entries: WeightEntry[] }) {
       <div className="mt-2 flex items-center justify-between text-[10px] text-gray-400 dark:text-zinc-600">
         <span>{formatDate(sorted[0].date)}</span>
         <span className="flex items-center gap-1">
-          <span className="inline-block h-0.5 w-4 rounded bg-indigo-500" />7T MA
+          <span className="inline-block h-0.5 w-4 rounded bg-indigo-500" />{t('weight.movingAvg')}
         </span>
         <span>{formatDate(latest.date)}</span>
       </div>
@@ -104,6 +107,7 @@ export function WeightPage() {
   const { data: entries = [] } = useWeight(90)
   const upsert = useUpsertWeight()
   const del = useDeleteWeight()
+  const { t } = useTranslation()
 
   const [date, setDate] = useState(todayIso())
   const [weight, setWeight] = useState('')
@@ -120,15 +124,15 @@ export function WeightPage() {
 
   return (
     <div className="mx-auto max-w-lg space-y-6 px-4 py-6">
-      <PageHeader title="Gewicht" />
+      <PageHeader title={t('weight.title')} />
 
       <WeightChart entries={entries} />
 
       <form onSubmit={handleSubmit} className="rounded-2xl bg-white dark:bg-zinc-900 p-4 space-y-3">
-        <h2 className="text-sm font-semibold text-gray-600 dark:text-zinc-300">Eintragen</h2>
+        <h2 className="text-sm font-semibold text-gray-600 dark:text-zinc-300">{t('weight.log')}</h2>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">Datum</label>
+            <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">{t('common.date')}</label>
             <input
               type="date"
               value={date}
@@ -137,7 +141,7 @@ export function WeightPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">Gewicht (kg)</label>
+            <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">{t('weight.weightKg')}</label>
             <input
               type="number"
               step="0.1"
@@ -152,7 +156,7 @@ export function WeightPage() {
         </div>
         <input
           type="text"
-          placeholder="Notiz (optional)"
+          placeholder={t('weight.notePlaceholder')}
           value={notes}
           onChange={e => setNotes(e.target.value)}
           className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
@@ -162,13 +166,13 @@ export function WeightPage() {
           disabled={upsert.isPending || !weight}
           className="w-full rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-50"
         >
-          Speichern
+          {t('common.save')}
         </button>
       </form>
 
       {entries.length > 0 && (
         <div className="space-y-2">
-          <h2 className="text-sm font-semibold text-gray-500 dark:text-zinc-400">Verlauf</h2>
+          <h2 className="text-sm font-semibold text-gray-500 dark:text-zinc-400">{t('common.history')}</h2>
           {entries.map(entry => (
             <div key={entry.id} className="flex items-center justify-between rounded-xl bg-white dark:bg-zinc-900 px-4 py-3">
               <div>

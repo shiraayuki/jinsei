@@ -1,17 +1,18 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { LayoutDashboard, CheckSquare, Dumbbell, Scale, Moon, UserCircle } from 'lucide-react'
 import { motion } from 'motion/react'
-
-const NAV = [
-  { to: '/', icon: LayoutDashboard, label: 'Start' },
-  { to: '/habits', icon: CheckSquare, label: 'Habits' },
-  { to: '/workouts', icon: Dumbbell, label: 'Sport' },
-  { to: '/weight', icon: Scale, label: 'Gewicht' },
-  { to: '/sleep', icon: Moon, label: 'Schlaf' },
-  { to: '/profile', icon: UserCircle, label: 'Profil' },
-]
+import { useTranslation } from 'react-i18next'
 
 export function AppShell() {
+  const { t } = useTranslation()
+  const NAV = [
+    { to: '/', icon: LayoutDashboard, label: t('nav.home') },
+    { to: '/habits', icon: CheckSquare, label: t('nav.habits') },
+    { to: '/workouts', icon: Dumbbell, label: t('nav.workouts') },
+    { to: '/weight', icon: Scale, label: t('nav.weight') },
+    { to: '/sleep', icon: Moon, label: t('nav.sleep') },
+    { to: '/profile', icon: UserCircle, label: t('nav.profile') },
+  ]
   return (
     <div className="flex h-dvh flex-col app-bg">
       <main className="flex-1 overflow-y-auto pb-16">

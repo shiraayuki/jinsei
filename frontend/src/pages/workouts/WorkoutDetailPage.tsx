@@ -4,21 +4,24 @@ import { PageHeader } from '../../components/ui/PageHeader'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { useWorkout, useDeleteWorkout } from '../../features/workouts/hooks'
+import { useTranslation } from 'react-i18next'
+import { dateLocale } from '../../i18n'
 
 export function WorkoutDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data: workout, isLoading } = useWorkout(id!)
   const deleteMut = useDeleteWorkout()
+  const { t } = useTranslation()
 
   async function handleDelete() {
-    if (!id || !confirm('Workout löschen?')) return
+    if (!id || !confirm(t('workoutDetail.deleteConfirm'))) return
     await deleteMut.mutateAsync(id)
     navigate('/workouts')
   }
 
   const date = workout
-    ? new Date(workout.date + 'T00:00:00').toLocaleDateString('de-DE', {
+    ? new Date(workout.date + 'T00:00:00').toLocaleDateString(dateLocale(), {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
       })
     : ''
@@ -74,9 +77,9 @@ export function WorkoutDetailPage() {
                 {/* Sets table */}
                 <div className="text-sm">
                   <div className={`grid pb-1 text-xs text-gray-400 dark:text-zinc-500 ${we.sets.some(s => s.rpe) ? 'grid-cols-[2rem_1fr_3rem_3rem]' : 'grid-cols-[2rem_1fr_3rem]'}`}>
-                    <span>Satz</span>
+                    <span>{t('workoutDetail.set')}</span>
                     <span className="text-center">kg</span>
-                    <span className="text-right">Wdh.</span>
+                    <span className="text-right">{t('workoutDetail.reps')}</span>
                     {we.sets.some(s => s.rpe) && <span className="text-right">RPE</span>}
                   </div>
                   {we.sets.map(s => (
@@ -101,7 +104,7 @@ export function WorkoutDetailPage() {
             loading={deleteMut.isPending}
           >
             <Trash2 size={16} />
-            Workout löschen
+            {t('workoutDetail.deleteWorkout')}
           </Button>
         </div>
       )}

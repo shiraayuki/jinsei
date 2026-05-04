@@ -75,13 +75,15 @@ public class AuthController : ControllerBase
         if (user is null) return Unauthorized();
 
         user.DisplayName = req.DisplayName?.Trim();
+        if (req.Language is "en" or "de")
+            user.Language = req.Language;
         await _userManager.UpdateAsync(user);
         return Ok(ToDto(user));
     }
 
-    private static object ToDto(AppUser u) => new { u.Id, u.Email, u.DisplayName };
+    private static object ToDto(AppUser u) => new { u.Id, u.Email, u.DisplayName, u.Language };
 }
 
 public record RegisterRequest(string Email, string Password, string? DisplayName);
 public record LoginRequest(string Email, string Password);
-public record UpdateProfileRequest(string? DisplayName);
+public record UpdateProfileRequest(string? DisplayName, string? Language);

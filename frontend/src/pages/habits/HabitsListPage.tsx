@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Plus, Flame, Check } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { useHabits, useLogEntry } from '../../features/habits/hooks'
+import { useTranslation } from 'react-i18next'
 import type { Habit } from '../../features/habits/api'
 
 function todayIso() {
@@ -10,6 +11,7 @@ function todayIso() {
 
 function HabitRow({ habit }: { habit: Habit }) {
   const log = useLogEntry()
+  const { t } = useTranslation()
 
   function toggle() {
     log.mutate({ habitId: habit.id, date: todayIso(), completedCount: habit.completedToday ? 0 : 1 })
@@ -40,7 +42,7 @@ function HabitRow({ habit }: { habit: Habit }) {
         {habit.streak > 0 && (
           <p className="mt-0.5 flex items-center gap-1 text-xs text-orange-400">
             <Flame size={11} />
-            {habit.streak} Tag{habit.streak !== 1 ? 'e' : ''} in Folge
+            {t('habits.daysStreak', { count: habit.streak })}
           </p>
         )}
       </Link>
@@ -55,33 +57,33 @@ function HabitRow({ habit }: { habit: Habit }) {
 
 export function HabitsListPage() {
   const { data: habits, isLoading } = useHabits()
+  const { t } = useTranslation()
   const active = habits?.filter(h => !h.archived) ?? []
   const done = active.filter(h => h.completedToday).length
 
   return (
     <div>
       <PageHeader
-        title="Habits"
+        title={t('habits.title')}
         action={
           <Link
             to="/habits/new"
             className="flex items-center gap-1.5 rounded-lg bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:bg-zinc-700 transition-colors"
           >
             <Plus size={14} />
-            Neu
+            {t('common.new')}
           </Link>
         }
       />
 
       <div className="px-4 pt-2 pb-8 space-y-2">
-        {/* Progress summary */}
         {active.length > 0 && (
           <div className="flex items-center justify-between px-1 pb-1">
             <p className="text-sm text-gray-400 dark:text-zinc-500">
-              <span className="font-semibold text-gray-700 dark:text-zinc-200">{done}</span>/{active.length} heute
+              <span className="font-semibold text-gray-700 dark:text-zinc-200">{done}</span>/{active.length} {t('habits.today')}
             </p>
             {done === active.length && active.length > 0 && (
-              <p className="text-xs font-medium text-indigo-400">Alle erledigt ✓</p>
+              <p className="text-xs font-medium text-indigo-400">{t('habits.allDone')}</p>
             )}
           </div>
         )}
