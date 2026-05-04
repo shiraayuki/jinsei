@@ -1,4 +1,4 @@
-# 生 Jinsei
+![Jinsei](docs/banner.png)
 
 Personal life-tracking app — workouts, nutrition, habits, sleep and weight in one place. Built as a mobile-first PWA.
 
@@ -17,8 +17,6 @@ Personal life-tracking app — workouts, nutrition, habits, sleep and weight in 
 | Workouts | Session | Analytics |
 |----------|---------|-----------|
 | ![Workouts](docs/screenshots/workouts.png) | ![Session](docs/screenshots/session.png) | ![Analytics](docs/screenshots/analytics.png) |
-
-> Add screenshots to `docs/screenshots/` to populate the table above.
 
 ## Stack
 
