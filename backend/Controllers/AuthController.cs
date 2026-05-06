@@ -41,7 +41,7 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest req)
     {
-        var result = await _signInManager.PasswordSignInAsync(req.Email, req.Password, isPersistent: true, lockoutOnFailure: false);
+        var result = await _signInManager.PasswordSignInAsync(req.Email, req.Password, isPersistent: true, lockoutOnFailure: true);
 
         if (!result.Succeeded)
             return Unauthorized("Invalid credentials.");

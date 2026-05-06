@@ -8,10 +8,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddIdentity<AppUser, Microsoft.AspNetCore.Identity.IdentityRole>(options =>
     {
-        options.Password.RequireDigit = false;
+        options.Password.RequireDigit = true;
         options.Password.RequireUppercase = false;
         options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequiredLength = 8;
+        options.Password.RequiredLength = 10;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.AllowedForNewUsers = true;
     })
     .AddEntityFrameworkStores<AppDbContext>();
 
@@ -19,7 +22,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
     options.SlidingExpiration = true;
     options.ExpireTimeSpan = TimeSpan.FromDays(30);
     options.Events.OnRedirectToLogin = ctx =>
