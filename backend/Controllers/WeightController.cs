@@ -55,7 +55,7 @@ public class WeightController : ControllerBase
         }
 
         await _db.SaveChangesAsync();
-        return Ok();
+        return NoContent();
     }
 
     [HttpDelete("{id:guid}")]

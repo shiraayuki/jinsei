@@ -145,7 +145,7 @@ public class HabitsController : ControllerBase
         }
 
         await _db.SaveChangesAsync();
-        return Ok();
+        return NoContent();
     }
 
     // GET /api/habits/{id}/stats?days=90
