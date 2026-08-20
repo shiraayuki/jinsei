@@ -50,7 +50,7 @@ if (builder.Environment.IsDevelopment())
 }
 
 builder.Services.AddMemoryCache();
-builder.Services.AddHttpClient<OpenFoodFactsClient>();
+builder.Services.AddHttpClient<HevyClient>();
 builder.Services.AddControllers();
 
 var app = builder.Build();

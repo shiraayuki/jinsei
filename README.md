@@ -4,13 +4,12 @@ Personal life-tracking app — workouts, nutrition, habits, sleep and weight in 
 
 ## Features
 
-- **Workouts** — log sessions manually or import directly from Hevy (paste share text)
-- **Exercises** — custom exercise library with muscle group tagging and per-exercise rest timer
-- **Routines** — reusable workout templates for quick session starts
+- **Workouts** — training log pulled from Hevy with one sync button; no manual entry
 - **Habits** — daily habit tracking with streaks
-- **Nutrition** — meal logging via OpenFoodFacts barcode/search
-- **Sleep & Weight** — daily logging with trend charts
-- **Analytics** — volume, frequency and progress charts per muscle group
+- **Nutrition** — daily totals for calories and macros, plus water and coffee with quick-add chips
+- **Sleep** — time in bed, actual sleep and Sleep Cycle's quality percentage, with efficiency
+- **Weight** — daily logging with trend chart
+- **Weekly review** — week over week across all of the above
 
 ## Screenshots
 
@@ -74,6 +73,21 @@ Set 2: 75 kg x 9
 ```
 
 Exercises are matched by name (case-insensitive) or created automatically if not found.
+
+## Hevy sync
+
+The workout log is read-only and filled by the sync button in its header. It pulls
+recent sessions from `GET /v1/workouts` and keys rows by the provider's id, so
+running it again updates what is already there rather than duplicating it. Warmup
+sets are dropped, and the calendar day is resolved in `Hevy__TimeZone` because the
+API reports UTC.
+
+```bash
+HEVY_API_KEY=<Hevy Pro -> Settings -> Developer>
+TZ=Europe/Vienna
+```
+
+Without a key the sync button reports itself as unconfigured and nothing else changes.
 
 ## Production
 

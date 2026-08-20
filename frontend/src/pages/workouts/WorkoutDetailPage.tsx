@@ -1,113 +1,79 @@
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Pencil, Trash2, Clock, Dumbbell } from 'lucide-react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Trash2 } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
-import { Card } from '../../components/ui/Card'
-import { Button } from '../../components/ui/Button'
 import { useWorkout, useDeleteWorkout } from '../../features/workouts/hooks'
 import { useTranslation } from 'react-i18next'
 import { dateLocale } from '../../i18n'
+import type { WorkoutSet } from '../../features/workouts/api'
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
+function formatSet(s: WorkoutSet) {
+  if (s.durationSeconds) return `${Math.round((s.durationSeconds / 60) * 10) / 10} min`
+  if (s.weightKg) return `${s.weightKg} kg × ${s.reps ?? 0}`
+  if (s.distanceMeters) return `${s.distanceMeters} m`
+  return `${s.reps ?? 0}`
+}
 
 export function WorkoutDetailPage() {
-  const { id } = useParams<{ id: string }>()
+  const { id } = useParams()
   const navigate = useNavigate()
-  const { data: workout, isLoading } = useWorkout(id!)
-  const deleteMut = useDeleteWorkout()
   const { t } = useTranslation()
+  const { data: workout, isLoading } = useWorkout(id)
+  const del = useDeleteWorkout()
 
-  async function handleDelete() {
-    if (!id || !confirm(t('workoutDetail.deleteConfirm'))) return
-    await deleteMut.mutateAsync(id)
-    navigate('/workouts')
+  if (isLoading || !workout) {
+    return (
+      <div>
+        <PageHeader title="" back />
+        <p className="p-8 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
+      </div>
+    )
   }
-
-  const date = workout
-    ? new Date(workout.date + 'T00:00:00').toLocaleDateString(dateLocale(), {
-        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-      })
-    : ''
 
   return (
     <div>
       <PageHeader
-        title={workout?.name ?? 'Workout'}
+        title={workout.title}
         back
         action={
-          id && (
-            <Link to={`/workouts/${id}/edit`} className="text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:text-zinc-200">
-              <Pencil size={18} />
-            </Link>
-          )
+          <button
+            onClick={() => del.mutate(workout.id, { onSuccess: () => navigate('/workouts') })}
+            aria-label={t('common.delete')}
+            className="flex h-10 w-10 items-center justify-center text-gray-400 dark:text-zinc-500 hover:text-red-400 transition-colors"
+          >
+            <Trash2 size={17} />
+          </button>
         }
       />
 
-      {isLoading && <p className="p-4 text-gray-400 dark:text-zinc-500 text-sm">Laden…</p>}
-
-      {workout && (
-        <div className="space-y-4 p-4">
-          {/* Meta */}
-          <div className="flex gap-4 text-sm text-gray-500 dark:text-zinc-400">
-            <span>{date}</span>
-            {workout.durationMinutes && (
-              <span className="flex items-center gap-1">
-                <Clock size={14} /> {workout.durationMinutes} min
-              </span>
-            )}
-          </div>
-
-          {workout.notes && (
-            <p className="rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 text-sm text-gray-600 dark:text-zinc-300">
-              {workout.notes}
-            </p>
-          )}
-
-          {/* Exercises */}
-          <div className="space-y-3">
-            {workout.exercises.map(we => (
-              <Card key={we.id} className="p-4">
-                <div className="mb-3 flex items-start gap-2">
-                  <Dumbbell size={16} className="mt-0.5 shrink-0 text-indigo-400" />
-                  <div>
-                    <p className="font-medium text-gray-800 dark:text-zinc-100">{we.exerciseName}</p>
-                    <p className="text-xs text-gray-400 dark:text-zinc-500">
-                      {we.muscles.filter(m => m.isPrimary).map(m => m.name).join(', ')}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Sets table */}
-                <div className="text-sm">
-                  <div className={`grid pb-1 text-xs text-gray-400 dark:text-zinc-500 ${we.sets.some(s => s.rpe) ? 'grid-cols-[2rem_1fr_3rem_3rem]' : 'grid-cols-[2rem_1fr_3rem]'}`}>
-                    <span>{t('workoutDetail.set')}</span>
-                    <span className="text-center">kg</span>
-                    <span className="text-right">{t('workoutDetail.reps')}</span>
-                    {we.sets.some(s => s.rpe) && <span className="text-right">RPE</span>}
-                  </div>
-                  {we.sets.map(s => (
-                    <div key={s.id} className={`grid items-center border-t border-gray-200 dark:border-zinc-800 py-1.5 ${we.sets.some(set => set.rpe) ? 'grid-cols-[2rem_1fr_3rem_3rem]' : 'grid-cols-[2rem_1fr_3rem]'}`}>
-                      <span className="text-gray-500 dark:text-zinc-400">{s.setNumber}</span>
-                      <span className="text-center font-mono text-gray-700 dark:text-zinc-200">{s.weightKg ?? '—'}</span>
-                      <span className="text-right font-mono text-gray-700 dark:text-zinc-200">{s.reps ?? '—'}</span>
-                      {we.sets.some(set => set.rpe) && (
-                        <span className="text-right text-gray-500 dark:text-zinc-400">{s.rpe ?? ''}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          <Button
-            variant="danger"
-            className="w-full"
-            onClick={handleDelete}
-            loading={deleteMut.isPending}
-          >
-            <Trash2 size={16} />
-            {t('workoutDetail.deleteWorkout')}
-          </Button>
+      <div className="space-y-4 p-4">
+        <div>
+          <p className="text-sm text-gray-500 dark:text-zinc-400">{formatDate(workout.date)}</p>
+          <p className="mt-1 text-xs text-gray-400 dark:text-zinc-500">
+            {t('workouts.setCount', { count: workout.setCount })}
+            {workout.durationMinutes != null && ` · ${workout.durationMinutes} min`}
+            {workout.volumeKg > 0 && ` · ${Math.round(workout.volumeKg).toLocaleString(dateLocale())} kg`}
+            {` · ${t('workouts.viaSource', { source: workout.source })}`}
+          </p>
         </div>
-      )}
+
+        {workout.exercises.map((ex, i) => (
+          <div key={`${ex.name}-${i}`} className="rounded-2xl bg-white dark:bg-zinc-900 p-4">
+            <p className="font-semibold text-gray-900 dark:text-zinc-100">{ex.name}</p>
+            <div className="mt-2 space-y-1">
+              {ex.sets.map((s, j) => (
+                <div key={j} className="flex justify-between text-sm">
+                  <span className="text-gray-400 dark:text-zinc-500">{t('workouts.set')} {j + 1}</span>
+                  <span className="text-gray-700 dark:text-zinc-200">{formatSet(s)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

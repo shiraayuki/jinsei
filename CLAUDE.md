@@ -27,8 +27,8 @@ Backend has no test project yet; there are no `dotnet test` targets.
 
 Three components, two compose files:
 
-- `backend/` — ASP.NET Core Web API targeting **net10.0**. `Program.cs` uses the minimal hosting model with `AddControllers()` / `MapControllers()`; controllers are not yet present. DB connection is read from `ConnectionStrings:Default` (configured in `docker/docker-compose.yml` for prod; not yet wired in dev `appsettings.*.json`).
-- `frontend/` — React 19 + TypeScript + Vite. Default scaffold under `src/` (`App.tsx`, `main.tsx`).
+- `backend/` — ASP.NET Core Web API targeting **net10.0**, minimal hosting with `AddControllers()` / `MapControllers()`. DB connection comes from `ConnectionStrings:Default` (compose in prod, `appsettings.Development.json` in dev, pointing at port 5431).
+- `frontend/` — React 19 + TypeScript + Vite + Tailwind, feature folders under `src/features` and route components under `src/pages`.
 - `docker/` — two compose files:
   - `docker-compose.dev.yml`: Postgres only, port-mapped `5431:5432`, hardcoded creds (`jinsei/jinsei/jinsei`).
   - `docker-compose.yml`: full prod stack — Postgres + backend + frontend; reads creds from a root `.env` file (`POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB`, see `.env.example`).
@@ -47,3 +47,10 @@ The backend container exposes 8080 internally only (no host port mapping), so it
 - Dev creds are hardcoded in `docker-compose.dev.yml`; prod creds come from `.env`.
 - Dev backend connection string is **not** configured in `appsettings.Development.json` — anything DB-related needs to be added.
 - The `/api` rewrite only exists in prod nginx. In dev, the frontend talks to the backend directly; if you add backend calls, configure a Vite dev proxy or use absolute URLs to `http://localhost:5132`.
+
+## Domain notes
+
+- **Workouts are read-only.** They are pulled from Hevy by `POST /api/workouts/sync` and identified by `(user_id, source, external_id)`, so a repeat sync updates rather than duplicates. There is no exercise library, no routines and no live session tracking — those were removed deliberately; do not reintroduce a manual create path without being asked.
+- **Sleep** is stored as durations, not clock times: `time_in_bed_minutes`, `actual_sleep_minutes`, and `quality` as the 0–100 percentage Sleep Cycle reports. Efficiency is derived, never stored.
+- **Nutrition** is one hand-entered row per day (calories, macros, water, coffee, time of the last coffee). There is no food database and no external nutrition source.
+- Sleep and nutrition are unique per `(user_id, date)` and written through upserts keyed on the date.

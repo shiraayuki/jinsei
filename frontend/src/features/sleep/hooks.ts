@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { sleepApi } from './api'
+import { sleepApi, type SleepInput } from './api'
 
 const KEY = 'sleep'
 
@@ -10,13 +10,7 @@ export function useSleep(days = 30) {
 export function useUpsertSleep() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: {
-      date: string
-      bedTime: string
-      wakeTime: string
-      quality: number
-      notes?: string
-    }) => sleepApi.upsert(data),
+    mutationFn: (data: SleepInput) => sleepApi.upsert(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   })
 }

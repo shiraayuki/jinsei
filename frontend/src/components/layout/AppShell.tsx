@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutDashboard, CheckSquare, Dumbbell, Scale, Moon, UserCircle } from 'lucide-react'
+import { LayoutDashboard, CheckSquare, Dumbbell, Apple, Scale, Moon, UserCircle } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 
@@ -9,6 +9,7 @@ export function AppShell() {
     { to: '/', icon: LayoutDashboard, label: t('nav.home') },
     { to: '/habits', icon: CheckSquare, label: t('nav.habits') },
     { to: '/workouts', icon: Dumbbell, label: t('nav.workouts') },
+    { to: '/nutrition', icon: Apple, label: t('nav.nutrition') },
     { to: '/weight', icon: Scale, label: t('nav.weight') },
     { to: '/sleep', icon: Moon, label: t('nav.sleep') },
     { to: '/profile', icon: UserCircle, label: t('nav.profile') },
@@ -36,7 +37,7 @@ export function AppShell() {
         }}
       >
         <div
-          className="mx-auto grid max-w-lg grid-cols-6"
+          className="mx-auto grid max-w-lg grid-cols-7"
           style={{ minHeight: 'var(--bottom-nav-height)' }}
         >
           {NAV.map(({ to, icon: Icon, label }) => (

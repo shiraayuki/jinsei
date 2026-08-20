@@ -18,6 +18,10 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       # Single-user deployment: flip to true only while creating an account.
       Auth__AllowRegistration: "false"
+      # Hevy is the only sync source; without a key the sync button reports
+      # itself as unconfigured and nothing else changes.
+      Hevy__ApiKey: ${HEVY_API_KEY:-}
+      Hevy__TimeZone: ${TZ:-Europe/Vienna}
     volumes:
       - dataprotection_keys:/root/.aspnet/DataProtection-Keys
     depends_on:

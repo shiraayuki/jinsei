@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Flame, Check, Dumbbell, Play, ChevronRight, Moon, Scale } from 'lucide-react'
+import { Flame, Check, Dumbbell, ChevronRight, Moon, Scale } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useAuth } from '../app/auth/AuthProvider'
 import { useHabits, useLogEntry } from '../features/habits/hooks'
@@ -67,8 +67,12 @@ export function DashboardPage() {
 
   const weekStart = getWeekStart()
   const workoutsThisWeek = workouts?.filter(w => w.date >= weekStart).length ?? 0
-  const avgSleepMinutes = sleepEntries.length > 0
-    ? Math.round(sleepEntries.reduce((s, e) => s + e.durationMinutes, 0) / sleepEntries.length)
+  // Prefer the measured sleep; fall back to time in bed when only that was logged.
+  const sleepMinutes = sleepEntries
+    .map(e => e.actualSleepMinutes ?? e.timeInBedMinutes)
+    .filter((m): m is number => m != null)
+  const avgSleepMinutes = sleepMinutes.length > 0
+    ? Math.round(sleepMinutes.reduce((s, m) => s + m, 0) / sleepMinutes.length)
     : null
   const latestWeight = weightEntries[0]
   const prevWeight = weightEntries.find((_e, i) => i > 0)
@@ -76,8 +80,6 @@ export function DashboardPage() {
     ? +(latestWeight.weightKg - prevWeight.weightKg).toFixed(1)
     : null
 
-  const SESSION_KEY = 'jinsei:workout-session'
-  const hasSession = !!localStorage.getItem(SESSION_KEY)
 
   const pct = totalHabits > 0 ? doneToday / totalHabits : 0
   const circumference = 125.6
@@ -252,30 +254,6 @@ export function DashboardPage() {
 
         {/* Workout section */}
         <motion.div variants={fadeUp} transition={{ duration: 0.35 }} className="space-y-2">
-          <Link
-            to="/workouts/session"
-            className="relative flex items-center justify-between overflow-hidden rounded-2xl px-5 py-4 shadow-lg shadow-indigo-950/40"
-            style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' }}
-          >
-            <div>
-              <p className="font-display font-bold text-white text-[15px]">
-                {hasSession ? t('dashboard.continueSession') : t('dashboard.startWorkout')}
-              </p>
-              <p className="mt-0.5 text-xs text-indigo-200/80">
-                {hasSession ? t('dashboard.sessionRunning') : t('dashboard.startTimer')}
-              </p>
-            </div>
-            <motion.div
-              whileTap={{ scale: 0.9 }}
-              className="flex h-11 w-11 items-center justify-center rounded-full"
-              style={{ background: 'rgba(255,255,255,0.18)' }}
-            >
-              <Play size={20} className="text-white" fill="white" />
-            </motion.div>
-            <div className="pointer-events-none absolute -right-4 -top-4 h-20 w-20 rounded-full bg-white/5" />
-            <div className="pointer-events-none absolute -left-2 bottom-0 h-12 w-12 rounded-full bg-white/3" />
-          </Link>
-
           {lastWorkout && (
             <Link to={`/workouts/${lastWorkout.id}`} className="card flex items-center gap-3 rounded-2xl px-4 py-3 hover:border-white/10 transition-colors">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
@@ -284,7 +262,7 @@ export function DashboardPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-gray-400 dark:text-zinc-600">{t('dashboard.lastWorkout')}</p>
-                <p className="text-sm font-semibold text-gray-800 dark:text-zinc-200">{lastWorkout.name ?? 'Workout'}</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-zinc-200">{lastWorkout.title}</p>
                 <p className="text-xs text-gray-400 dark:text-zinc-600">
                   {new Date(lastWorkout.date + 'T00:00:00').toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric', month: 'short' })}
                   {lastWorkout.durationMinutes ? ` · ${lastWorkout.durationMinutes} min` : ''}

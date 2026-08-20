@@ -8,6 +8,7 @@ import { useSleep } from '../features/sleep/hooks'
 import { useWeight } from '../features/weight/hooks'
 import { useTranslation } from 'react-i18next'
 import { dateLocale } from '../i18n'
+import type { SleepEntry } from '../features/sleep/api'
 
 function getWeekBounds(weeksAgo = 0) {
   const today = new Date()
@@ -20,6 +21,14 @@ function getWeekBounds(weeksAgo = 0) {
     start: monday.toISOString().slice(0, 10),
     end: sunday.toISOString().slice(0, 10),
   }
+}
+
+/** Mean of the nights that carry a duration, preferring measured sleep over time in bed. */
+function averageSleep(entries: SleepEntry[]) {
+  const minutes = entries
+    .map(e => e.actualSleepMinutes ?? e.timeInBedMinutes)
+    .filter((m): m is number => m != null)
+  return minutes.length > 0 ? Math.round(minutes.reduce((s, m) => s + m, 0) / minutes.length) : null
 }
 
 function filterByWeek<T extends { date: string }>(items: T[], week: { start: string; end: string }) {
@@ -73,8 +82,9 @@ export function WeeklyReviewPage() {
   const lastWeek = useMemo(() => getWeekBounds(1), [])
 
   const { data: habits = [] } = useHabits()
-  const { data: thisWeekWorkouts = [] } = useWorkouts(thisWeek.start, thisWeek.end)
-  const { data: lastWeekWorkouts = [] } = useWorkouts(lastWeek.start, lastWeek.end)
+  const { data: allWorkouts = [] } = useWorkouts(30)
+  const thisWeekWorkouts = filterByWeek(allWorkouts, thisWeek)
+  const lastWeekWorkouts = filterByWeek(allWorkouts, lastWeek)
   const { data: sleepEntries = [] } = useSleep(21)
   const { data: weightEntries = [] } = useWeight(21)
 
@@ -93,14 +103,11 @@ export function WeeklyReviewPage() {
   const thisSleep = filterByWeek(sleepEntries, thisWeek)
   const lastSleep = filterByWeek(sleepEntries, lastWeek)
 
-  const avgSleepMins = thisSleep.length > 0
-    ? Math.round(thisSleep.reduce((s, e) => s + e.durationMinutes, 0) / thisSleep.length)
-    : null
-  const lastAvgSleepMins = lastSleep.length > 0
-    ? Math.round(lastSleep.reduce((s, e) => s + e.durationMinutes, 0) / lastSleep.length)
-    : null
-  const avgQuality = thisSleep.length > 0
-    ? (thisSleep.reduce((s, e) => s + e.quality, 0) / thisSleep.length).toFixed(1)
+  const avgSleepMins = averageSleep(thisSleep)
+  const lastAvgSleepMins = averageSleep(lastSleep)
+  const qualities = thisSleep.map(e => e.quality).filter((q): q is number => q != null)
+  const avgQuality = qualities.length > 0
+    ? `${Math.round(qualities.reduce((s, q) => s + q, 0) / qualities.length)}%`
     : null
   const sleepDeltaMins = avgSleepMins != null && lastAvgSleepMins != null
     ? avgSleepMins - lastAvgSleepMins
@@ -203,7 +210,7 @@ export function WeeklyReviewPage() {
           <div className="space-y-1.5 border-t border-zinc-100 pt-2 dark:border-zinc-800">
             {thisWeekWorkouts.map(w => (
               <div key={w.id} className="flex items-center justify-between text-sm">
-                <span className="flex-1 truncate text-zinc-700 dark:text-zinc-300">{w.name ?? 'Workout'}</span>
+                <span className="flex-1 truncate text-zinc-700 dark:text-zinc-300">{w.title}</span>
                 <span className="ml-2 shrink-0 text-xs text-zinc-500">
                   {new Date(w.date + 'T00:00:00').toLocaleDateString(dateLocale(), { weekday: 'short' })}
                   {w.durationMinutes ? ` · ${w.durationMinutes}m` : ''}

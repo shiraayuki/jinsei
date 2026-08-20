@@ -33,33 +33,27 @@ public class SleepController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Upsert([FromBody] UpsertSleepRequest req)
     {
-        if (req.Quality < 1 || req.Quality > 5)
-            return BadRequest("Quality must be 1–5.");
+        if (req.Quality is < 0 or > 100)
+            return BadRequest("Quality must be between 0 and 100.");
+        if (req.TimeInBedMinutes is < 0 or > 1440 || req.ActualSleepMinutes is < 0 or > 1440)
+            return BadRequest("Durations must be between 0 and 1440 minutes.");
+        if (req.ActualSleepMinutes is int asleep && req.TimeInBedMinutes is int inBed && asleep > inBed)
+            return BadRequest("Actual sleep cannot exceed time in bed.");
 
         var existing = await _db.SleepEntries
             .FirstOrDefaultAsync(e => e.UserId == UserId && e.Date == req.Date);
 
-        if (existing is not null)
+        if (existing is null)
         {
-            existing.BedTime = req.BedTime;
-            existing.WakeTime = req.WakeTime;
-            existing.Quality = req.Quality;
-            existing.Notes = req.Notes;
-            existing.LoggedAt = DateTimeOffset.UtcNow;
+            existing = new SleepEntry { Id = Guid.NewGuid(), UserId = UserId, Date = req.Date };
+            _db.SleepEntries.Add(existing);
         }
-        else
-        {
-            _db.SleepEntries.Add(new SleepEntry
-            {
-                Id = Guid.NewGuid(),
-                UserId = UserId,
-                Date = req.Date,
-                BedTime = req.BedTime,
-                WakeTime = req.WakeTime,
-                Quality = req.Quality,
-                Notes = req.Notes,
-            });
-        }
+
+        existing.TimeInBedMinutes = req.TimeInBedMinutes;
+        existing.ActualSleepMinutes = req.ActualSleepMinutes;
+        existing.Quality = req.Quality;
+        existing.Notes = req.Notes;
+        existing.LoggedAt = DateTimeOffset.UtcNow;
 
         await _db.SaveChangesAsync();
         return NoContent();
@@ -75,26 +69,26 @@ public class SleepController : ControllerBase
         return NoContent();
     }
 
-    private static object ToDto(SleepEntry e)
+    private static object ToDto(SleepEntry e) => new
     {
-        var bedMinutes = e.BedTime.Hour * 60 + e.BedTime.Minute;
-        var wakeMinutes = e.WakeTime.Hour * 60 + e.WakeTime.Minute;
-        var durationMinutes = wakeMinutes >= bedMinutes
-            ? wakeMinutes - bedMinutes
-            : 1440 - bedMinutes + wakeMinutes;
-
-        return new
-        {
-            e.Id,
-            Date = e.Date.ToString("yyyy-MM-dd"),
-            BedTime = e.BedTime.ToString("HH:mm"),
-            WakeTime = e.WakeTime.ToString("HH:mm"),
-            DurationMinutes = durationMinutes,
-            e.Quality,
-            e.Notes,
-            e.LoggedAt,
-        };
-    }
+        e.Id,
+        Date = e.Date.ToString("yyyy-MM-dd"),
+        e.TimeInBedMinutes,
+        e.ActualSleepMinutes,
+        e.Quality,
+        // Share of the time in bed actually spent asleep — the number Sleep
+        // Cycle calls efficiency.
+        Efficiency = e.TimeInBedMinutes is > 0 && e.ActualSleepMinutes is not null
+            ? (int)Math.Round(e.ActualSleepMinutes.Value * 100.0 / e.TimeInBedMinutes.Value)
+            : (int?)null,
+        e.Notes,
+        e.LoggedAt,
+    };
 }
 
-public record UpsertSleepRequest(DateOnly Date, TimeOnly BedTime, TimeOnly WakeTime, int Quality, string? Notes);
+public record UpsertSleepRequest(
+    DateOnly Date,
+    int? TimeInBedMinutes,
+    int? ActualSleepMinutes,
+    int? Quality,
+    string? Notes);
