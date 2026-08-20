@@ -56,17 +56,30 @@ h1, h2, h3, .font-display {
 }
 
 /*
- * Safari gives date and time inputs an intrinsic minimum width wide enough for
- * their widest rendering, and they refuse to shrink below it. In a two-column
- * grid on a phone that pushes the field over its track and on top of its
- * neighbour, so let them shrink and rely on the width the layout gives them.
+ * iOS renders date and time inputs as a native control sized to its own
+ * content and ignores the width the layout gives it, so these fields came out
+ * wider than every other input on the page and spilled past the card's
+ * padding. Dropping the native appearance makes them size like a normal field
+ * again; max-width is the hard stop in case an engine still disagrees.
  */
 input[type='date'],
 input[type='time'],
 input[type='datetime-local'],
 input[type='month'],
 input[type='week'] {
+  -webkit-appearance: none;
+  appearance: none;
   min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Without the native control iOS still centres the value; keep it on the left
+   like the text fields beside it. */
+input[type='date']::-webkit-date-and-time-value,
+input[type='time']::-webkit-date-and-time-value,
+input[type='datetime-local']::-webkit-date-and-time-value {
+  text-align: left;
 }
 
 /* Glassmorphism card */
