@@ -103,7 +103,9 @@ public class SummaryController : ControllerBase
             var values = source.Select(pick).OfType<decimal>().ToList();
             if (values.Count == 0) return null;
             var mean = Math.Round(values.Average(), digits);
-            return $"{mean.ToString(digits > 0 ? "0.#" : "0", De)}{unit}";
+            // N0/N1 rather than 0/0.#, so a step average reads 10.308 like
+            // every other count in the text.
+            return $"{mean.ToString(digits > 0 ? $"N{digits}" : "N0", De)}{unit}";
         }
 
         var averages = new[]
@@ -123,7 +125,8 @@ public class SummaryController : ControllerBase
         foreach (var line in averages) sb.AppendLine("  " + line);
         sb.AppendLine($"  Training: {workouts.Count} Einheiten · {workouts.Sum(x => x.SetCount)} Sätze"
             + $" · {Thousands((int)Math.Round(workouts.Sum(x => x.VolumeKg)))} kg");
-        sb.AppendLine($"  Cardio: {move.Count(x => x.Cardio == true)} Tage");
+        var cardioDays = move.Count(x => x.Cardio == true);
+        sb.AppendLine($"  Cardio: {cardioDays} {(cardioDays == 1 ? "Tag" : "Tage")}");
 
         return Content(sb.ToString().TrimEnd() + "\n", "text/plain; charset=utf-8");
     }
