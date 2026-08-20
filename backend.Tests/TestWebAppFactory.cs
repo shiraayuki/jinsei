@@ -8,16 +8,32 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 public class TestWebAppFactory : WebApplicationFactory<Program>
 {
+    private readonly Action<IServiceCollection>? _configure;
+    private readonly Dictionary<string, string?> _settings;
+
+    public TestWebAppFactory(
+        Action<IServiceCollection>? configure = null,
+        Dictionary<string, string?>? settings = null)
+    {
+        _configure = configure;
+        _settings = settings ?? [];
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Testing");
+        // Development, not "Testing": outside development the auth cookie is
+        // marked Secure, and the test server speaks plain http, so the client
+        // would never send it back and every authenticated call would 401.
+        builder.UseEnvironment("Development");
 
         builder.ConfigureAppConfiguration((_, config) =>
         {
-            config.AddInMemoryCollection(new Dictionary<string, string?>
+            var settings = new Dictionary<string, string?>
             {
                 ["Auth:AllowRegistration"] = "true",
-            });
+            };
+            foreach (var (key, value) in _settings) settings[key] = value;
+            config.AddInMemoryCollection(settings);
         });
 
         builder.ConfigureServices(services =>
@@ -35,6 +51,8 @@ public class TestWebAppFactory : WebApplicationFactory<Program>
             var dbRoot = new Microsoft.EntityFrameworkCore.Storage.InMemoryDatabaseRoot();
             services.AddDbContext<AppDbContext>(opts =>
                 opts.UseInMemoryDatabase(dbName, dbRoot).EnableServiceProviderCaching(false));
+
+            _configure?.Invoke(services);
         });
     }
 }

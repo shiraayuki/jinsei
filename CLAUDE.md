@@ -21,7 +21,7 @@ Frontend tooling (run from `frontend/`):
 - `npm run lint` — flat-config ESLint over `**/*.{ts,tsx}`.
 - `npm run preview` — preview the production build.
 
-Backend has no test project yet; there are no `dotnet test` targets.
+Backend tests live in `backend.Tests/` (xunit + WebApplicationFactory against the in-memory provider). Run them with `dotnet test` from the repo root.
 
 ## Architecture
 
