@@ -55,6 +55,20 @@ h1, h2, h3, .font-display {
   }
 }
 
+/*
+ * Safari gives date and time inputs an intrinsic minimum width wide enough for
+ * their widest rendering, and they refuse to shrink below it. In a two-column
+ * grid on a phone that pushes the field over its track and on top of its
+ * neighbour, so let them shrink and rely on the width the layout gives them.
+ */
+input[type='date'],
+input[type='time'],
+input[type='datetime-local'],
+input[type='month'],
+input[type='week'] {
+  min-width: 0;
+}
+
 /* Glassmorphism card */
 .card {
   background: white;

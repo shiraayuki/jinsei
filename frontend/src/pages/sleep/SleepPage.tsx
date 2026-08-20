@@ -142,7 +142,7 @@ export function SleepPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div>
+          <div className="min-w-0">
             <label className="mb-1 flex items-center gap-1 text-xs text-gray-400 dark:text-zinc-500">
               <Moon size={11} /> {t('sleep.bedtime')}
             </label>
@@ -153,7 +153,7 @@ export function SleepPage() {
               className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
-          <div>
+          <div className="min-w-0">
             <label className="mb-1 flex items-center gap-1 text-xs text-gray-400 dark:text-zinc-500">
               <Sun size={11} /> {t('sleep.wakeTime')}
             </label>
