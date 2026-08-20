@@ -1,13 +1,9 @@
 import { useState } from 'react'
-import { Coffee, Droplet } from 'lucide-react'
-import { PageHeader } from '../../components/ui/PageHeader'
-import { useNutritionDay, useUpsertNutrition } from '../../features/nutrition/hooks'
-import type { NutritionEntry } from '../../features/nutrition/api'
+import { Apple, Coffee, Droplet } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
+import { useNutritionDay, useUpsertNutrition } from '../../../features/nutrition/hooks'
+import type { NutritionEntry } from '../../../features/nutrition/api'
+import { Section, SaveButton } from './Section'
 
 function numOrNull(value: string): number | null {
   if (value.trim() === '') return null
@@ -218,41 +214,22 @@ function NutritionForm({ date, entry }: { date: string; entry?: NutritionEntry }
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={upsert.isPending}
-        className="w-full rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-50"
-      >
-        {t('common.save')}
-      </button>
+      <SaveButton pending={upsert.isPending} label={t('common.save')} />
     </form>
   )
 }
 
-export function NutritionPage() {
+export function NutritionSection({ date }: { date: string }) {
   const { t } = useTranslation()
-  const [date, setDate] = useState(todayIso())
-  const { data: day, isLoading } = useNutritionDay(date)
+  const { data: entry, isLoading } = useNutritionDay(date)
+
+  const summary = entry?.kcal != null ? `${entry.kcal.toLocaleString()} kcal` : undefined
 
   return (
-    <div className="mx-auto max-w-lg space-y-6 px-4 py-6">
-      <PageHeader title={t('nutrition.title')} />
-
-      <div className="rounded-2xl bg-white dark:bg-zinc-900 p-4 space-y-5">
-        <div>
-          <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">{t('common.date')}</label>
-          <input
-            type="date"
-            value={date}
-            onChange={e => setDate(e.target.value)}
-            className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
-
-        {isLoading
-          ? <p className="py-6 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
-          : <NutritionForm key={`${date}:${day?.id ?? 'new'}`} date={date} entry={day} />}
-      </div>
-    </div>
+    <Section title={t('nutrition.title')} icon={<Apple size={15} />} summary={summary}>
+      {isLoading
+        ? <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
+        : <NutritionForm key={`${date}:${entry?.id ?? 'new'}`} date={date} entry={entry} />}
+    </Section>
   )
 }

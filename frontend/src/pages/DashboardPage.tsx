@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Flame, Check, Dumbbell, ChevronRight, Moon, Scale } from 'lucide-react'
+import { Flame, Check, Dumbbell, ChevronRight, Moon, Scale, UserCircle } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useAuth } from '../app/auth/AuthProvider'
 import { useHabits, useLogEntry } from '../features/habits/hooks'
@@ -95,12 +95,22 @@ export function DashboardPage() {
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="px-5 pb-5 pt-12"
+        className="flex items-start gap-3 px-5 pb-5 pt-12"
       >
-        <p className="text-xs font-medium tracking-widest text-zinc-600 uppercase">{formatDate()}</p>
-        <h1 className="mt-1 font-display text-[1.65rem] font-bold leading-tight text-zinc-800 dark:text-zinc-50">
-          {greeting()}, <span className="text-indigo-400">{name}</span>
-        </h1>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium tracking-widest text-zinc-600 uppercase">{formatDate()}</p>
+          <h1 className="mt-1 font-display text-[1.65rem] font-bold leading-tight text-zinc-800 dark:text-zinc-50">
+            {greeting()}, <span className="text-indigo-400">{name}</span>
+          </h1>
+        </div>
+        {/* Profile lost its nav slot when the bar went down to four tabs. */}
+        <Link
+          to="/profile"
+          aria-label={t('nav.profile')}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-400 dark:text-zinc-500 hover:text-indigo-400 transition-colors"
+        >
+          <UserCircle size={24} strokeWidth={1.6} />
+        </Link>
       </motion.div>
 
       <motion.div
@@ -221,7 +231,7 @@ export function DashboardPage() {
                 </div>
               </Link>
 
-              <Link to="/sleep" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
+              <Link to="/today" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
                 <Moon size={15} className="shrink-0 text-violet-400" strokeWidth={1.8} />
                 <div>
                   <p className="text-base font-bold text-zinc-100 leading-none">
@@ -231,7 +241,7 @@ export function DashboardPage() {
                 </div>
               </Link>
 
-              <Link to="/weight" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
+              <Link to="/today" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
                 <Scale size={15} className="shrink-0 text-sky-400" strokeWidth={1.8} />
                 <div>
                   <p className="text-base font-bold text-zinc-100 leading-none">

@@ -2,10 +2,8 @@ export default {
   nav: {
     home: 'Home',
     habits: 'Habits',
-    workouts: 'Workouts',
-    nutrition: 'Food',
-    weight: 'Weight',
-    sleep: 'Sleep',
+    today: 'Today',
+    workouts: 'Training',
     profile: 'Profile',
   },
   common: {
@@ -124,6 +122,19 @@ export default {
     avgQuality: 'Avg quality',
     avgEfficiency: 'Avg efficiency',
     qualityChart: 'Sleep quality',
+  },
+  today: {
+    title: 'Today',
+    previousDay: 'Previous day',
+    nextDay: 'Next day',
+    backToToday: 'Back to today',
+  },
+  activity: {
+    title: 'Activity',
+    steps: 'Steps',
+    stepsUnit: 'steps',
+    cardio: 'Cardio',
+    cardioMinutes: 'Cardio duration',
   },
   nutrition: {
     title: 'Nutrition',

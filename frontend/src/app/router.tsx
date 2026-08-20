@@ -10,9 +10,7 @@ const HabitDetailPage   = lazy(() => import('../pages/habits/HabitDetailPage').t
 const HabitFormPage     = lazy(() => import('../pages/habits/HabitFormPage').then(m => ({ default: m.HabitFormPage })))
 const WorkoutsListPage  = lazy(() => import('../pages/workouts/WorkoutsListPage').then(m => ({ default: m.WorkoutsListPage })))
 const WorkoutDetailPage = lazy(() => import('../pages/workouts/WorkoutDetailPage').then(m => ({ default: m.WorkoutDetailPage })))
-const NutritionPage     = lazy(() => import('../pages/nutrition/NutritionPage').then(m => ({ default: m.NutritionPage })))
-const WeightPage        = lazy(() => import('../pages/weight/WeightPage').then(m => ({ default: m.WeightPage })))
-const SleepPage         = lazy(() => import('../pages/sleep/SleepPage').then(m => ({ default: m.SleepPage })))
+const TodayPage         = lazy(() => import('../pages/today/TodayPage').then(m => ({ default: m.TodayPage })))
 const ProfilePage       = lazy(() => import('../pages/ProfilePage').then(m => ({ default: m.ProfilePage })))
 const WeeklyReviewPage  = lazy(() => import('../pages/WeeklyReviewPage').then(m => ({ default: m.WeeklyReviewPage })))
 
@@ -50,9 +48,11 @@ export function AppRouter() {
           <Route path="/habits/:id/edit" element={<HabitFormPage />} />
           <Route path="/workouts" element={<WorkoutsListPage />} />
           <Route path="/workouts/:id" element={<WorkoutDetailPage />} />
-          <Route path="/nutrition" element={<NutritionPage />} />
-          <Route path="/weight" element={<WeightPage />} />
-          <Route path="/sleep" element={<SleepPage />} />
+          <Route path="/today" element={<TodayPage />} />
+          {/* The metrics used to have a page each; keep the old paths working. */}
+          <Route path="/nutrition" element={<Navigate to="/today" replace />} />
+          <Route path="/weight" element={<Navigate to="/today" replace />} />
+          <Route path="/sleep" element={<Navigate to="/today" replace />} />
           <Route path="/review" element={<WeeklyReviewPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>

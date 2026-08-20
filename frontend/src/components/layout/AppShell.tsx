@@ -1,18 +1,18 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutDashboard, CheckSquare, Dumbbell, Apple, Scale, Moon, UserCircle } from 'lucide-react'
+import { LayoutDashboard, CheckSquare, CalendarDays, Dumbbell } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 
 export function AppShell() {
   const { t } = useTranslation()
+  // Four destinations: the overview, habits, everything that is logged per day,
+  // and the training log. Profile lives in the dashboard header — it is opened
+  // rarely and does not deserve a permanent slot.
   const NAV = [
     { to: '/', icon: LayoutDashboard, label: t('nav.home') },
     { to: '/habits', icon: CheckSquare, label: t('nav.habits') },
+    { to: '/today', icon: CalendarDays, label: t('nav.today') },
     { to: '/workouts', icon: Dumbbell, label: t('nav.workouts') },
-    { to: '/nutrition', icon: Apple, label: t('nav.nutrition') },
-    { to: '/weight', icon: Scale, label: t('nav.weight') },
-    { to: '/sleep', icon: Moon, label: t('nav.sleep') },
-    { to: '/profile', icon: UserCircle, label: t('nav.profile') },
   ]
   return (
     <div className="flex h-dvh flex-col app-bg">
@@ -37,7 +37,7 @@ export function AppShell() {
         }}
       >
         <div
-          className="mx-auto grid max-w-lg grid-cols-7"
+          className="mx-auto grid max-w-lg grid-cols-4"
           style={{ minHeight: 'var(--bottom-nav-height)' }}
         >
           {NAV.map(({ to, icon: Icon, label }) => (
@@ -63,11 +63,11 @@ export function AppShell() {
                     className="relative flex flex-col items-center gap-1"
                   >
                     <Icon
-                      size={19}
+                      size={21}
                       strokeWidth={isActive ? 2.2 : 1.7}
                       className={isActive ? 'text-indigo-400' : 'text-gray-400 dark:text-zinc-600'}
                     />
-                    <span className={`text-[10px] font-semibold tracking-wide ${isActive ? 'text-indigo-400' : 'text-gray-400 dark:text-zinc-600'}`}>
+                    <span className={`text-[11px] font-semibold tracking-wide ${isActive ? 'text-indigo-400' : 'text-gray-400 dark:text-zinc-600'}`}>
                       {label}
                     </span>
                   </motion.div>

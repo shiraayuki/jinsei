@@ -121,8 +121,56 @@ public class WorkoutsController : ControllerBase
             row.SyncedAt = DateTimeOffset.UtcNow;
         }
 
+        var cardioDays = await FillCardioAsync(workouts, ct);
+
         await _db.SaveChangesAsync(ct);
-        return Ok(new { added, updated, total = workouts.Count });
+        return Ok(new { added, updated, total = workouts.Count, cardioDays });
+    }
+
+    /// <summary>
+    /// Sets carrying a duration or a distance are cardio, whether that is a
+    /// dedicated session or ten minutes on the treadmill afterwards. The day's
+    /// activity entry is only filled where nothing has been said about cardio
+    /// yet — an answer given by hand is never overwritten by a sync.
+    /// </summary>
+    private async Task<int> FillCardioAsync(List<HevyWorkout> workouts, CancellationToken ct)
+    {
+        var byDay = workouts
+            .Where(w => w.Exercises.Any(e => e.Sets.Any(s => s.DurationSeconds > 0 || s.DistanceMeters > 0)))
+            .GroupBy(w => w.Date)
+            .ToDictionary(
+                g => g.Key,
+                g => (int)Math.Round(g.SelectMany(w => w.Exercises)
+                    .SelectMany(e => e.Sets)
+                    .Sum(s => s.DurationSeconds ?? 0) / 60.0));
+
+        if (byDay.Count == 0) return 0;
+
+        var days = byDay.Keys.ToList();
+        var existing = await _db.ActivityEntries
+            .Where(a => a.UserId == UserId && days.Contains(a.Date))
+            .ToDictionaryAsync(a => a.Date, ct);
+
+        var filled = 0;
+        foreach (var (day, minutes) in byDay)
+        {
+            if (existing.TryGetValue(day, out var entry))
+            {
+                if (entry.Cardio is not null) continue;
+            }
+            else
+            {
+                entry = new ActivityEntry { Id = Guid.NewGuid(), UserId = UserId, Date = day };
+                _db.ActivityEntries.Add(entry);
+            }
+
+            entry.Cardio = true;
+            if (minutes > 0) entry.CardioMinutes = minutes;
+            entry.LoggedAt = DateTimeOffset.UtcNow;
+            filled++;
+        }
+
+        return filled;
     }
 
     /// <summary>Readable rendering of a session, in the shape Hevy's share text uses.</summary>
