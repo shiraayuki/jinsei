@@ -201,7 +201,7 @@ function SleepForm({ date, entry }: { date: string; entry?: SleepEntry }) {
 }
 
 export function SleepPage() {
-  const { data: entries = [] } = useSleep(30)
+  const { data: entries = [] } = useSleep(180)
   const del = useDeleteSleep()
   const { t } = useTranslation()
 
