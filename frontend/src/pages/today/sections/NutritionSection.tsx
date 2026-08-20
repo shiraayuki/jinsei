@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Apple, Coffee, Droplet } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { dateLocale } from '../../../i18n'
 import { useNutritionDay, useUpsertNutrition } from '../../../features/nutrition/hooks'
 import type { NutritionEntry } from '../../../features/nutrition/api'
 import { Section, SaveButton } from './Section'
@@ -223,7 +224,7 @@ export function NutritionSection({ date }: { date: string }) {
   const { t } = useTranslation()
   const { data: entry, isLoading } = useNutritionDay(date)
 
-  const summary = entry?.kcal != null ? `${entry.kcal.toLocaleString()} kcal` : undefined
+  const summary = entry?.kcal != null ? `${entry.kcal.toLocaleString(dateLocale())} kcal` : undefined
 
   return (
     <Section title={t('nutrition.title')} icon={<Apple size={15} />} summary={summary}>

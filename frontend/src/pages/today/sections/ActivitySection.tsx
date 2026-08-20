@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Footprints } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { dateLocale } from '../../../i18n'
 import { useActivityDay, useUpsertActivity } from '../../../features/activity/hooks'
 import { Section, SaveButton } from './Section'
 import type { ActivityEntry } from '../../../features/activity/api'
@@ -96,7 +97,7 @@ export function ActivitySection({ date }: { date: string }) {
   const { data: entry, isLoading } = useActivityDay(date)
 
   const summary = entry?.steps != null
-    ? `${entry.steps.toLocaleString()} ${t('activity.stepsUnit')}`
+    ? `${entry.steps.toLocaleString(dateLocale())} ${t('activity.stepsUnit')}`
     : entry?.cardio
       ? t('activity.cardio')
       : undefined
