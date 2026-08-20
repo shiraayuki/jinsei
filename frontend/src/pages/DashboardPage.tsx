@@ -10,15 +10,12 @@ import { useNutritionDay, useUpsertNutrition } from '../features/nutrition/hooks
 import { useActivityDay } from '../features/activity/hooks'
 import { useTranslation } from 'react-i18next'
 import { dateLocale } from '../i18n'
+import { todayIso } from '../lib/date'
 
 function formatDuration(minutes: number) {
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
   return m > 0 ? `${h}h ${m}m` : `${h}h`
-}
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
 }
 
 function nowHhMm() {

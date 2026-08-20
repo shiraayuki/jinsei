@@ -4,10 +4,7 @@ import { PageHeader } from '../../components/ui/PageHeader'
 import { useHabits, useLogEntry } from '../../features/habits/hooks'
 import { useTranslation } from 'react-i18next'
 import type { Habit } from '../../features/habits/api'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
+import { todayIso } from '../../lib/date'
 
 function HabitRow({ habit }: { habit: Habit }) {
   const log = useLogEntry()

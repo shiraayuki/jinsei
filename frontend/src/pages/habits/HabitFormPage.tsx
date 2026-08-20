@@ -7,6 +7,7 @@ import { PageHeader } from '../../components/ui/PageHeader'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import { useHabits, useCreateHabit, useUpdateHabit } from '../../features/habits/hooks'
+import { todayIso } from '../../lib/date'
 
 const DAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
 const COLORS = ['#6366f1', '#ec4899', '#f97316', '#22c55e', '#06b6d4', '#eab308', '#ef4444']
@@ -80,7 +81,7 @@ export function HabitFormPage() {
         targetCount: data.targetCount,
         daysOfWeek: data.scheduleType === 'weekly' ? data.daysOfWeek : undefined,
         intervalDays: data.scheduleType === 'interval' ? data.intervalDays : undefined,
-        activeFrom: new Date().toISOString().slice(0, 10),
+        activeFrom: todayIso(),
       },
     }
 

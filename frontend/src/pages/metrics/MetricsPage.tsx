@@ -12,6 +12,7 @@ import { useNutrition } from '../../features/nutrition/hooks'
 import { useActivity } from '../../features/activity/hooks'
 import { useWellbeing } from '../../features/wellbeing/hooks'
 import { dateLocale } from '../../i18n'
+import { toIsoDate } from '../../lib/date'
 
 const RANGES = [7, 30, 90, 180] as const
 
@@ -22,7 +23,7 @@ function getWeekBounds(weeksAgo = 0) {
   monday.setDate(today.getDate() - daysBack - weeksAgo * 7)
   const sunday = new Date(monday)
   sunday.setDate(monday.getDate() + 6)
-  return { start: monday.toISOString().slice(0, 10), end: sunday.toISOString().slice(0, 10) }
+  return { start: toIsoDate(monday), end: toIsoDate(sunday) }
 }
 
 function inWeek<T extends { date: string }>(items: T[], week: { start: string; end: string }) {

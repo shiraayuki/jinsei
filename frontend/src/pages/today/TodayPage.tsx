@@ -9,16 +9,7 @@ import { WeightSection } from './sections/WeightSection'
 import { WellbeingSection } from './sections/WellbeingSection'
 import { SummarySheet } from '../../components/ui/SummarySheet'
 import { useDaySummary } from '../../features/summary/hooks'
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
-
-function shift(iso: string, days: number) {
-  const d = new Date(`${iso}T00:00:00`)
-  d.setDate(d.getDate() + days)
-  return d.toISOString().slice(0, 10)
-}
+import { todayIso, shiftIso } from '../../lib/date'
 
 export function TodayPage() {
   const { t } = useTranslation()
@@ -38,7 +29,7 @@ export function TodayPage() {
         className="sticky top-0 z-10 flex items-center gap-2 bg-white/95 dark:bg-zinc-950/95 px-3 py-2 backdrop-blur-xl"
       >
         <button
-          onClick={() => setDate(d => shift(d, -1))}
+          onClick={() => setDate(d => shiftIso(d, -1))}
           aria-label={t('today.previousDay')}
           className="flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
         >
@@ -69,7 +60,7 @@ export function TodayPage() {
         </button>
 
         <button
-          onClick={() => setDate(d => shift(d, 1))}
+          onClick={() => setDate(d => shiftIso(d, 1))}
           disabled={isToday}
           aria-label={t('today.nextDay')}
           className="flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"

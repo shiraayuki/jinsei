@@ -5,9 +5,10 @@ import { PageHeader } from '../../components/ui/PageHeader'
 import { Button } from '../../components/ui/Button'
 import { useHabits, useHabitEntries, useLogEntry, useArchiveHabit, useHabitStats } from '../../features/habits/hooks'
 import type { HabitStats } from '../../features/habits/api'
+import { toIsoDate } from '../../lib/date'
 
 function isoDate(d: Date) {
-  return d.toISOString().slice(0, 10)
+  return toIsoDate(d)
 }
 
 const WEEKDAY_LABELS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
