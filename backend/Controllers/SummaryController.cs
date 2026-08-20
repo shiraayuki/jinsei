@@ -44,16 +44,7 @@ public class SummaryController : ControllerBase
             .OrderBy(w => w.StartedAt)
             .ToListAsync();
 
-        var habits = await _db.Habits
-            .Where(h => h.UserId == UserId && !h.Archived)
-            .Select(h => new
-            {
-                h.Name,
-                Done = h.Entries.Any(e => e.Date == day && e.CompletedCount > 0),
-            })
-            .ToListAsync();
-
-        var text = Render(day, weight, food, move, sleep, feel, workouts, habits.Select(h => (h.Name, h.Done)).ToList());
+        var text = Render(day, weight, food, move, sleep, feel, workouts);
         return Content(text, "text/plain; charset=utf-8");
     }
 
@@ -73,8 +64,7 @@ public class SummaryController : ControllerBase
         ActivityEntry? move,
         SleepEntry? sleep,
         WellbeingEntry? feel,
-        List<WorkoutLog> workouts,
-        List<(string Name, bool Done)> habits)
+        List<WorkoutLog> workouts)
     {
         var sb = new StringBuilder();
         sb.AppendLine($"Tageslog {day.ToString("dd.MM.yyyy", De)} ({De.DateTimeFormat.GetDayName(day.DayOfWeek)})");
@@ -146,17 +136,6 @@ public class SummaryController : ControllerBase
         }.OfType<string>().ToList();
         Section("Befinden", feelParts.Count > 0 ? new[] { string.Join(" · ", feelParts) } : []);
 
-        if (habits.Count > 0)
-        {
-            var done = habits.Where(h => h.Done).Select(h => h.Name).ToList();
-            var open = habits.Where(h => !h.Done).Select(h => h.Name).ToList();
-            Section("Habits", new[]
-            {
-                $"{done.Count}/{habits.Count} erledigt",
-                done.Count > 0 ? "Erledigt: " + string.Join(", ", done) : null,
-                open.Count > 0 ? "Offen: " + string.Join(", ", open) : null,
-            }.OfType<string>());
-        }
 
         if (workouts.Count == 0)
         {
