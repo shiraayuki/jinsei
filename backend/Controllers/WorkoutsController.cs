@@ -23,6 +23,13 @@ public class WorkoutsController : ControllerBase
 
     private string UserId => _users.GetUserId(User)!;
 
+    // The stored payload is handed to the client verbatim as a JsonElement, so
+    // it has to be written in the casing the API uses everywhere else —
+    // serializing with the defaults would emit PascalCase and the client would
+    // read undefined out of every field.
+    private static readonly JsonSerializerOptions PayloadOptions =
+        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] int days = 90)
     {
@@ -110,7 +117,7 @@ public class WorkoutsController : ControllerBase
             row.SetCount = setCount;
             row.VolumeKg = Math.Round(volume, 1);
             row.RawText = Render(w);
-            row.PayloadJson = JsonSerializer.Serialize(w.Exercises);
+            row.PayloadJson = JsonSerializer.Serialize(w.Exercises, PayloadOptions);
             row.SyncedAt = DateTimeOffset.UtcNow;
         }
 

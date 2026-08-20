@@ -60,11 +60,11 @@ export function WorkoutDetailPage() {
           </p>
         </div>
 
-        {workout.exercises.map((ex, i) => (
+        {(workout.exercises ?? []).map((ex, i) => (
           <div key={`${ex.name}-${i}`} className="rounded-2xl bg-white dark:bg-zinc-900 p-4">
             <p className="font-semibold text-gray-900 dark:text-zinc-100">{ex.name}</p>
             <div className="mt-2 space-y-1">
-              {ex.sets.map((s, j) => (
+              {(ex.sets ?? []).map((s, j) => (
                 <div key={j} className="flex justify-between text-sm">
                   <span className="text-gray-400 dark:text-zinc-500">{t('workouts.set')} {j + 1}</span>
                   <span className="text-gray-700 dark:text-zinc-200">{formatSet(s)}</span>
