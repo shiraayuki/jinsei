@@ -31,7 +31,7 @@ export function TodayPage() {
   return (
     <div>
       <header
-        className="sticky top-0 z-10 flex items-center gap-2 bg-white/80 dark:bg-zinc-950/80 px-3 py-2 backdrop-blur-xl"
+        className="sticky top-0 z-10 flex items-center gap-2 bg-white/95 dark:bg-zinc-950/95 px-3 py-2 backdrop-blur-xl"
       >
         <button
           onClick={() => setDate(d => shift(d, -1))}

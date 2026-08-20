@@ -10,7 +10,7 @@ interface Props {
 export function PageHeader({ title, back, action }: Props) {
   const navigate = useNavigate()
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center gap-3 bg-white/80 dark:bg-zinc-950/80 px-4 backdrop-blur-xl">
+    <header className="sticky top-0 z-10 flex h-14 items-center gap-3 bg-white/95 dark:bg-zinc-950/95 px-4 backdrop-blur-xl">
       {back && (
         <button
           onClick={() => navigate(-1)}
