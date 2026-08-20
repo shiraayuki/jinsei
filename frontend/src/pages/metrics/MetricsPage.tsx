@@ -11,6 +11,7 @@ import { useWeight } from '../../features/weight/hooks'
 import { useNutrition } from '../../features/nutrition/hooks'
 import { useActivity } from '../../features/activity/hooks'
 import { useWellbeing } from '../../features/wellbeing/hooks'
+import { dateLocale } from '../../i18n'
 
 const RANGES = [7, 30, 90, 180] as const
 
@@ -126,7 +127,11 @@ export function MetricsPage() {
   const cardioMinutes = activity.map(e => e.cardioMinutes).filter((v): v is number => v != null)
 
   const round = (v: number | null, digits = 0) =>
-    v == null ? '–' : String(Math.round(v * 10 ** digits) / 10 ** digits)
+    v == null
+      ? '–'
+      : (Math.round(v * 10 ** digits) / 10 ** digits).toLocaleString(dateLocale(), {
+          maximumFractionDigits: digits,
+        })
 
   const hunger = wellbeing.map(e => e.hunger).filter((v): v is number => v != null)
   const energy = wellbeing.map(e => e.energy).filter((v): v is number => v != null)
