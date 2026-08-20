@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Apple, CheckSquare, Dumbbell, Footprints, Moon, Scale, TrendingDown, TrendingUp, Minus } from 'lucide-react'
+import { Apple, CheckSquare, Dumbbell, Footprints, Moon, Scale, Smile, TrendingDown, TrendingUp, Minus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { MetricChart } from '../../components/charts/MetricChart'
@@ -10,6 +10,7 @@ import { useSleep } from '../../features/sleep/hooks'
 import { useWeight } from '../../features/weight/hooks'
 import { useNutrition } from '../../features/nutrition/hooks'
 import { useActivity } from '../../features/activity/hooks'
+import { useWellbeing } from '../../features/wellbeing/hooks'
 
 const RANGES = [7, 30, 90, 180] as const
 
@@ -90,6 +91,7 @@ export function MetricsPage() {
   const { data: weight = [] } = useWeight(days)
   const { data: nutrition = [] } = useNutrition(days)
   const { data: activity = [] } = useActivity(days)
+  const { data: wellbeing = [] } = useWellbeing(days)
 
   const thisWeek = useMemo(() => getWeekBounds(0), [])
   const lastWeek = useMemo(() => getWeekBounds(1), [])
@@ -126,8 +128,11 @@ export function MetricsPage() {
   const round = (v: number | null, digits = 0) =>
     v == null ? '–' : String(Math.round(v * 10 ** digits) / 10 ** digits)
 
+  const hunger = wellbeing.map(e => e.hunger).filter((v): v is number => v != null)
+  const energy = wellbeing.map(e => e.energy).filter((v): v is number => v != null)
+
   const hasNothing = workouts.length === 0 && sleep.length === 0 && weight.length === 0
-    && nutrition.length === 0 && activity.length === 0
+    && nutrition.length === 0 && activity.length === 0 && wellbeing.length === 0
 
   return (
     <div>
@@ -247,6 +252,15 @@ export function MetricsPage() {
             />
           </div>
         </Card>
+
+        {wellbeing.length > 0 && (
+          <Card icon={<Smile size={15} />} title={t('wellbeing.title')}>
+            <div className="grid grid-cols-2 gap-2">
+              <Stat label={t('wellbeing.hunger')} value={hunger.length ? `${round(mean(hunger), 1)}/5` : '–'} hint={t('metrics.perDay')} />
+              <Stat label={t('wellbeing.energy')} value={energy.length ? `${round(mean(energy), 1)}/5` : '–'} hint={t('metrics.perDay')} />
+            </div>
+          </Card>
+        )}
 
         <Card icon={<CheckSquare size={15} />} title={t('nav.habits')}>
           <div className="grid grid-cols-2 gap-2">

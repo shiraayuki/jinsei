@@ -134,6 +134,14 @@ export default {
     bestStreak: 'Längste Serie',
     empty: 'Noch keine Daten. Trage etwas unter Heute ein oder synchronisiere deine Trainings.',
   },
+  wellbeing: {
+    title: 'Befinden',
+    hunger: 'Hunger',
+    energy: 'Energie',
+    hungerShort: 'Hunger',
+    energyShort: 'Energie',
+    notePlaceholder: 'Wie war der Tag? (optional)',
+  },
   today: {
     title: 'Heute',
     previousDay: 'Vorheriger Tag',

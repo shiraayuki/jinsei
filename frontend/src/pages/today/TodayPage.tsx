@@ -6,6 +6,7 @@ import { NutritionSection } from './sections/NutritionSection'
 import { ActivitySection } from './sections/ActivitySection'
 import { SleepSection } from './sections/SleepSection'
 import { WeightSection } from './sections/WeightSection'
+import { WellbeingSection } from './sections/WellbeingSection'
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10)
@@ -70,6 +71,7 @@ export function TodayPage() {
         <ActivitySection date={date} />
         <SleepSection date={date} />
         <WeightSection date={date} />
+        <WellbeingSection date={date} />
       </div>
     </div>
   )

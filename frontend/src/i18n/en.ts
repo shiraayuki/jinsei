@@ -134,6 +134,14 @@ export default {
     bestStreak: 'Longest streak',
     empty: 'Nothing logged yet. Add something under Today or sync your training.',
   },
+  wellbeing: {
+    title: 'Wellbeing',
+    hunger: 'Hunger',
+    energy: 'Energy',
+    hungerShort: 'Hunger',
+    energyShort: 'Energy',
+    notePlaceholder: 'How was the day? (optional)',
+  },
   today: {
     title: 'Today',
     previousDay: 'Previous day',
