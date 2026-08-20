@@ -84,7 +84,19 @@ cp .env.example .env
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-Frontend nginx serves on 80/443 and reverse-proxies `/api/` to the backend container.
+Frontend nginx serves the SPA and reverse-proxies `/api/` to the backend container. The
+stack is bound to `127.0.0.1:8092` only — nothing is published to the LAN or the internet.
+
+### Exposure via Tailscale
+
+Access is Tailscale-only; TLS is terminated by `tailscale serve` using the tailnet cert.
+
+```bash
+sudo tailscale serve --bg --https 9443 http://127.0.0.1:8092
+```
+
+Reachable at `https://<host>.<tailnet>.ts.net:9443` from any device in the tailnet.
+Remove with `sudo tailscale serve --https 9443 off`.
 
 ## Project structure
 
@@ -101,5 +113,5 @@ frontend/
     components/   Shared UI
 docker/
   docker-compose.dev.yml   Postgres only (dev)
-  docker-compose.yml       Full prod stack
+  docker-compose.yml       Full prod stack (loopback-bound, Tailscale-exposed)
 ```

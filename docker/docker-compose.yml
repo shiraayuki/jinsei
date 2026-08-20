@@ -26,31 +26,14 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
+    ports:
+      # Loopback only: TLS + exposure are handled by `tailscale serve` on the host.
+      - "127.0.0.1:8092:80"
     depends_on:
       - backend
     restart: unless-stopped
 
-  caddy:
-    build:
-      context: .
-      dockerfile: Dockerfile.caddy
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    environment:
-      JINSEI_DOMAIN: ${JINSEI_DOMAIN}
-      DUCKDNS_TOKEN: ${DUCKDNS_TOKEN}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - frontend
-    restart: unless-stopped
 
 volumes:
   postgres_data:
-  caddy_data:
-  caddy_config:
   dataprotection_keys:

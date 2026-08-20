@@ -35,7 +35,9 @@ Three components, two compose files:
 
 ### Production request path (important)
 
-In prod, the frontend container is an nginx serving the built SPA on ports 80/443. `frontend/nginx.conf` reverse-proxies `/api/` to `http://backend:8080/` — note the **trailing slash on the upstream**, which strips the `/api` prefix before forwarding. So a frontend call to `/api/foo` reaches the backend as `/foo`. Keep backend route definitions un-prefixed; the prefix lives in nginx.
+In prod, the frontend container is an nginx serving the built SPA on port 80, published on the host as `127.0.0.1:8092` only. `frontend/nginx.conf` reverse-proxies `/api/` to `http://backend:8080` — **no trailing slash**, so the `/api` prefix is preserved. Controller routes therefore include it (`[Route("api/weight")]`).
+
+TLS and exposure are handled outside the stack by `tailscale serve` on the host (`--https 9443 http://127.0.0.1:8092`); the app is reachable only from the tailnet. There is no Caddy, no public domain, no ACME.
 
 The backend container exposes 8080 internally only (no host port mapping), so it is reachable from the frontend container by service name `backend` but not from the host.
 
