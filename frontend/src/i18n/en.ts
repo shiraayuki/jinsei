@@ -143,6 +143,10 @@ export default {
     notePlaceholder: 'How was the day? (optional)',
   },
   today: {
+    exportTitle: 'Day as text',
+    copy: 'Copy',
+    copied: 'Copied',
+    copyFailed: 'Clipboard unavailable — tap the text and copy it by hand.',
     title: 'Today',
     previousDay: 'Previous day',
     nextDay: 'Next day',

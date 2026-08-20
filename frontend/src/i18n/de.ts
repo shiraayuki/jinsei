@@ -143,6 +143,10 @@ export default {
     notePlaceholder: 'Wie war der Tag? (optional)',
   },
   today: {
+    exportTitle: 'Tag als Text',
+    copy: 'Kopieren',
+    copied: 'Kopiert',
+    copyFailed: 'Zwischenablage nicht verfügbar — Text antippen und von Hand kopieren.',
     title: 'Heute',
     previousDay: 'Vorheriger Tag',
     nextDay: 'Nächster Tag',

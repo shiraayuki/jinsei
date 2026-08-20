@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FileText } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { dateLocale } from '../../i18n'
 import { NutritionSection } from './sections/NutritionSection'
@@ -7,6 +7,8 @@ import { ActivitySection } from './sections/ActivitySection'
 import { SleepSection } from './sections/SleepSection'
 import { WeightSection } from './sections/WeightSection'
 import { WellbeingSection } from './sections/WellbeingSection'
+import { SummarySheet } from '../../components/ui/SummarySheet'
+import { useDaySummary } from '../../features/summary/hooks'
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10)
@@ -21,6 +23,7 @@ function shift(iso: string, days: number) {
 export function TodayPage() {
   const { t } = useTranslation()
   const [date, setDate] = useState(todayIso())
+  const summary = useDaySummary()
 
   const isToday = date === todayIso()
   const label = new Date(`${date}T00:00:00`).toLocaleDateString(dateLocale(), {
@@ -57,6 +60,15 @@ export function TodayPage() {
         </div>
 
         <button
+          onClick={() => summary.mutate(date)}
+          disabled={summary.isPending}
+          aria-label={t('today.exportTitle')}
+          className="flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-40 transition-colors"
+        >
+          <FileText size={17} />
+        </button>
+
+        <button
           onClick={() => setDate(d => shift(d, 1))}
           disabled={isToday}
           aria-label={t('today.nextDay')}
@@ -65,6 +77,14 @@ export function TodayPage() {
           <ChevronRight size={18} />
         </button>
       </header>
+
+      {summary.isError && (
+        <p className="px-4 pt-3 text-xs text-rose-500 dark:text-rose-400">{(summary.error as Error).message}</p>
+      )}
+
+      {summary.data != null && (
+        <SummarySheet text={summary.data} onClose={() => summary.reset()} />
+      )}
 
       <div className="space-y-3 p-4">
         <NutritionSection date={date} />
