@@ -89,6 +89,21 @@ TZ=Europe/Vienna
 
 Without a key the sync button reports itself as unconfigured and nothing else changes.
 
+## Importing from gym-log
+
+`scripts/import-gymlog.py` copies gym-log's `day_logs` rows into jinsei. It goes
+through the API rather than the database, so imported rows pass the same
+validation as hand-entered ones, and every endpoint upserts on the date, so
+re-running it is harmless.
+
+```bash
+EMAIL=… PASSWORD=… python3 scripts/import-gymlog.py           # dry run
+EMAIL=… PASSWORD=… python3 scripts/import-gymlog.py --apply
+```
+
+Workouts are skipped on purpose: jinsei pulls those from Hevy directly, and
+gym-log's copies of the same sessions carry no provider id to match them on.
+
 ## Production
 
 ```bash
