@@ -34,16 +34,21 @@ function ImportModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center"
+      style={{ paddingBottom: 'max(1rem, var(--safe-bottom))' }}
+      onClick={onClose}
+    >
       <div
-        className="w-full max-w-lg rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-2xl"
+        className="w-full max-w-lg overflow-y-auto rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-2xl"
+        style={{ maxHeight: '85dvh' }}
         onClick={e => e.stopPropagation()}
       >
         <h2 className="mb-1 text-base font-semibold text-gray-900 dark:text-zinc-100">{t('workouts.importTitle')}</h2>
         <p className="mb-3 text-xs text-gray-400 dark:text-zinc-500">{t('workouts.importHint')}</p>
         <textarea
           className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 p-3 text-xs font-mono text-gray-700 dark:text-zinc-300 placeholder-gray-300 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-          rows={12}
+          rows={8}
           value={text}
           onChange={e => setText(e.target.value)}
           placeholder={t('workouts.importPlaceholder')}
@@ -119,12 +124,12 @@ export function WorkoutsListPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowImport(true)}
-              className="flex items-center gap-1.5 rounded-lg bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700"
+              className="flex items-center gap-1.5 rounded-lg bg-gray-100 dark:bg-zinc-800 px-3 py-2.5 text-xs font-medium text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700"
             >
               <Upload size={14} />
               {t('workouts.import')}
             </button>
-            <Link to="/workouts/new" className="flex items-center gap-1.5 rounded-lg bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700">
+            <Link to="/workouts/new" className="flex items-center gap-1.5 rounded-lg bg-gray-100 dark:bg-zinc-800 px-3 py-2.5 text-xs font-medium text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700">
               <Plus size={14} />
               {t('workouts.log')}
             </Link>

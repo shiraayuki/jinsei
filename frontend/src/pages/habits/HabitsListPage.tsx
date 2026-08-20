@@ -21,12 +21,12 @@ function HabitRow({ habit }: { habit: Habit }) {
     <div className={`flex items-center gap-3 rounded-2xl border px-4 py-3.5 transition-all ${
       habit.completedToday
         ? 'border-indigo-900/40 bg-indigo-950/20'
-        : 'border-gray-200/80 dark:border-gray-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-900'
+        : 'border-gray-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900'
     }`}>
       <button
         onClick={toggle}
         disabled={log.isPending}
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-all ${
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all ${
           habit.completedToday
             ? 'bg-indigo-600 text-white shadow-md shadow-indigo-900/60'
             : 'border border-gray-300 dark:border-zinc-700 text-gray-400 dark:text-zinc-600 hover:border-indigo-500 hover:text-indigo-400'
@@ -35,7 +35,7 @@ function HabitRow({ habit }: { habit: Habit }) {
         <Check size={15} strokeWidth={2.5} />
       </button>
 
-      <Link to={`/habits/${habit.id}`} className="min-w-0 flex-1">
+      <Link to={`/habits/${habit.id}`} className="flex min-w-0 flex-1 flex-col justify-center self-stretch py-1">
         <p className={`font-semibold transition-colors ${habit.completedToday ? 'text-gray-400 dark:text-zinc-500 line-through decoration-zinc-600' : 'text-gray-800 dark:text-zinc-100'}`}>
           {habit.name}
         </p>
@@ -68,7 +68,7 @@ export function HabitsListPage() {
         action={
           <Link
             to="/habits/new"
-            className="flex items-center gap-1.5 rounded-lg bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:bg-zinc-700 transition-colors"
+            className="flex items-center gap-1.5 rounded-lg bg-gray-100 dark:bg-zinc-800 px-3 py-2.5 text-xs font-medium text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
           >
             <Plus size={14} />
             {t('common.new')}

@@ -268,8 +268,11 @@ export function WorkoutFormPage() {
           onClick={tryClosePicker}
         >
           <div
-            className="flex flex-col rounded-t-2xl bg-white dark:bg-zinc-900 mb-16"
-            style={{ maxHeight: 'calc(85vh - 4rem)' }}
+            className="flex flex-col rounded-t-2xl bg-white dark:bg-zinc-900"
+            style={{
+              maxHeight: 'calc(85dvh - var(--bottom-nav-total))',
+              marginBottom: 'var(--bottom-nav-total)',
+            }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-zinc-800 flex-shrink-0">

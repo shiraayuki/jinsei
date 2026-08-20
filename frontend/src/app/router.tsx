@@ -21,7 +21,7 @@ const ProfilePage       = lazy(() => import('../pages/ProfilePage').then(m => ({
 const WeeklyReviewPage  = lazy(() => import('../pages/WeeklyReviewPage').then(m => ({ default: m.WeeklyReviewPage })))
 
 const PageFallback = () => (
-  <div className="flex h-screen items-center justify-center text-zinc-500">Laden…</div>
+  <div className="flex h-dvh items-center justify-center text-zinc-500">Laden…</div>
 )
 
 function RequireAuth({ children }: { children: React.ReactNode }) {

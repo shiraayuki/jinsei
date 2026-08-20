@@ -42,7 +42,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-zinc-950 px-6">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-gray-50 dark:bg-zinc-950 px-6">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-indigo-400">Jinsei</h1>

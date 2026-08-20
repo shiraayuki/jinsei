@@ -12,7 +12,11 @@ export function PageHeader({ title, back, action }: Props) {
   return (
     <header className="sticky top-0 z-10 flex h-14 items-center gap-3 bg-white/80 dark:bg-zinc-950/80 px-4 backdrop-blur-xl">
       {back && (
-        <button onClick={() => navigate(-1)} className="text-gray-500 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors">
+        <button
+          onClick={() => navigate(-1)}
+          aria-label="Zurück"
+          className="-m-2 flex h-10 w-10 items-center justify-center text-gray-500 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
+        >
           <ArrowLeft size={20} strokeWidth={2} />
         </button>
       )}

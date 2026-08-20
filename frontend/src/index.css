@@ -5,6 +5,17 @@
 
 :root {
   --bottom-nav-height: 64px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  /* Bottom nav plus the home-indicator strip underneath it. */
+  --bottom-nav-total: calc(var(--bottom-nav-height) + var(--safe-bottom));
+}
+
+html {
+  /* Stop iOS from inflating text when the device is rotated. */
+  -webkit-text-size-adjust: 100%;
 }
 
 * {
@@ -28,7 +39,20 @@ h1, h2, h3, .font-display {
 }
 
 .pb-safe {
-  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  padding-bottom: max(1rem, var(--safe-bottom));
+}
+
+/*
+ * iOS Safari zooms the whole page when a field is focused whose text renders
+ * below 16px, and never zooms back out. Several forms use text-sm inputs, so
+ * force the minimum on touch devices.
+ */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 /* Glassmorphism card */

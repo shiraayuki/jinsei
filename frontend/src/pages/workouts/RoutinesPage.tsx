@@ -148,7 +148,7 @@ export function RoutinesPage() {
           </p>
         )}
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
           {routines?.map(r => (
             <div
               key={r.id}
@@ -158,7 +158,7 @@ export function RoutinesPage() {
                 <p className="font-semibold text-gray-800 dark:text-zinc-100 leading-snug">{r.name}</p>
                 <p className="mt-1 text-sm text-gray-400 dark:text-zinc-500">{r.exercises.length} Übungen</p>
               </div>
-              <div className="mt-3 flex items-center gap-2">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
                 <Link
                   to={`/workouts/session?routine=${r.id}`}
                   className="flex items-center gap-1 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-indigo-500 transition-colors"
@@ -168,7 +168,7 @@ export function RoutinesPage() {
                 </Link>
                 <button
                   onClick={() => openEdit(r)}
-                  className="flex items-center gap-1 text-xs text-gray-400 dark:text-zinc-500 hover:text-indigo-400 transition-colors"
+                  className="flex items-center gap-1 py-1.5 text-xs text-gray-400 dark:text-zinc-500 hover:text-indigo-400 transition-colors"
                 >
                   <Pencil size={13} />
                   Bearbeiten
@@ -176,7 +176,8 @@ export function RoutinesPage() {
                 <button
                   onClick={() => deleteMut.mutate(r.id)}
                   disabled={deleteMut.isPending}
-                  className="ml-auto text-gray-300 dark:text-zinc-700 hover:text-red-400 transition-colors"
+                  aria-label="Routine löschen"
+                  className="ml-auto flex h-9 w-9 items-center justify-center text-gray-300 dark:text-zinc-700 hover:text-red-400 transition-colors"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -193,8 +194,11 @@ export function RoutinesPage() {
           onClick={tryClose}
         >
           <div
-            className="flex flex-col rounded-t-2xl bg-white dark:bg-zinc-900 mb-16"
-            style={{ maxHeight: 'calc(90vh - 4rem)' }}
+            className="flex flex-col rounded-t-2xl bg-white dark:bg-zinc-900"
+            style={{
+              maxHeight: 'calc(90dvh - var(--bottom-nav-total))',
+              marginBottom: 'var(--bottom-nav-total)',
+            }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-zinc-800 flex-shrink-0">
@@ -274,8 +278,11 @@ export function RoutinesPage() {
           onClick={closePicker}
         >
           <div
-            className="flex flex-col rounded-t-2xl bg-white dark:bg-zinc-900 mb-16"
-            style={{ maxHeight: 'calc(85vh - 4rem)' }}
+            className="flex flex-col rounded-t-2xl bg-white dark:bg-zinc-900"
+            style={{
+              maxHeight: 'calc(85dvh - var(--bottom-nav-total))',
+              marginBottom: 'var(--bottom-nav-total)',
+            }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-zinc-800 flex-shrink-0">
