@@ -141,7 +141,7 @@ export function SleepPage() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="min-w-0">
             <label className="mb-1 flex items-center gap-1 text-xs text-gray-400 dark:text-zinc-500">
               <Moon size={11} /> {t('sleep.bedtime')}

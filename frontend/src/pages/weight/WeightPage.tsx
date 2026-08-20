@@ -130,7 +130,7 @@ export function WeightPage() {
 
       <form onSubmit={handleSubmit} className="rounded-2xl bg-white dark:bg-zinc-900 p-4 space-y-3">
         <h2 className="text-sm font-semibold text-gray-600 dark:text-zinc-300">{t('weight.log')}</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="min-w-0">
             <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">{t('common.date')}</label>
             <input

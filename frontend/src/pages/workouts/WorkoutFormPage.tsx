@@ -183,7 +183,7 @@ export function WorkoutFormPage() {
 
       <div className="space-y-4 p-4">
         {/* Meta */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Input label="Datum" type="date" value={date} onChange={e => setDate(e.target.value)} />
           <Input
             label="Dauer (min)"
