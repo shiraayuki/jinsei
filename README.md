@@ -98,6 +98,9 @@ sudo tailscale serve --bg --https 9443 http://127.0.0.1:8092
 Reachable at `https://<host>.<tailnet>.ts.net:9443` from any device in the tailnet.
 Remove with `sudo tailscale serve --https 9443 off`.
 
+Registration is disabled in prod via `Auth__AllowRegistration=false` in the compose
+file. Set it to `true`, restart the backend, create the account, then set it back.
+
 ## Project structure
 
 ```

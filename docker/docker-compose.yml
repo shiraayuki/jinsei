@@ -16,6 +16,8 @@ services:
     environment:
       ConnectionStrings__Default: Host=postgres;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       ASPNETCORE_ENVIRONMENT: Production
+      # Single-user deployment: flip to true only while creating an account.
+      Auth__AllowRegistration: "false"
     volumes:
       - dataprotection_keys:/root/.aspnet/DataProtection-Keys
     depends_on:
