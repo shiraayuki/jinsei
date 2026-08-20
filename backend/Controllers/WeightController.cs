@@ -33,26 +33,24 @@ public class WeightController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Upsert([FromBody] UpsertWeightRequest req)
     {
+        if (req.WeightKg is null && req.WaistCm is null)
+            return BadRequest("Provide a weight, a waist measurement, or both.");
+        if (req.WeightKg is < 20 or > 400) return BadRequest("Weight out of range.");
+        if (req.WaistCm is < 30 or > 250) return BadRequest("Waist out of range.");
+
         var existing = await _db.WeightEntries
             .FirstOrDefaultAsync(e => e.UserId == UserId && e.Date == req.Date);
 
-        if (existing is not null)
+        if (existing is null)
         {
-            existing.WeightKg = req.WeightKg;
-            existing.Notes = req.Notes;
-            existing.LoggedAt = DateTimeOffset.UtcNow;
+            existing = new WeightEntry { Id = Guid.NewGuid(), UserId = UserId, Date = req.Date };
+            _db.WeightEntries.Add(existing);
         }
-        else
-        {
-            _db.WeightEntries.Add(new WeightEntry
-            {
-                Id = Guid.NewGuid(),
-                UserId = UserId,
-                Date = req.Date,
-                WeightKg = req.WeightKg,
-                Notes = req.Notes,
-            });
-        }
+
+        existing.WeightKg = req.WeightKg;
+        existing.WaistCm = req.WaistCm;
+        existing.Notes = req.Notes;
+        existing.LoggedAt = DateTimeOffset.UtcNow;
 
         await _db.SaveChangesAsync();
         return NoContent();
@@ -73,9 +71,10 @@ public class WeightController : ControllerBase
         e.Id,
         Date = e.Date.ToString("yyyy-MM-dd"),
         e.WeightKg,
+        e.WaistCm,
         e.Notes,
         e.LoggedAt,
     };
 }
 
-public record UpsertWeightRequest(DateOnly Date, decimal WeightKg, string? Notes);
+public record UpsertWeightRequest(DateOnly Date, decimal? WeightKg, decimal? WaistCm, string? Notes);

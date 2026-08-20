@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { weightApi } from './api'
+import { weightApi, type WeightInput } from './api'
 
 const KEY = 'weight'
 
@@ -10,8 +10,7 @@ export function useWeight(days = 90) {
 export function useUpsertWeight() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: { date: string; weightKg: number; notes?: string }) =>
-      weightApi.upsert(data),
+    mutationFn: (data: WeightInput) => weightApi.upsert(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   })
 }

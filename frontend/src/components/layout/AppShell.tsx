@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutDashboard, CheckSquare, CalendarDays, Dumbbell } from 'lucide-react'
+import { LayoutDashboard, CheckSquare, CalendarDays, Dumbbell, LineChart } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 
@@ -13,6 +13,7 @@ export function AppShell() {
     { to: '/habits', icon: CheckSquare, label: t('nav.habits') },
     { to: '/today', icon: CalendarDays, label: t('nav.today') },
     { to: '/workouts', icon: Dumbbell, label: t('nav.workouts') },
+    { to: '/metrics', icon: LineChart, label: t('nav.metrics') },
   ]
   return (
     <div className="flex h-dvh flex-col app-bg">
@@ -37,7 +38,7 @@ export function AppShell() {
         }}
       >
         <div
-          className="mx-auto grid max-w-lg grid-cols-4"
+          className="mx-auto grid max-w-lg grid-cols-5"
           style={{ minHeight: 'var(--bottom-nav-height)' }}
         >
           {NAV.map(({ to, icon: Icon, label }) => (

@@ -38,6 +38,10 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .HasIndex(x => new { x.UserId, x.Date })
             .IsUnique();
 
+        builder.Entity<WeightEntry>()
+            .HasIndex(x => new { x.UserId, x.Date })
+            .IsUnique();
+
         // A workout is identified by the provider's id, which makes a re-sync
         // an update rather than a duplicate.
         builder.Entity<WorkoutLog>()

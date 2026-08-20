@@ -12,7 +12,7 @@ const WorkoutsListPage  = lazy(() => import('../pages/workouts/WorkoutsListPage'
 const WorkoutDetailPage = lazy(() => import('../pages/workouts/WorkoutDetailPage').then(m => ({ default: m.WorkoutDetailPage })))
 const TodayPage         = lazy(() => import('../pages/today/TodayPage').then(m => ({ default: m.TodayPage })))
 const ProfilePage       = lazy(() => import('../pages/ProfilePage').then(m => ({ default: m.ProfilePage })))
-const WeeklyReviewPage  = lazy(() => import('../pages/WeeklyReviewPage').then(m => ({ default: m.WeeklyReviewPage })))
+const MetricsPage       = lazy(() => import('../pages/metrics/MetricsPage').then(m => ({ default: m.MetricsPage })))
 
 const PageFallback = () => (
   <div className="flex h-dvh items-center justify-center text-zinc-500">Laden…</div>
@@ -53,7 +53,8 @@ export function AppRouter() {
           <Route path="/nutrition" element={<Navigate to="/today" replace />} />
           <Route path="/weight" element={<Navigate to="/today" replace />} />
           <Route path="/sleep" element={<Navigate to="/today" replace />} />
-          <Route path="/review" element={<WeeklyReviewPage />} />
+          <Route path="/metrics" element={<MetricsPage />} />
+          <Route path="/review" element={<Navigate to="/metrics" replace />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

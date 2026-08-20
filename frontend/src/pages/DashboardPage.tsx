@@ -1,21 +1,15 @@
 import { Link } from 'react-router-dom'
-import { Flame, Check, Dumbbell, ChevronRight, Moon, Scale, UserCircle } from 'lucide-react'
+import { Apple, Coffee, Droplet, Flame, Check, Dumbbell, ChevronRight, Footprints, Moon, Scale, UserCircle } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useAuth } from '../app/auth/AuthProvider'
 import { useHabits, useLogEntry } from '../features/habits/hooks'
 import { useWorkouts } from '../features/workouts/hooks'
 import { useSleep } from '../features/sleep/hooks'
 import { useWeight } from '../features/weight/hooks'
+import { useNutritionDay, useUpsertNutrition } from '../features/nutrition/hooks'
+import { useActivityDay } from '../features/activity/hooks'
 import { useTranslation } from 'react-i18next'
 import { dateLocale } from '../i18n'
-
-function getWeekStart(): string {
-  const today = new Date()
-  const daysBack = (today.getDay() + 6) % 7
-  const monday = new Date(today)
-  monday.setDate(today.getDate() - daysBack)
-  return monday.toISOString().slice(0, 10)
-}
 
 function formatDuration(minutes: number) {
   const h = Math.floor(minutes / 60)
@@ -25,6 +19,10 @@ function formatDuration(minutes: number) {
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10)
+}
+
+function nowHhMm() {
+  return new Date().toTimeString().slice(0, 5)
 }
 
 const fadeUp = {
@@ -56,7 +54,10 @@ export function DashboardPage() {
   const { data: habits } = useHabits()
   const { data: workouts } = useWorkouts()
   const { data: sleepEntries = [] } = useSleep(7)
-  const { data: weightEntries = [] } = useWeight(14)
+  const { data: weightEntries = [] } = useWeight(30)
+  const { data: todayNutrition } = useNutritionDay(todayIso())
+  const { data: todayActivity } = useActivityDay(todayIso())
+  const quickAdd = useUpsertNutrition()
   const log = useLogEntry()
 
   const today = todayIso()
@@ -65,20 +66,33 @@ export function DashboardPage() {
   const totalHabits = activeHabits.length
   const lastWorkout = workouts?.[0]
 
-  const weekStart = getWeekStart()
-  const workoutsThisWeek = workouts?.filter(w => w.date >= weekStart).length ?? 0
   // Prefer the measured sleep; fall back to time in bed when only that was logged.
-  const sleepMinutes = sleepEntries
-    .map(e => e.actualSleepMinutes ?? e.timeInBedMinutes)
-    .filter((m): m is number => m != null)
-  const avgSleepMinutes = sleepMinutes.length > 0
-    ? Math.round(sleepMinutes.reduce((s, m) => s + m, 0) / sleepMinutes.length)
+  const lastNight = sleepEntries[0]
+  const lastNightMinutes = lastNight
+    ? lastNight.actualSleepMinutes ?? lastNight.timeInBedMinutes
     : null
-  const latestWeight = weightEntries[0]
-  const prevWeight = weightEntries.find((_e, i) => i > 0)
-  const weightDelta = latestWeight && prevWeight
+
+  const weighed = weightEntries.filter(e => e.weightKg != null)
+  const latestWeight = weighed[0]
+  const prevWeight = weighed[1]
+  const weightDelta = latestWeight?.weightKg != null && prevWeight?.weightKg != null
     ? +(latestWeight.weightKg - prevWeight.weightKg).toFixed(1)
     : null
+
+  /** Writes the whole day back, since the endpoint replaces the row it is given. */
+  function addDrink(patch: { waterL?: number; coffeeMl?: number; lastCoffee?: string }) {
+    quickAdd.mutate({
+      date: todayIso(),
+      kcal: todayNutrition?.kcal ?? null,
+      proteinG: todayNutrition?.proteinG ?? null,
+      carbsG: todayNutrition?.carbsG ?? null,
+      fatG: todayNutrition?.fatG ?? null,
+      waterL: patch.waterL ?? todayNutrition?.waterL ?? null,
+      coffeeMl: patch.coffeeMl ?? todayNutrition?.coffeeMl ?? null,
+      lastCoffee: patch.lastCoffee ?? todayNutrition?.lastCoffee ?? null,
+      notes: todayNutrition?.notes ?? null,
+    })
+  }
 
 
   const pct = totalHabits > 0 ? doneToday / totalHabits : 0
@@ -208,56 +222,102 @@ export function DashboardPage() {
           </motion.div>
         )}
 
-        {/* Weekly summary */}
+        {/* What the day looks like so far */}
         <motion.div variants={fadeUp} transition={{ duration: 0.35 }}>
           <div className="card rounded-2xl p-4 shadow-xl shadow-black/30">
-            <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">{t('dashboard.thisWeek')}</p>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">{t('dashboard.todaySoFar')}</p>
+              <Link to="/today" className="flex items-center gap-1 text-[11px] text-zinc-600 hover:text-indigo-400 transition-colors">
+                {t('dashboard.logNow')} <ChevronRight size={11} />
+              </Link>
+            </div>
+
             <div className="grid grid-cols-2 gap-2">
-              <Link to="/workouts" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
-                <Dumbbell size={15} className="shrink-0 text-indigo-400" strokeWidth={1.8} />
-                <div>
-                  <p className="text-base font-bold text-zinc-100 leading-none">{workoutsThisWeek}</p>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">{t('dashboard.workouts')}</p>
+              <Link to="/today" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
+                <Apple size={15} className="shrink-0 text-emerald-400" strokeWidth={1.8} />
+                <div className="min-w-0">
+                  <p className="truncate text-base font-bold text-zinc-100 leading-none">
+                    {todayNutrition?.kcal != null ? todayNutrition.kcal.toLocaleString(dateLocale()) : '–'}
+                  </p>
+                  <p className="mt-0.5 truncate text-[10px] text-zinc-500">
+                    {todayNutrition?.proteinG != null
+                      ? t('dashboard.kcalWithProtein', { protein: todayNutrition.proteinG })
+                      : 'kcal'}
+                  </p>
                 </div>
               </Link>
 
-              <Link to="/habits" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
-                <Check size={15} className="shrink-0 text-emerald-400" strokeWidth={2.5} />
-                <div>
-                  <p className="text-base font-bold text-zinc-100 leading-none">
-                    {totalHabits > 0 ? `${doneToday}/${totalHabits}` : '–'}
+              <Link to="/today" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
+                <Footprints size={15} className="shrink-0 text-cyan-400" strokeWidth={1.8} />
+                <div className="min-w-0">
+                  <p className="truncate text-base font-bold text-zinc-100 leading-none">
+                    {todayActivity?.steps != null ? todayActivity.steps.toLocaleString(dateLocale()) : '–'}
                   </p>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">{t('dashboard.habitsToday')}</p>
+                  <p className="mt-0.5 truncate text-[10px] text-zinc-500">{t('activity.stepsUnit')}</p>
                 </div>
               </Link>
 
               <Link to="/today" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
                 <Moon size={15} className="shrink-0 text-violet-400" strokeWidth={1.8} />
-                <div>
-                  <p className="text-base font-bold text-zinc-100 leading-none">
-                    {avgSleepMinutes != null ? formatDuration(avgSleepMinutes) : '–'}
+                <div className="min-w-0">
+                  <p className="truncate text-base font-bold text-zinc-100 leading-none">
+                    {lastNightMinutes != null ? formatDuration(lastNightMinutes) : '–'}
                   </p>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">{t('dashboard.avgSleep')}</p>
+                  <p className="mt-0.5 truncate text-[10px] text-zinc-500">{t('dashboard.lastNight')}</p>
                 </div>
               </Link>
 
               <Link to="/today" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
                 <Scale size={15} className="shrink-0 text-sky-400" strokeWidth={1.8} />
-                <div>
-                  <p className="text-base font-bold text-zinc-100 leading-none">
-                    {latestWeight ? `${latestWeight.weightKg} kg` : '–'}
+                <div className="min-w-0">
+                  <p className="truncate text-base font-bold text-zinc-100 leading-none">
+                    {latestWeight?.weightKg != null ? `${latestWeight.weightKg} kg` : '–'}
                   </p>
-                  {weightDelta != null && (
-                    <p className={`text-[10px] mt-0.5 ${weightDelta > 0 ? 'text-rose-400' : weightDelta < 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                  {weightDelta != null ? (
+                    <p className={`mt-0.5 text-[10px] ${weightDelta > 0 ? 'text-rose-400' : weightDelta < 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
                       {weightDelta > 0 ? '+' : ''}{weightDelta} kg
                     </p>
+                  ) : (
+                    <p className="mt-0.5 truncate text-[10px] text-zinc-500">{t('dashboard.weight')}</p>
                   )}
-                  {weightDelta == null && <p className="text-[10px] text-zinc-500 mt-0.5">{t('dashboard.weight')}</p>}
                 </div>
               </Link>
             </div>
-            <Link to="/review" className="mt-2 flex items-center justify-end gap-1 text-[11px] text-zinc-600 hover:text-indigo-400 transition-colors">
-              {t('dashboard.weeklyReview')} <ChevronRight size={11} />
+
+            {/* Water and coffee are the two things logged repeatedly during the
+                day, so they get a one-tap path that saves straight away. */}
+            <div className="mt-2 flex items-center gap-2">
+              <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-xl bg-zinc-800/50 px-3 py-2">
+                <Droplet size={14} className="shrink-0 text-blue-400" strokeWidth={1.8} />
+                <span className="text-sm font-semibold text-zinc-100">
+                  {(todayNutrition?.waterL ?? 0).toLocaleString(dateLocale())}
+                </span>
+                <span className="text-[10px] text-zinc-500">L</span>
+                <button
+                  onClick={() => addDrink({ waterL: (todayNutrition?.waterL ?? 0) + 0.25 })}
+                  disabled={quickAdd.isPending}
+                  className="ml-auto rounded-lg bg-zinc-700/60 px-2 py-1 text-[11px] font-medium text-zinc-200 hover:bg-zinc-600/60 disabled:opacity-40"
+                >
+                  +0,25
+                </button>
+              </div>
+
+              <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-xl bg-zinc-800/50 px-3 py-2">
+                <Coffee size={14} className="shrink-0 text-amber-400" strokeWidth={1.8} />
+                <span className="text-sm font-semibold text-zinc-100">{todayNutrition?.coffeeMl ?? 0}</span>
+                <span className="text-[10px] text-zinc-500">ml</span>
+                <button
+                  onClick={() => addDrink({ coffeeMl: (todayNutrition?.coffeeMl ?? 0) + 200, lastCoffee: nowHhMm() })}
+                  disabled={quickAdd.isPending}
+                  className="ml-auto rounded-lg bg-zinc-700/60 px-2 py-1 text-[11px] font-medium text-zinc-200 hover:bg-zinc-600/60 disabled:opacity-40"
+                >
+                  +200
+                </button>
+              </div>
+            </div>
+
+            <Link to="/metrics" className="mt-2 flex items-center justify-end gap-1 text-[11px] text-zinc-600 hover:text-indigo-400 transition-colors">
+              {t('metrics.title')} <ChevronRight size={11} />
             </Link>
           </div>
         </motion.div>

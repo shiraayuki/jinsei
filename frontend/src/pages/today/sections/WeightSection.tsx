@@ -3,38 +3,70 @@ import { Scale } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useWeight, useUpsertWeight } from '../../../features/weight/hooks'
 import type { WeightEntry } from '../../../features/weight/api'
-import { WeightChart } from '../../../components/charts/WeightChart'
+import { MetricChart } from '../../../components/charts/MetricChart'
 import { Section, SaveButton } from './Section'
 
-function WeightForm({ date, entry }: { date: string; entry?: WeightEntry }) {
+function numOrNull(value: string): number | null {
+  if (value.trim() === '') return null
+  const n = Number(value.replace(',', '.'))
+  return Number.isFinite(n) ? n : null
+}
+
+function BodyForm({ date, entry }: { date: string; entry?: WeightEntry }) {
   const { t } = useTranslation()
   const upsert = useUpsertWeight()
 
-  const [weight, setWeight] = useState(entry ? String(entry.weightKg) : '')
+  const [weight, setWeight] = useState(entry?.weightKg == null ? '' : String(entry.weightKg))
+  const [waist, setWaist] = useState(entry?.waistCm == null ? '' : String(entry.waistCm))
   const [notes, setNotes] = useState(entry?.notes ?? '')
+
+  const weightKg = numOrNull(weight)
+  const waistCm = numOrNull(waist)
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const kg = parseFloat(weight.replace(',', '.'))
-    if (!kg || kg <= 0) return
-    upsert.mutate({ date, weightKg: kg, notes: notes || undefined })
+    if (weightKg == null && waistCm == null) return
+    upsert.mutate({ date, weightKg, waistCm, notes: notes || undefined })
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="flex items-baseline gap-2 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2.5">
-        <input
-          type="number"
-          inputMode="decimal"
-          step={0.1}
-          min={20}
-          max={300}
-          placeholder="–"
-          value={weight}
-          onChange={e => setWeight(e.target.value)}
-          className="w-full min-w-0 bg-transparent text-base font-semibold text-gray-900 dark:text-white outline-none"
-        />
-        <span className="text-xs text-gray-400 dark:text-zinc-500">kg</span>
+      <div className="grid grid-cols-2 gap-2">
+        <label className="flex min-w-0 flex-col gap-1">
+          <span className="text-xs text-gray-400 dark:text-zinc-500">{t('weight.weightKg')}</span>
+          <div className="flex items-baseline gap-1 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2.5">
+            <input
+              type="number"
+              inputMode="decimal"
+              step={0.1}
+              min={20}
+              max={400}
+              placeholder="–"
+              value={weight}
+              onChange={e => setWeight(e.target.value)}
+              className="w-full min-w-0 bg-transparent text-base font-semibold text-gray-900 dark:text-white outline-none"
+            />
+            <span className="text-xs text-gray-400 dark:text-zinc-500">kg</span>
+          </div>
+        </label>
+
+        <label className="flex min-w-0 flex-col gap-1">
+          <span className="text-xs text-gray-400 dark:text-zinc-500">{t('weight.waistCm')}</span>
+          <div className="flex items-baseline gap-1 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2.5">
+            <input
+              type="number"
+              inputMode="decimal"
+              step={0.5}
+              min={30}
+              max={250}
+              placeholder="–"
+              value={waist}
+              onChange={e => setWaist(e.target.value)}
+              className="w-full min-w-0 bg-transparent text-base font-semibold text-gray-900 dark:text-white outline-none"
+            />
+            <span className="text-xs text-gray-400 dark:text-zinc-500">cm</span>
+          </div>
+        </label>
       </div>
 
       <input
@@ -45,7 +77,11 @@ function WeightForm({ date, entry }: { date: string; entry?: WeightEntry }) {
         className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
       />
 
-      <SaveButton pending={upsert.isPending} disabled={!weight} label={t('common.save')} />
+      <SaveButton
+        pending={upsert.isPending}
+        disabled={weightKg == null && waistCm == null}
+        label={t('common.save')}
+      />
     </form>
   )
 }
@@ -55,17 +91,27 @@ export function WeightSection({ date }: { date: string }) {
   const { data: entries = [], isLoading } = useWeight(180)
   const entry = entries.find(e => e.date === date)
 
+  const summary = [
+    entry?.weightKg != null ? `${entry.weightKg} kg` : null,
+    entry?.waistCm != null ? `${entry.waistCm} cm` : null,
+  ].filter(Boolean).join(' · ')
+
+  const chronological = [...entries].sort((a, b) => a.date.localeCompare(b.date))
+
   return (
-    <Section
-      title={t('weight.title')}
-      icon={<Scale size={15} />}
-      summary={entry ? `${entry.weightKg} kg` : undefined}
-    >
+    <Section title={t('weight.title')} icon={<Scale size={15} />} summary={summary || undefined}>
       <div className="space-y-3">
         {isLoading
           ? <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
-          : <WeightForm key={`${date}:${entry?.id ?? 'new'}`} date={date} entry={entry} />}
-        <WeightChart entries={entries} />
+          : <BodyForm key={`${date}:${entry?.id ?? 'new'}`} date={date} entry={entry} />}
+        {chronological.length > 1 && (
+          <MetricChart
+            series={[
+              { label: t('weight.weightKg'), color: '#6366f1', unit: ' kg', points: chronological.map(e => ({ date: e.date, value: e.weightKg })) },
+              { label: t('weight.waistCm'), color: '#f59e0b', unit: ' cm', points: chronological.map(e => ({ date: e.date, value: e.waistCm })) },
+            ]}
+          />
+        )}
       </div>
     </Section>
   )
