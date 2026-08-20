@@ -142,8 +142,15 @@ export default {
     energyShort: 'Energy',
     notePlaceholder: 'How was the day? (optional)',
   },
+  outbox: {
+    pending_one: '{{count}} entry waiting for a connection',
+    pending_other: '{{count}} entries waiting for a connection',
+    retry: 'Send now',
+    queued: 'Saved offline — it will be sent once you are back online.',
+  },
   today: {
     exportTitle: 'Day as text',
+    exportWeekTitle: 'Week as text',
     copy: 'Copy',
     copied: 'Copied',
     copyFailed: 'Clipboard unavailable — tap the text and copy it by hand.',
@@ -170,6 +177,15 @@ export default {
     coffee: 'Coffee',
     lastCoffee: 'Last coffee',
     reset: 'Reset',
+  },
+  goals: {
+    title: 'Daily goals',
+    hint: 'Leave empty for no target.',
+    kcal: 'Calories',
+    protein: 'Protein',
+    water: 'Water',
+    steps: 'Steps',
+    of: 'of {{goal}}',
   },
   profile: {
     title: 'Profile',

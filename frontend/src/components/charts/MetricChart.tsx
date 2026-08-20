@@ -6,6 +6,11 @@ export interface Series {
   /** Points in chronological order; gaps are allowed and are skipped. */
   points: { date: string; value: number | null }[]
   unit?: string
+  /**
+   * Draw a trailing average over this many readings alongside the raw line.
+   * Daily weigh-ins swing by more than the trend they are meant to show.
+   */
+  averageOver?: number
 }
 
 function formatDate(iso: string) {
@@ -32,6 +37,16 @@ export function MetricChart({ series, height = 90 }: { series: Series[]; height?
     const max = Math.max(...values)
     const range = max - min || 1
 
+    // The average walks over the readings that exist, ignoring the gaps, so a
+    // missed day does not drag the line.
+    const seen: number[] = []
+    const averaged = s.points.map(p => {
+      if (p.value == null) return null
+      seen.push(p.value)
+      const window = seen.slice(-(s.averageOver ?? 1))
+      return window.reduce((sum, v) => sum + v, 0) / window.length
+    })
+
     const coords = s.points
       .map((p, i) => {
         if (p.value == null) return null
@@ -41,7 +56,19 @@ export function MetricChart({ series, height = 90 }: { series: Series[]; height?
       })
       .filter((c): c is { x: number; y: number } => c != null)
 
-    return { ...s, coords, min, max, last: values[values.length - 1] }
+    const averageCoords = s.averageOver
+      ? s.points
+          .map((_point, i) => {
+            const value = averaged[i]
+            if (value == null) return null
+            const x = PAD + (s.points.length > 1 ? (i / (s.points.length - 1)) * (W - PAD * 2) : (W - PAD * 2) / 2)
+            const y = PAD + ((max - value) / range) * (H - PAD * 2)
+            return { x, y }
+          })
+          .filter((c): c is { x: number; y: number } => c != null)
+      : []
+
+    return { ...s, coords, averageCoords, min, max, last: values[values.length - 1] }
   })
 
   return (
@@ -53,10 +80,21 @@ export function MetricChart({ series, height = 90 }: { series: Series[]; height?
               points={p.coords.map(c => `${c.x},${c.y}`).join(' ')}
               fill="none"
               stroke={p.color}
-              strokeWidth="2"
+              strokeWidth={p.averageCoords.length > 0 ? 1.5 : 2}
+              strokeOpacity={p.averageCoords.length > 0 ? 0.3 : 1}
               strokeLinecap="round"
               strokeLinejoin="round"
             />
+            {p.averageCoords.length > 0 && (
+              <polyline
+                points={p.averageCoords.map(c => `${c.x},${c.y}`).join(' ')}
+                fill="none"
+                stroke={p.color}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
             {p.coords.map((c, i) => (
               <circle key={i} cx={c.x} cy={c.y} r="2" fill={p.color} fillOpacity="0.5" />
             ))}

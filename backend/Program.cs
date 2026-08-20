@@ -51,6 +51,8 @@ if (builder.Environment.IsDevelopment())
 
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<HevyClient>();
+builder.Services.AddScoped<WorkoutSyncService>();
+builder.Services.AddHostedService<HevySyncScheduler>();
 builder.Services.AddControllers();
 
 var app = builder.Build();

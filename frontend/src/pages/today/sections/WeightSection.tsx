@@ -107,7 +107,7 @@ export function WeightSection({ date }: { date: string }) {
         {chronological.length > 1 && (
           <MetricChart
             series={[
-              { label: t('weight.weightKg'), color: '#6366f1', unit: ' kg', points: chronological.map(e => ({ date: e.date, value: e.weightKg })) },
+              { label: t('weight.weightKg'), color: '#6366f1', unit: ' kg', averageOver: 7, points: chronological.map(e => ({ date: e.date, value: e.weightKg })) },
               { label: t('weight.waistCm'), color: '#f59e0b', unit: ' cm', points: chronological.map(e => ({ date: e.date, value: e.waistCm })) },
             ]}
           />

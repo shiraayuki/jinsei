@@ -1,3 +1,5 @@
+import { enqueue } from './offlineQueue'
+
 const BASE = '/api'
 
 class ApiError extends Error {
@@ -8,19 +10,41 @@ class ApiError extends Error {
   }
 }
 
+/** Thrown for a write that was parked in the outbox instead of sent. */
+class QueuedOfflineError extends Error {
+  constructor() {
+    super('offline')
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
-    ...init,
-  })
+  const method = init?.method ?? 'GET'
+
+  let res: Response
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', ...init?.headers },
+      ...init,
+    })
+  } catch (cause) {
+    // The request never reached the server. Writes are upserts, so parking one
+    // and replaying it later lands the same row; a read has nothing to park.
+    if (method !== 'GET') {
+      enqueue(`${BASE}${path}`, method, init?.body as string | undefined)
+      throw new QueuedOfflineError()
+    }
+    throw cause
+  }
 
   if (!res.ok) {
     let message = res.statusText
     try {
       const body = await res.json()
       message = Array.isArray(body) ? body.join(', ') : String(body)
-    } catch {}
+    } catch {
+      // Not every error carries a JSON body; the status text will do.
+    }
     throw new ApiError(res.status, message)
   }
 
@@ -37,4 +61,4 @@ export const api = {
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 }
 
-export { ApiError }
+export { ApiError, QueuedOfflineError }

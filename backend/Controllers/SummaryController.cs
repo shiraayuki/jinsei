@@ -48,6 +48,86 @@ public class SummaryController : ControllerBase
         return Content(text, "text/plain; charset=utf-8");
     }
 
+    /// <summary>
+    /// A whole week as one text: a line per day for the numbers that vary daily,
+    /// then the averages. Meant to be pasted somewhere as a single block rather
+    /// than seven separate day exports.
+    /// </summary>
+    [HttpGet("week/{date}")]
+    public async Task<IActionResult> Week(string date)
+    {
+        if (!DateOnly.TryParse(date, out var anyDay)) return BadRequest("Invalid date.");
+
+        // Weeks run Monday to Sunday, whichever day was asked for.
+        var monday = anyDay.AddDays(-(((int)anyDay.DayOfWeek + 6) % 7));
+        var sunday = monday.AddDays(6);
+
+        var weight = await _db.WeightEntries.Where(e => e.UserId == UserId && e.Date >= monday && e.Date <= sunday).ToListAsync();
+        var food = await _db.NutritionEntries.Where(e => e.UserId == UserId && e.Date >= monday && e.Date <= sunday).ToListAsync();
+        var move = await _db.ActivityEntries.Where(e => e.UserId == UserId && e.Date >= monday && e.Date <= sunday).ToListAsync();
+        var sleep = await _db.SleepEntries.Where(e => e.UserId == UserId && e.Date >= monday && e.Date <= sunday).ToListAsync();
+        var feel = await _db.WellbeingEntries.Where(e => e.UserId == UserId && e.Date >= monday && e.Date <= sunday).ToListAsync();
+        var workouts = await _db.WorkoutLogs.Where(w => w.UserId == UserId && w.Date >= monday && w.Date <= sunday).ToListAsync();
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"Wochenlog {monday.ToString("dd.MM.", De)}–{sunday.ToString("dd.MM.yyyy", De)}");
+
+        for (var day = monday; day <= sunday; day = day.AddDays(1))
+        {
+            var w = weight.FirstOrDefault(e => e.Date == day);
+            var n = food.FirstOrDefault(e => e.Date == day);
+            var a = move.FirstOrDefault(e => e.Date == day);
+            var sl = sleep.FirstOrDefault(e => e.Date == day);
+            var f = feel.FirstOrDefault(e => e.Date == day);
+            var training = workouts.Where(x => x.Date == day).Select(x => x.Title).ToList();
+
+            var parts = new[]
+            {
+                w?.WeightKg is decimal kg ? $"{Num(kg)} kg" : null,
+                n?.Kcal is int kcal ? $"{kcal} kcal" : null,
+                n?.ProteinG is int p ? $"{p} g P" : null,
+                a?.Steps is int steps ? $"{Thousands(steps)} Schritte" : null,
+                sl?.ActualSleepMinutes is int asleep ? $"{Hm(asleep)} Schlaf" : null,
+                sl?.Quality is int q ? $"{q} %" : null,
+                f?.Energy is int energy ? $"Energie {energy}/5" : null,
+                training.Count > 0 ? string.Join(" + ", training) : null,
+            }.OfType<string>().ToList();
+
+            sb.AppendLine();
+            sb.AppendLine($"{De.DateTimeFormat.GetAbbreviatedDayName(day.DayOfWeek)} {day.ToString("dd.MM.", De)}");
+            sb.AppendLine(parts.Count > 0 ? "  " + string.Join(" · ", parts) : "  —");
+        }
+
+        string? Avg<T>(IEnumerable<T> source, Func<T, decimal?> pick, string unit, int digits = 0)
+        {
+            var values = source.Select(pick).OfType<decimal>().ToList();
+            if (values.Count == 0) return null;
+            var mean = Math.Round(values.Average(), digits);
+            return $"{mean.ToString(digits > 0 ? "0.#" : "0", De)}{unit}";
+        }
+
+        var averages = new[]
+        {
+            Avg(food, e => e.Kcal, " kcal") is string k ? $"Kalorien: {k}" : null,
+            Avg(food, e => e.ProteinG, " g") is string p2 ? $"Protein: {p2}" : null,
+            Avg(move, e => e.Steps, "") is string st ? $"Schritte: {st}" : null,
+            sleep.Select(e => e.ActualSleepMinutes ?? e.TimeInBedMinutes).OfType<int>().ToList() is { Count: > 0 } mins
+                ? $"Schlaf: {Hm((int)Math.Round(mins.Average()))}"
+                : null,
+            Avg(sleep, e => e.Quality, " %") is string q2 ? $"Schlafqualität: {q2}" : null,
+            Avg(weight, e => e.WeightKg, " kg", 1) is string w2 ? $"Gewicht: {w2}" : null,
+        }.OfType<string>().ToList();
+
+        sb.AppendLine();
+        sb.AppendLine("Schnitt");
+        foreach (var line in averages) sb.AppendLine("  " + line);
+        sb.AppendLine($"  Training: {workouts.Count} Einheiten · {workouts.Sum(x => x.SetCount)} Sätze"
+            + $" · {Thousands((int)Math.Round(workouts.Sum(x => x.VolumeKg)))} kg");
+        sb.AppendLine($"  Cardio: {move.Count(x => x.Cardio == true)} Tage");
+
+        return Content(sb.ToString().TrimEnd() + "\n", "text/plain; charset=utf-8");
+    }
+
     private static string Num(decimal value) =>
         value == Math.Truncate(value)
             ? ((int)value).ToString(De)

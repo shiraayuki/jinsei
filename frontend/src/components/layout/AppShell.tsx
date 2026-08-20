@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { LayoutDashboard, CheckSquare, CalendarDays, Dumbbell, LineChart } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
+import { OutboxBanner } from './OutboxBanner'
 
 export function AppShell() {
   const { t } = useTranslation()
@@ -24,6 +25,7 @@ export function AppShell() {
           paddingBottom: 'var(--bottom-nav-total)',
         }}
       >
+        <OutboxBanner />
         <Outlet />
       </main>
 

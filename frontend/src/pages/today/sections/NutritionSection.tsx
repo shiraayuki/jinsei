@@ -5,6 +5,8 @@ import { dateLocale } from '../../../i18n'
 import { useNutritionDay, useUpsertNutrition } from '../../../features/nutrition/hooks'
 import type { NutritionEntry } from '../../../features/nutrition/api'
 import { Section, SaveButton } from './Section'
+import { GoalBar } from '../../../components/ui/GoalBar'
+import { useAuth } from '../../../app/auth/AuthProvider'
 
 function numOrNull(value: string): number | null {
   if (value.trim() === '') return null
@@ -79,6 +81,7 @@ function Chips({ amounts, unit, onAdd, onReset }: {
 function NutritionForm({ date, entry }: { date: string; entry?: NutritionEntry }) {
   const { t } = useTranslation()
   const upsert = useUpsertNutrition()
+  const { user } = useAuth()
 
   const str = (v: number | null | undefined) => (v == null ? '' : String(v))
 
@@ -130,6 +133,9 @@ function NutritionForm({ date, entry }: { date: string; entry?: NutritionEntry }
           />
           <span className="text-xs text-gray-400 dark:text-zinc-500">kcal</span>
         </div>
+        <div className="mt-1.5">
+          <GoalBar value={numOrNull(kcal)} goal={user?.kcalGoal ?? null} unit=" kcal" />
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -171,6 +177,7 @@ function NutritionForm({ date, entry }: { date: string; entry?: NutritionEntry }
             <span className="text-xs text-gray-400 dark:text-zinc-500">L</span>
           </div>
         </div>
+        <GoalBar value={numOrNull(water)} goal={user?.waterGoalL ?? null} unit=" L" />
         <Chips
           amounts={[{ label: '0,25', value: 0.25 }, { label: '0,5', value: 0.5 }, { label: '1', value: 1 }]}
           unit="L"

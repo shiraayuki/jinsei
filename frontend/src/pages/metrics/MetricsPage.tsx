@@ -203,7 +203,7 @@ export function MetricsPage() {
           </div>
           <MetricChart
             series={[
-              { label: t('weight.weightKg'), color: '#6366f1', unit: ' kg', points: asc(weight).map(e => ({ date: e.date, value: e.weightKg })) },
+              { label: t('weight.weightKg'), color: '#6366f1', unit: ' kg', averageOver: 7, points: asc(weight).map(e => ({ date: e.date, value: e.weightKg })) },
               { label: t('weight.waistCm'), color: '#f59e0b', unit: ' cm', points: asc(weight).map(e => ({ date: e.date, value: e.waistCm })) },
             ]}
           />

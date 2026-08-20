@@ -8,6 +8,81 @@ import { Card } from '../components/ui/Card'
 import { LogOut, Sun, Moon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+function numOrNull(value: string): number | null {
+  if (value.trim() === '') return null
+  const n = Number(value.replace(',', '.'))
+  return Number.isFinite(n) ? n : null
+}
+
+/** Daily targets. An empty field means no target, not zero. */
+function GoalsCard() {
+  const { user, updateProfile } = useAuth()
+  const { t } = useTranslation()
+  const [kcal, setKcal] = useState(user?.kcalGoal == null ? '' : String(user.kcalGoal))
+  const [protein, setProtein] = useState(user?.proteinGoal == null ? '' : String(user.proteinGoal))
+  const [water, setWater] = useState(user?.waterGoalL == null ? '' : String(user.waterGoalL))
+  const [steps, setSteps] = useState(user?.stepsGoal == null ? '' : String(user.stepsGoal))
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  async function save() {
+    setSaving(true)
+    setSaved(false)
+    try {
+      await updateProfile({
+        kcalGoal: numOrNull(kcal),
+        proteinGoal: numOrNull(protein),
+        waterGoalL: numOrNull(water),
+        stepsGoal: numOrNull(steps),
+      })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const fields: [string, string, string, (v: string) => void, string][] = [
+    [t('goals.kcal'), 'kcal', kcal, setKcal, '10'],
+    [t('goals.protein'), 'g', protein, setProtein, '5'],
+    [t('goals.water'), 'L', water, setWater, '0.25'],
+    [t('goals.steps'), '', steps, setSteps, '500'],
+  ]
+
+  return (
+    <Card className="space-y-3 p-4">
+      <div>
+        <p className="text-sm font-medium text-gray-700 dark:text-zinc-200">{t('goals.title')}</p>
+        <p className="mt-0.5 text-xs text-gray-400 dark:text-zinc-500">{t('goals.hint')}</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        {fields.map(([label, unit, value, setValue, step]) => (
+          <label key={label} className="flex min-w-0 flex-col gap-1">
+            <span className="text-xs text-gray-400 dark:text-zinc-500">{label}</span>
+            <div className="flex items-baseline gap-1 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2.5">
+              <input
+                type="number"
+                inputMode="decimal"
+                step={step}
+                placeholder="–"
+                value={value}
+                onChange={e => setValue(e.target.value)}
+                className="w-full min-w-0 bg-transparent text-base font-semibold text-gray-900 dark:text-white outline-none"
+              />
+              {unit && <span className="text-xs text-gray-400 dark:text-zinc-500">{unit}</span>}
+            </div>
+          </label>
+        ))}
+      </div>
+
+      <Button onClick={save} loading={saving} className="w-full">
+        {saved ? t('common.saved') : t('common.save')}
+      </Button>
+    </Card>
+  )
+}
+
 export function ProfilePage() {
   const { user, logout, updateProfile } = useAuth()
   const { theme, toggle } = useTheme()
@@ -21,7 +96,7 @@ export function ProfilePage() {
     setSaving(true)
     setSaved(false)
     try {
-      await updateProfile(displayName, language)
+      await updateProfile({ displayName, language })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } finally {
@@ -34,6 +109,8 @@ export function ProfilePage() {
       <PageHeader title={t('profile.title')} />
 
       <div className="space-y-4 p-4">
+        <GoalsCard />
+
         <Card className="space-y-4 p-4">
           <div>
             <p className="text-xs text-gray-400 dark:text-zinc-500">{t('profile.email')}</p>

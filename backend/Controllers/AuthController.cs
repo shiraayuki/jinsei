@@ -77,13 +77,41 @@ public class AuthController : ControllerBase
         user.DisplayName = req.DisplayName?.Trim();
         if (req.Language is "en" or "de")
             user.Language = req.Language;
+
+        if (req.KcalGoal is < 0 or > 20000) return BadRequest("Kcal goal out of range.");
+        if (req.ProteinGoal is < 0 or > 1000) return BadRequest("Protein goal out of range.");
+        if (req.WaterGoalL is < 0 or > 30) return BadRequest("Water goal out of range.");
+        if (req.StepsGoal is < 0 or > 200000) return BadRequest("Steps goal out of range.");
+
+        // A goal is cleared by sending null, so these are assigned rather than
+        // merged.
+        user.KcalGoal = req.KcalGoal;
+        user.ProteinGoal = req.ProteinGoal;
+        user.WaterGoalL = req.WaterGoalL;
+        user.StepsGoal = req.StepsGoal;
         await _userManager.UpdateAsync(user);
         return Ok(ToDto(user));
     }
 
-    private static object ToDto(AppUser u) => new { u.Id, u.Email, u.DisplayName, u.Language };
+    private static object ToDto(AppUser u) => new
+    {
+        u.Id,
+        u.Email,
+        u.DisplayName,
+        u.Language,
+        u.KcalGoal,
+        u.ProteinGoal,
+        u.WaterGoalL,
+        u.StepsGoal,
+    };
 }
 
 public record RegisterRequest(string Email, string Password, string? DisplayName);
 public record LoginRequest(string Email, string Password);
-public record UpdateProfileRequest(string? DisplayName, string? Language);
+public record UpdateProfileRequest(
+    string? DisplayName,
+    string? Language,
+    int? KcalGoal,
+    int? ProteinGoal,
+    decimal? WaterGoalL,
+    int? StepsGoal);

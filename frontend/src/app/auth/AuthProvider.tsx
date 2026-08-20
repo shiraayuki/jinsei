@@ -2,7 +2,14 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { api } from '../../lib/api'
 import i18n from '../../i18n'
 
-export interface User {
+export interface Goals {
+  kcalGoal: number | null
+  proteinGoal: number | null
+  waterGoalL: number | null
+  stepsGoal: number | null
+}
+
+export interface User extends Goals {
   id: string
   email: string
   displayName?: string
@@ -15,7 +22,7 @@ interface AuthCtx {
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, displayName?: string) => Promise<void>
   logout: () => Promise<void>
-  updateProfile: (displayName: string, language?: string) => Promise<void>
+  updateProfile: (patch: Partial<Goals> & { displayName?: string; language?: string }) => Promise<void>
 }
 
 const Ctx = createContext<AuthCtx>(null!)
@@ -52,8 +59,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
   }
 
-  async function updateProfile(displayName: string, language?: string) {
-    const u = await api.put<User>('/auth/profile', { displayName, language })
+  /**
+   * The endpoint replaces every field it knows about, so anything not being
+   * changed has to be sent back as it stands — otherwise saving a name would
+   * clear the goals.
+   */
+  async function updateProfile(patch: Partial<Goals> & { displayName?: string; language?: string }) {
+    const u = await api.put<User>('/auth/profile', {
+      displayName: user?.displayName ?? null,
+      language: user?.language,
+      kcalGoal: user?.kcalGoal ?? null,
+      proteinGoal: user?.proteinGoal ?? null,
+      waterGoalL: user?.waterGoalL ?? null,
+      stepsGoal: user?.stepsGoal ?? null,
+      ...patch,
+    })
     applyUser(u)
   }
 

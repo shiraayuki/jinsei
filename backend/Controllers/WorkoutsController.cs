@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -12,13 +11,13 @@ public class WorkoutsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly UserManager<AppUser> _users;
-    private readonly HevyClient _hevy;
+    private readonly WorkoutSyncService _sync;
 
-    public WorkoutsController(AppDbContext db, UserManager<AppUser> users, HevyClient hevy)
+    public WorkoutsController(AppDbContext db, UserManager<AppUser> users, WorkoutSyncService sync)
     {
         _db = db;
         _users = users;
-        _hevy = hevy;
+        _sync = sync;
     }
 
     private string UserId => _users.GetUserId(User)!;
@@ -60,139 +59,24 @@ public class WorkoutsController : ControllerBase
     }
 
     [HttpGet("sync/status")]
-    public IActionResult SyncStatus() => Ok(new { configured = _hevy.IsConfigured, source = "hevy" });
+    public IActionResult SyncStatus() => Ok(new { configured = _sync.IsConfigured, source = "hevy" });
 
-    /// <summary>
-    /// Pulls recent sessions from Hevy. Rows are keyed by the provider's id, so
-    /// running this repeatedly updates what is already there rather than
-    /// duplicating it, and nothing entered elsewhere can be silently replaced.
-    /// </summary>
+    /// <summary>Pulls recent sessions from Hevy on demand.</summary>
     [HttpPost("sync")]
     public async Task<IActionResult> Sync([FromQuery] int pages = 4, CancellationToken ct = default)
     {
-        if (!_hevy.IsConfigured)
+        if (!_sync.IsConfigured)
             return StatusCode(503, new { message = "Hevy ist nicht konfiguriert." });
 
-        List<HevyWorkout> workouts;
         try
         {
-            workouts = await _hevy.FetchRecentAsync(Math.Clamp(pages, 1, 20), ct);
+            var result = await _sync.SyncAsync(UserId, pages, ct);
+            return Ok(new { added = result.Added, updated = result.Updated, total = result.Total, cardioDays = result.CardioDays });
         }
         catch (HevyException exc)
         {
             return StatusCode(502, new { message = exc.Message });
         }
-
-        var ids = workouts.Select(w => w.Id).ToList();
-        var existing = await _db.WorkoutLogs
-            .Where(w => w.UserId == UserId && w.Source == "hevy" && ids.Contains(w.ExternalId))
-            .ToDictionaryAsync(w => w.ExternalId, ct);
-
-        int added = 0, updated = 0;
-        foreach (var w in workouts)
-        {
-            if (string.IsNullOrEmpty(w.Id)) continue;
-
-            var setCount = w.Exercises.Sum(e => e.Sets.Count);
-            var volume = w.Exercises
-                .SelectMany(e => e.Sets)
-                .Sum(s => (s.WeightKg ?? 0m) * (s.Reps ?? 0));
-
-            if (existing.TryGetValue(w.Id, out var row))
-            {
-                updated++;
-            }
-            else
-            {
-                row = new WorkoutLog { Id = Guid.NewGuid(), UserId = UserId, Source = "hevy", ExternalId = w.Id };
-                _db.WorkoutLogs.Add(row);
-                added++;
-            }
-
-            row.Date = w.Date;
-            row.StartedAt = w.StartedAt;
-            row.Title = w.Title;
-            row.DurationMinutes = w.DurationMinutes;
-            row.ExerciseCount = w.Exercises.Count;
-            row.SetCount = setCount;
-            row.VolumeKg = Math.Round(volume, 1);
-            row.RawText = Render(w);
-            row.PayloadJson = JsonSerializer.Serialize(w.Exercises, PayloadOptions);
-            row.SyncedAt = DateTimeOffset.UtcNow;
-        }
-
-        var cardioDays = await FillCardioAsync(workouts, ct);
-
-        await _db.SaveChangesAsync(ct);
-        return Ok(new { added, updated, total = workouts.Count, cardioDays });
-    }
-
-    /// <summary>
-    /// Sets carrying a duration or a distance are cardio, whether that is a
-    /// dedicated session or ten minutes on the treadmill afterwards. The day's
-    /// activity entry is only filled where nothing has been said about cardio
-    /// yet — an answer given by hand is never overwritten by a sync.
-    /// </summary>
-    private async Task<int> FillCardioAsync(List<HevyWorkout> workouts, CancellationToken ct)
-    {
-        var byDay = workouts
-            .Where(w => w.Exercises.Any(e => e.Sets.Any(s => s.DurationSeconds > 0 || s.DistanceMeters > 0)))
-            .GroupBy(w => w.Date)
-            .ToDictionary(
-                g => g.Key,
-                g => (int)Math.Round(g.SelectMany(w => w.Exercises)
-                    .SelectMany(e => e.Sets)
-                    .Sum(s => s.DurationSeconds ?? 0) / 60.0));
-
-        if (byDay.Count == 0) return 0;
-
-        var days = byDay.Keys.ToList();
-        var existing = await _db.ActivityEntries
-            .Where(a => a.UserId == UserId && days.Contains(a.Date))
-            .ToDictionaryAsync(a => a.Date, ct);
-
-        var filled = 0;
-        foreach (var (day, minutes) in byDay)
-        {
-            if (existing.TryGetValue(day, out var entry))
-            {
-                if (entry.Cardio is not null) continue;
-            }
-            else
-            {
-                entry = new ActivityEntry { Id = Guid.NewGuid(), UserId = UserId, Date = day };
-                _db.ActivityEntries.Add(entry);
-            }
-
-            entry.Cardio = true;
-            if (minutes > 0) entry.CardioMinutes = minutes;
-            entry.LoggedAt = DateTimeOffset.UtcNow;
-            filled++;
-        }
-
-        return filled;
-    }
-
-    /// <summary>Readable rendering of a session, in the shape Hevy's share text uses.</summary>
-    private static string Render(HevyWorkout w)
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine(w.Title);
-        foreach (var ex in w.Exercises)
-        {
-            sb.AppendLine(ex.Name);
-            for (var i = 0; i < ex.Sets.Count; i++)
-            {
-                var s = ex.Sets[i];
-                if (s.DurationSeconds is > 0)
-                    sb.AppendLine($"Satz {i + 1}: {Math.Round(s.DurationSeconds.Value / 60d, 1)} min");
-                else if (s.WeightKg is > 0)
-                    sb.AppendLine($"Satz {i + 1}: {s.WeightKg:0.##} kg x {s.Reps ?? 0}");
-                else
-                    sb.AppendLine($"Satz {i + 1}: {s.Reps ?? 0}");
-            }
-        }
-        return sb.ToString().TrimEnd();
     }
 
     private static object ToDto(WorkoutLog w) => new

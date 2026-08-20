@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { dateLocale } from '../../../i18n'
 import { useActivityDay, useUpsertActivity } from '../../../features/activity/hooks'
 import { Section, SaveButton } from './Section'
+import { GoalBar } from '../../../components/ui/GoalBar'
+import { useAuth } from '../../../app/auth/AuthProvider'
 import type { ActivityEntry } from '../../../features/activity/api'
 
 function numOrNull(value: string): number | null {
@@ -15,6 +17,7 @@ function numOrNull(value: string): number | null {
 function ActivityForm({ date, entry }: { date: string; entry?: ActivityEntry }) {
   const { t } = useTranslation()
   const upsert = useUpsertActivity()
+  const { user } = useAuth()
 
   const [steps, setSteps] = useState(entry?.steps == null ? '' : String(entry.steps))
   const [cardio, setCardio] = useState(entry?.cardio ?? false)
@@ -47,6 +50,9 @@ function ActivityForm({ date, entry }: { date: string; entry?: ActivityEntry }) 
             className="w-full min-w-0 bg-transparent text-base font-semibold text-gray-900 dark:text-white outline-none"
           />
           <span className="text-xs text-gray-400 dark:text-zinc-500">{t('activity.stepsUnit')}</span>
+        </div>
+        <div className="mt-1.5">
+          <GoalBar value={numOrNull(steps)} goal={user?.stepsGoal ?? null} />
         </div>
       </div>
 

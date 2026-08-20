@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next'
  * once the text is already in hand. The textarea is the fallback for when the
  * clipboard is unavailable.
  */
-export function SummarySheet({ text, onClose }: { text: string; onClose: () => void }) {
+export function SummarySheet({ title, text, onClose }: { title: string; text: string; onClose: () => void }) {
   const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -39,7 +39,7 @@ export function SummarySheet({ text, onClose }: { text: string; onClose: () => v
         onClick={e => e.stopPropagation()}
       >
         <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-100 dark:border-zinc-800 px-4 py-3">
-          <h2 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">{t('today.exportTitle')}</h2>
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">{title}</h2>
           <button
             onClick={onClose}
             aria-label={t('common.close')}

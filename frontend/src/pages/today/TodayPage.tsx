@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, FileText } from 'lucide-react'
+import { CalendarRange, ChevronLeft, ChevronRight, FileText } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { dateLocale } from '../../i18n'
 import { NutritionSection } from './sections/NutritionSection'
@@ -51,12 +51,21 @@ export function TodayPage() {
         </div>
 
         <button
-          onClick={() => summary.mutate(date)}
+          onClick={() => summary.mutate({ scope: 'day', date })}
           disabled={summary.isPending}
           aria-label={t('today.exportTitle')}
           className="flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-40 transition-colors"
         >
           <FileText size={17} />
+        </button>
+
+        <button
+          onClick={() => summary.mutate({ scope: 'week', date })}
+          disabled={summary.isPending}
+          aria-label={t('today.exportWeekTitle')}
+          className="flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-40 transition-colors"
+        >
+          <CalendarRange size={17} />
         </button>
 
         <button
@@ -74,7 +83,11 @@ export function TodayPage() {
       )}
 
       {summary.data != null && (
-        <SummarySheet text={summary.data} onClose={() => summary.reset()} />
+        <SummarySheet
+          title={summary.variables?.scope === 'week' ? t('today.exportWeekTitle') : t('today.exportTitle')}
+          text={summary.data}
+          onClose={() => summary.reset()}
+        />
       )}
 
       <div className="space-y-3 p-4">

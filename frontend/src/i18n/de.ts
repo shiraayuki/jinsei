@@ -142,8 +142,15 @@ export default {
     energyShort: 'Energie',
     notePlaceholder: 'Wie war der Tag? (optional)',
   },
+  outbox: {
+    pending_one: '{{count}} Eintrag wartet auf Verbindung',
+    pending_other: '{{count}} Einträge warten auf Verbindung',
+    retry: 'Jetzt senden',
+    queued: 'Offline gespeichert — wird gesendet, sobald du wieder verbunden bist.',
+  },
   today: {
     exportTitle: 'Tag als Text',
+    exportWeekTitle: 'Woche als Text',
     copy: 'Kopieren',
     copied: 'Kopiert',
     copyFailed: 'Zwischenablage nicht verfügbar — Text antippen und von Hand kopieren.',
@@ -170,6 +177,15 @@ export default {
     coffee: 'Kaffee',
     lastCoffee: 'Letzter Kaffee',
     reset: 'Reset',
+  },
+  goals: {
+    title: 'Tagesziele',
+    hint: 'Leer lassen heißt: kein Ziel.',
+    kcal: 'Kalorien',
+    protein: 'Protein',
+    water: 'Wasser',
+    steps: 'Schritte',
+    of: 'von {{goal}}',
   },
   profile: {
     title: 'Profil',
