@@ -1,7 +1,10 @@
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+[DbContext(typeof(AppDbContext))]
+[Migration("20260504130000_AddUserLanguage")]
 public partial class AddUserLanguage : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)

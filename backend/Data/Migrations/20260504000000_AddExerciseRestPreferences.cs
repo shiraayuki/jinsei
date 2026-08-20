@@ -1,10 +1,13 @@
 using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace backend.Data.Migrations
 {
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20260504000000_AddExerciseRestPreferences")]
     public partial class AddExerciseRestPreferences : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
