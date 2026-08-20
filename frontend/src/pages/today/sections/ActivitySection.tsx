@@ -62,7 +62,7 @@ function ActivityForm({ date, entry }: { date: string; entry?: ActivityEntry }) 
           }`}
         >
           <span
-            className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${
+            className={`absolute left-0 top-1 h-5 w-5 rounded-full bg-white transition-transform ${
               cardio ? 'translate-x-6' : 'translate-x-1'
             }`}
           />
