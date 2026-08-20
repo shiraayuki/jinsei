@@ -82,6 +82,53 @@ input[type='datetime-local']::-webkit-date-and-time-value {
   text-align: left;
 }
 
+/* Range inputs default to a bright native track, which reads as a white bar on
+   the dark theme. Draw the track ourselves and keep the thumb on the accent. */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 24px;
+  background: transparent;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+html.dark input[type='range']::-webkit-slider-runnable-track {
+  background: #27272a;
+}
+
+input[type='range']::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+html.dark input[type='range']::-moz-range-track {
+  background: #27272a;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -7px;
+  height: 20px;
+  width: 20px;
+  border-radius: 999px;
+  background: #6366f1;
+}
+
+input[type='range']::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border: none;
+  border-radius: 999px;
+  background: #6366f1;
+}
+
 /* Glassmorphism card */
 .card {
   background: white;
