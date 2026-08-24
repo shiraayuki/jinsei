@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 
 /// <summary>
 /// Sends real screenshots through the real model. Skipped unless both
-/// ANTHROPIC_API_KEY and JINSEI_SCREENSHOT_DIR are set, because it costs money
+/// GEMINI_API_KEY and JINSEI_SCREENSHOT_DIR are set, because it costs money
 /// and needs images that are deliberately not in the repository:
 ///
 ///   JINSEI_SCREENSHOT_DIR/sleep.png      — a Sleep Cycle day
@@ -17,7 +17,7 @@ using Microsoft.Extensions.Configuration;
 public class ScreenshotImportLiveTests
 {
     private static string? Dir => Environment.GetEnvironmentVariable("JINSEI_SCREENSHOT_DIR");
-    private static string? Key => Environment.GetEnvironmentVariable("ANTHROPIC_API_KEY");
+    private static string? Key => Environment.GetEnvironmentVariable("GEMINI_API_KEY");
 
     private static bool Enabled(string expectVar) =>
         !string.IsNullOrEmpty(Dir)
@@ -29,11 +29,11 @@ public class ScreenshotImportLiveTests
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Anthropic:ApiKey"] = Key,
-                ["Anthropic:Model"] = Environment.GetEnvironmentVariable("ANTHROPIC_MODEL") ?? "claude-opus-5",
+                ["Gemini:ApiKey"] = Key,
+                ["Gemini:Model"] = Environment.GetEnvironmentVariable("GEMINI_MODEL") ?? "gemini-3.6-flash",
             })
             .Build();
-        return new ScreenshotImportService(config);
+        return new ScreenshotImportService(new GeminiClient(new HttpClient(), config));
     }
 
     private static async Task<ImportDraft> ReadAsync(string kind, string file, DateOnly contextDate)

@@ -1,13 +1,13 @@
 /// <summary>
 /// Covers the guards around the screenshot import. The model call itself is not
-/// exercised here — everything that would reach Anthropic is rejected before it
+/// exercised here — everything that would reach Gemini is rejected before it
 /// gets that far.
 /// </summary>
 public class ScreenshotImportTests
 {
     private static readonly Dictionary<string, string?> Configured = new()
     {
-        ["Anthropic:ApiKey"] = "sk-test",
+        ["Gemini:ApiKey"] = "test-key",
     };
 
     [Fact]

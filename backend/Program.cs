@@ -52,7 +52,8 @@ if (builder.Environment.IsDevelopment())
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<HevyClient>();
 builder.Services.AddScoped<WorkoutSyncService>();
-builder.Services.AddSingleton<ScreenshotImportService>();
+builder.Services.AddHttpClient<GeminiClient>();
+builder.Services.AddScoped<ScreenshotImportService>();
 builder.Services.AddHostedService<HevySyncScheduler>();
 builder.Services.AddControllers();
 

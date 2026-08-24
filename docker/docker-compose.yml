@@ -24,8 +24,8 @@ services:
       Hevy__TimeZone: ${TZ:-Europe/Vienna}
       # Reads screenshots of Sleep Cycle / FatSecret into a draft. Without a
       # key the import button stays hidden and everything is entered by hand.
-      Anthropic__ApiKey: ${ANTHROPIC_API_KEY:-}
-      Anthropic__Model: ${ANTHROPIC_MODEL:-claude-opus-5}
+      Gemini__ApiKey: ${GEMINI_API_KEY:-}
+      Gemini__Model: ${GEMINI_MODEL:-gemini-3.6-flash}
     volumes:
       - dataprotection_keys:/root/.aspnet/DataProtection-Keys
     depends_on:

@@ -1,6 +1,4 @@
 using System.Text.Json;
-using Anthropic;
-using Anthropic.Models.Messages;
 
 /// <summary>
 /// Reads the numbers off a screenshot of Sleep Cycle or FatSecret so a day can
@@ -10,21 +8,14 @@ using Anthropic.Models.Messages;
 /// </summary>
 public class ScreenshotImportService
 {
-    private readonly IConfiguration _config;
-    private AnthropicClient? _client;
+    private readonly GeminiClient _gemini;
 
-    public ScreenshotImportService(IConfiguration config)
+    public ScreenshotImportService(GeminiClient gemini)
     {
-        _config = config;
+        _gemini = gemini;
     }
 
-    private string? ApiKey => _config["Anthropic:ApiKey"] is { Length: > 0 } key ? key : null;
-
-    public bool IsConfigured => ApiKey is not null;
-
-    private string Model => _config["Anthropic:Model"] is { Length: > 0 } m ? m : "claude-opus-5";
-
-    private AnthropicClient Client => _client ??= new AnthropicClient { ApiKey = ApiKey };
+    public bool IsConfigured => _gemini.IsConfigured;
 
     public static bool IsSupportedKind(string kind) => kind is "sleep" or "nutrition";
 
@@ -32,7 +23,7 @@ public class ScreenshotImportService
         mediaType is "image/png" or "image/jpeg" or "image/webp" or "image/gif";
 
     /// <summary>
-    /// Sends the image to Claude under a schema that only admits the fields the
+    /// Sends the image to the model under a schema that only admits the fields the
     /// day actually stores, then range-checks what comes back.
     /// </summary>
     public async Task<ImportDraft> ExtractAsync(
@@ -43,58 +34,21 @@ public class ScreenshotImportService
         CancellationToken ct = default)
     {
         if (!IsConfigured)
-            throw new ScreenshotImportException("Anthropic ist nicht konfiguriert: setze Anthropic:ApiKey.");
+            throw new ScreenshotImportException("Gemini ist nicht konfiguriert: setze Gemini:ApiKey.");
 
         var (prompt, schema) = kind == "sleep"
             ? (SleepPrompt(contextDate), SleepSchema)
             : (NutritionPrompt(contextDate), NutritionSchema);
 
-        Message response;
+        string text;
         try
         {
-            response = await Client.Messages.Create(new MessageCreateParams
-            {
-                Model = Model,
-                MaxTokens = 2000,
-                // The numbers are printed on the screen; there is nothing to
-                // reason about, so the cheapest effort is also the fastest.
-                OutputConfig = new OutputConfig
-                {
-                    Effort = Effort.Low,
-                    Format = new JsonOutputFormat { Schema = schema },
-                },
-                System = "Du liest Zahlen aus einem Screenshot einer Gesundheits-App ab. "
-                    + "Gib ausschließlich zurück, was im Bild wirklich steht. Rate nie: was du "
-                    + "nicht sicher lesen kannst, ist null und gehört in lowConfidence.",
-                Messages =
-                [
-                    new MessageParam
-                    {
-                        Role = Role.User,
-                        Content = new List<ContentBlockParam>
-                        {
-                            new ImageBlockParam
-                            {
-                                Source = new Base64ImageSource
-                                {
-                                    Data = base64Image,
-                                    MediaType = mediaType,
-                                },
-                            },
-                            new TextBlockParam { Text = prompt },
-                        },
-                    },
-                ],
-            }, cancellationToken: ct);
+            text = await _gemini.ReadImageAsync(base64Image, mediaType, SystemInstruction, prompt, schema, ct);
         }
-        catch (Exception exc) when (exc is not OperationCanceledException)
+        catch (GeminiException exc)
         {
-            throw new ScreenshotImportException($"Auswertung fehlgeschlagen: {exc.Message}", exc);
+            throw new ScreenshotImportException(exc.Message, exc);
         }
-
-        var text = string.Concat(response.Content.Select(b => b.Value).OfType<TextBlock>().Select(t => t.Text));
-        if (string.IsNullOrWhiteSpace(text))
-            throw new ScreenshotImportException("Das Modell hat nichts zurückgegeben.");
 
         JsonElement parsed;
         try
@@ -112,6 +66,11 @@ public class ScreenshotImportService
     }
 
     // --- prompts -----------------------------------------------------------
+
+    private const string SystemInstruction =
+        "Du liest Zahlen aus einem Screenshot einer Gesundheits-App ab. "
+        + "Gib ausschließlich zurück, was im Bild wirklich steht. Rate nie: was du "
+        + "nicht sicher lesen kannst, ist null und gehört in lowConfidence.";
 
     private static string SleepPrompt(DateOnly contextDate) =>
         $"""
@@ -150,29 +109,26 @@ public class ScreenshotImportService
 
     // --- schemas -----------------------------------------------------------
 
-    private static JsonElement Json(object value) => JsonSerializer.SerializeToElement(value);
-
     private static object NullableInt(string description) => new
     {
-        anyOf = new object[] { new { type = "integer" }, new { type = "null" } },
+        type = new[] { "integer", "null" },
         description,
     };
 
     private static object NullableString(string description) => new
     {
-        anyOf = new object[] { new { type = "string" }, new { type = "null" } },
+        type = new[] { "string", "null" },
         description,
     };
 
-    private static Dictionary<string, JsonElement> Schema(object properties, string[] required) => new()
+    private static object Schema(object properties, string[] required) => new
     {
-        ["type"] = Json("object"),
-        ["additionalProperties"] = Json(false),
-        ["properties"] = Json(properties),
-        ["required"] = Json(required),
+        type = "object",
+        properties,
+        required,
     };
 
-    private static readonly Dictionary<string, JsonElement> SleepSchema = Schema(
+    private static readonly object SleepSchema = Schema(
         new
         {
             date = NullableString("Aufwachtag als YYYY-MM-DD."),
@@ -189,7 +145,7 @@ public class ScreenshotImportService
         },
         ["date", "timeInBedMinutes", "actualSleepMinutes", "quality", "lowConfidence", "notes"]);
 
-    private static readonly Dictionary<string, JsonElement> NutritionSchema = Schema(
+    private static readonly object NutritionSchema = Schema(
         new
         {
             date = NullableString("Tag als YYYY-MM-DD."),
