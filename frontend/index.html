@@ -10,7 +10,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="Jinsei" />
     <link rel="icon" type="image/png" href="/icon-192.png" />
-    <link rel="apple-touch-icon" href="/icon-512.png" />
+    <!--
+      iOS reads this one for the home screen, wants 180x180, and composites any
+      transparency onto black before applying its own corner mask — so this file
+      is an opaque full-bleed square rather than the rounded manifest icon.
+    -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <title>Jinsei</title>
   </head>
   <body>
