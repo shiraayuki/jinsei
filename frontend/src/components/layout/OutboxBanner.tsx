@@ -44,7 +44,7 @@ export function OutboxBanner() {
           setSending(false)
         }
       }}
-      className="flex w-full items-center gap-2 bg-amber-500/15 px-4 py-2 text-left text-xs text-amber-700 dark:text-amber-400"
+      className="flex w-full items-center gap-2 bg-warn/15 px-4 py-2 text-left text-meta text-warn"
     >
       {sending ? <RefreshCw size={13} className="animate-spin" /> : <CloudOff size={13} />}
       <span className="flex-1">{t('outbox.pending', { count: pending })}</span>

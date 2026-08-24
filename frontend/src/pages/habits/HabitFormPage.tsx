@@ -15,7 +15,7 @@ const COLORS = ['#6366f1', '#ec4899', '#f97316', '#22c55e', '#06b6d4', '#eab308'
 const schema = z.object({
   name: z.string().min(1, 'Pflichtfeld'),
   description: z.string().optional(),
-  color: z.string().default('#6366f1'),
+  color: z.string().default('#5b5be8'),
   icon: z.string().optional(),
   scheduleType: z.enum(['daily', 'weekly', 'interval']),
   targetCount: z.coerce.number().int().min(1).default(1),
@@ -46,7 +46,7 @@ export function HabitFormPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(schema) as Resolver<Fields>,
     defaultValues: {
-      color: '#6366f1',
+      color: '#5b5be8',
       scheduleType: 'daily',
       targetCount: 1,
     },
@@ -115,7 +115,7 @@ export function HabitFormPage() {
 
         {/* Color picker */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm text-gray-500 dark:text-zinc-400">Farbe</label>
+          <label className="text-body text-ink-mute">Farbe</label>
           <div className="flex gap-2 flex-wrap">
             {COLORS.map(c => (
               <button
@@ -140,15 +140,15 @@ export function HabitFormPage() {
 
         {/* Schedule type */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm text-gray-500 dark:text-zinc-400">Frequenz</label>
+          <label className="text-body text-ink-mute">Frequenz</label>
           <div className="grid grid-cols-3 gap-2">
             {(['daily', 'weekly', 'interval'] as const).map(t => (
               <label
                 key={t}
-                className={`flex cursor-pointer items-center justify-center rounded-xl border py-2 text-sm transition-colors ${
+                className={`flex cursor-pointer items-center justify-center rounded-control border py-2 text-body transition-colors ${
                   scheduleType === t
-                    ? 'border-indigo-500 bg-indigo-600/20 text-indigo-300'
-                    : 'border-gray-300 dark:border-zinc-700 text-gray-500 dark:text-zinc-400'
+                    ? 'border-accent bg-accent-soft text-accent'
+                    : 'border-line-strong text-ink-mute'
                 }`}
               >
                 <input type="radio" value={t} {...register('scheduleType')} className="sr-only" />
@@ -161,7 +161,7 @@ export function HabitFormPage() {
         {/* Weekly: day selector */}
         {scheduleType === 'weekly' && (
           <div className="flex flex-col gap-2">
-            <label className="text-sm text-gray-500 dark:text-zinc-400">Tage</label>
+            <label className="text-body text-ink-mute">Tage</label>
             <Controller
               name="daysOfWeek"
               control={control}
@@ -180,10 +180,10 @@ export function HabitFormPage() {
                             : [...(field.value ?? []), i]
                           field.onChange(next)
                         }}
-                        className={`flex-1 rounded-lg py-1.5 text-xs font-medium transition-colors ${
+                        className={`flex-1 rounded-chip py-1.5 text-meta font-medium transition-colors ${
                           selected
-                            ? 'bg-indigo-600 text-white'
-                            : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:bg-gray-200 dark:bg-zinc-700'
+                            ? 'bg-accent text-white'
+                            : 'bg-raised text-ink-mute hover:bg-line '
                         }`}
                       >
                         {d}

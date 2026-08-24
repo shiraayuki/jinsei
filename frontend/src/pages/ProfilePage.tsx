@@ -52,15 +52,15 @@ function GoalsCard() {
   return (
     <Card className="space-y-3 p-4">
       <div>
-        <p className="text-sm font-medium text-gray-700 dark:text-zinc-200">{t('goals.title')}</p>
-        <p className="mt-0.5 text-xs text-gray-400 dark:text-zinc-500">{t('goals.hint')}</p>
+        <p className="text-body font-medium text-ink-soft">{t('goals.title')}</p>
+        <p className="mt-0.5 text-meta text-ink-mute">{t('goals.hint')}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         {fields.map(([label, unit, value, setValue, step]) => (
           <label key={label} className="flex min-w-0 flex-col gap-1">
-            <span className="text-xs text-gray-400 dark:text-zinc-500">{label}</span>
-            <div className="flex items-baseline gap-1 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2.5">
+            <span className="text-meta text-ink-mute">{label}</span>
+            <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2.5">
               <input
                 type="number"
                 inputMode="decimal"
@@ -68,9 +68,9 @@ function GoalsCard() {
                 placeholder="–"
                 value={value}
                 onChange={e => setValue(e.target.value)}
-                className="w-full min-w-0 bg-transparent text-base font-semibold text-gray-900 dark:text-white outline-none"
+                className="w-full min-w-0 bg-transparent text-title font-semibold text-ink outline-none"
               />
-              {unit && <span className="text-xs text-gray-400 dark:text-zinc-500">{unit}</span>}
+              {unit && <span className="text-meta text-ink-mute">{unit}</span>}
             </div>
           </label>
         ))}
@@ -113,8 +113,8 @@ export function ProfilePage() {
 
         <Card className="space-y-4 p-4">
           <div>
-            <p className="text-xs text-gray-400 dark:text-zinc-500">{t('profile.email')}</p>
-            <p className="mt-0.5 text-gray-600 dark:text-zinc-300">{user?.email}</p>
+            <p className="text-meta text-ink-mute">{t('profile.email')}</p>
+            <p className="mt-0.5 text-ink-soft">{user?.email}</p>
           </div>
 
           <Input
@@ -131,24 +131,24 @@ export function ProfilePage() {
 
         <Card className="flex items-center justify-between p-4">
           <div>
-            <p className="text-sm font-medium text-gray-700 dark:text-zinc-200">{t('profile.appearance')}</p>
-            <p className="text-xs text-gray-400 dark:text-zinc-500">{theme === 'dark' ? t('profile.dark') : t('profile.light')}</p>
+            <p className="text-body font-medium text-ink-soft">{t('profile.appearance')}</p>
+            <p className="text-meta text-ink-mute">{theme === 'dark' ? t('profile.dark') : t('profile.light')}</p>
           </div>
           <button
             onClick={toggle}
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
+            className="flex h-9 w-9 items-center justify-center rounded-control bg-raised text-ink-soft hover:bg-line transition-colors"
           >
             {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
           </button>
         </Card>
 
         <Card className="flex items-center justify-between p-4">
-          <p className="text-sm font-medium text-gray-700 dark:text-zinc-200">{t('profile.language')}</p>
+          <p className="text-body font-medium text-ink-soft">{t('profile.language')}</p>
           <select
             value={language}
             onChange={e => setLanguage(e.target.value)}
             onBlur={() => { if (language !== user?.language) save() }}
-            className="rounded-lg bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 text-sm text-gray-700 dark:text-zinc-200 outline-none focus:ring-2 focus:ring-indigo-500"
+            className="rounded-chip bg-raised px-3 py-1.5 text-body text-ink-soft outline-none focus:ring-2 focus:ring-accent"
           >
             <option value="en">English</option>
             <option value="de">Deutsch</option>

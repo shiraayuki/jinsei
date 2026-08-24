@@ -74,7 +74,7 @@ export function ScreenshotImport<F>({ kind, date, onApply, onSelectDate }: Props
         type="button"
         onClick={() => input.current?.click()}
         disabled={importer.isPending}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 dark:border-zinc-700 py-2.5 text-xs font-medium text-gray-500 dark:text-zinc-400 hover:border-indigo-400 hover:text-indigo-400 disabled:opacity-50 transition-colors"
+        className="flex w-full items-center justify-center gap-2 rounded-control border border-dashed border-line-strong py-2.5 text-meta font-medium text-ink-mute hover:border-accent hover:text-accent disabled:opacity-50 transition-colors"
       >
         {importer.isPending
           ? <><Loader2 size={14} className="animate-spin" /> {t('import.reading')}</>
@@ -82,21 +82,21 @@ export function ScreenshotImport<F>({ kind, date, onApply, onSelectDate }: Props
       </button>
 
       {localError && (
-        <p className="text-xs text-rose-500 dark:text-rose-400">{localError}</p>
+        <p className="text-meta text-bad">{localError}</p>
       )}
 
       {importer.isError && (
-        <p className="text-xs text-rose-500 dark:text-rose-400">
+        <p className="text-meta text-bad">
           {(importer.error as Error).message || t('import.failed')}
         </p>
       )}
 
       {draft && (
-        <div className="space-y-1 rounded-xl bg-indigo-500/5 px-3 py-2">
-          <p className="text-xs text-indigo-500 dark:text-indigo-400">{t('import.applied')}</p>
+        <div className="space-y-1 rounded-control bg-accent/5 px-3 py-2">
+          <p className="text-meta text-accent">{t('import.applied')}</p>
 
           {draft.lowConfidence.length > 0 && (
-            <p className="text-[11px] text-amber-600 dark:text-amber-400">
+            <p className="text-meta text-warn">
               {t('import.uncertain', {
                 fields: draft.lowConfidence
                   .map(f => t(`import.fields.${f}`, { defaultValue: f }))
@@ -106,17 +106,17 @@ export function ScreenshotImport<F>({ kind, date, onApply, onSelectDate }: Props
           )}
 
           {draft.warnings.map(w => (
-            <p key={w} className="text-[11px] text-amber-600 dark:text-amber-400">{w}</p>
+            <p key={w} className="text-meta text-warn">{w}</p>
           ))}
 
           {otherDay && (
-            <p className="text-[11px] text-amber-600 dark:text-amber-400">
+            <p className="text-meta text-warn">
               {t('import.otherDay', { date: draft.date })}{' '}
               {onSelectDate && (
                 <button
                   type="button"
                   onClick={() => onSelectDate(draft.date!)}
-                  className="underline hover:text-amber-500"
+                  className="underline hover:text-warn"
                 >
                   {t('import.switchDay')}
                 </button>
@@ -125,7 +125,7 @@ export function ScreenshotImport<F>({ kind, date, onApply, onSelectDate }: Props
           )}
 
           {draft.notes && (
-            <p className="text-[11px] text-gray-400 dark:text-zinc-500">{draft.notes}</p>
+            <p className="text-meta text-ink-mute">{draft.notes}</p>
           )}
         </div>
       )}

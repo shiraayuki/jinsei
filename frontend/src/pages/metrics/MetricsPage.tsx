@@ -13,6 +13,8 @@ import { useActivity } from '../../features/activity/hooks'
 import { useWellbeing } from '../../features/wellbeing/hooks'
 import { dateLocale } from '../../i18n'
 import { toIsoDate } from '../../lib/date'
+import { CardSection } from '../../components/ui/Card'
+import { moduleColor, type ModuleKey } from '../../lib/modules'
 
 const RANGES = [7, 30, 90, 180] as const
 
@@ -43,23 +45,24 @@ function formatDuration(minutes: number | null) {
 
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="min-w-0 rounded-xl bg-gray-50 dark:bg-zinc-800/60 p-3">
-      <p className="truncate text-lg font-bold text-gray-900 dark:text-white">{value}</p>
-      <p className="truncate text-[11px] text-gray-400 dark:text-zinc-500">{label}</p>
-      {hint && <p className="truncate text-[10px] text-gray-400 dark:text-zinc-600">{hint}</p>}
+    <div className="min-w-0 rounded-control bg-raised p-3">
+      <p className="truncate font-display text-value font-semibold text-ink tabular">{value}</p>
+      <p className="truncate text-meta text-ink-mute">{label}</p>
+      {hint && <p className="truncate text-label text-ink-faint">{hint}</p>}
     </div>
   )
 }
 
-function Card({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+function Block({ module, icon, title, children }: {
+  module: ModuleKey
+  icon: React.ReactNode
+  title: string
+  children: React.ReactNode
+}) {
   return (
-    <section className="rounded-2xl bg-white dark:bg-zinc-900 p-4 space-y-3">
-      <div className="flex items-center gap-2">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">{icon}</span>
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-zinc-200">{title}</h2>
-      </div>
-      {children}
-    </section>
+    <CardSection module={module} title={title} icon={icon}>
+      <div className="space-y-3">{children}</div>
+    </CardSection>
   )
 }
 
@@ -69,14 +72,14 @@ function Delta({ value, unit = '', lowerIsBetter = false }: { value: number | nu
   const rounded = Math.round(value * 10) / 10
   if (rounded === 0) {
     return (
-      <span className="flex items-center gap-1 text-[11px] text-gray-400 dark:text-zinc-500">
+      <span className="flex items-center gap-1 text-meta text-ink-mute">
         <Minus size={11} /> {t('metrics.vsLastWeek', { delta: '±0', unit })}
       </span>
     )
   }
   const good = lowerIsBetter ? rounded < 0 : rounded > 0
   return (
-    <span className={`flex items-center gap-1 text-[11px] font-medium ${good ? 'text-emerald-400' : 'text-rose-400'}`}>
+    <span className={`flex items-center gap-1 text-meta font-medium ${good ? 'text-good' : 'text-bad'}`}>
       {rounded > 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
       {t('metrics.vsLastWeek', { delta: `${rounded > 0 ? '+' : ''}${rounded}`, unit })}
     </span>
@@ -150,10 +153,10 @@ export function MetricsPage() {
             <button
               key={r}
               onClick={() => setDays(r)}
-              className={`flex-1 rounded-lg py-2 text-xs font-medium transition-colors ${
+              className={`flex-1 rounded-chip py-2 text-meta font-medium transition-colors ${
                 days === r
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                  ? 'bg-accent text-white'
+                  : 'bg-raised text-ink-soft hover:bg-line'
               }`}
             >
               {t('metrics.days', { count: r })}
@@ -162,10 +165,10 @@ export function MetricsPage() {
         </div>
 
         {hasNothing && (
-          <p className="py-12 text-center text-sm text-gray-400 dark:text-zinc-500">{t('metrics.empty')}</p>
+          <p className="py-12 text-center text-body text-ink-mute">{t('metrics.empty')}</p>
         )}
 
-        <Card icon={<TrendingUp size={15} />} title={t('metrics.thisWeek')}>
+        <Block module="train" icon={<TrendingUp size={15} />} title={t('metrics.thisWeek')}>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <Stat label={t('nav.workouts')} value={String(wThis.length)} />
@@ -186,9 +189,9 @@ export function MetricsPage() {
               <div className="mt-1"><Delta value={stepsThis != null && stepsLast != null ? stepsThis - stepsLast : null} /></div>
             </div>
           </div>
-        </Card>
+        </Block>
 
-        <Card icon={<Scale size={15} />} title={t('weight.title')}>
+        <Block module="body" icon={<Scale size={15} />} title={t('weight.title')}>
           <div className="grid grid-cols-2 gap-2">
             <Stat
               label={t('weight.weightKg')}
@@ -203,13 +206,13 @@ export function MetricsPage() {
           </div>
           <MetricChart
             series={[
-              { label: t('weight.weightKg'), color: '#6366f1', unit: ' kg', averageOver: 7, points: asc(weight).map(e => ({ date: e.date, value: e.weightKg })) },
-              { label: t('weight.waistCm'), color: '#f59e0b', unit: ' cm', points: asc(weight).map(e => ({ date: e.date, value: e.waistCm })) },
+              { label: t('weight.weightKg'), color: moduleColor.body, unit: ' kg', averageOver: 7, points: asc(weight).map(e => ({ date: e.date, value: e.weightKg })) },
+              { label: t('weight.waistCm'), color: moduleColor.mind, unit: ' cm', points: asc(weight).map(e => ({ date: e.date, value: e.waistCm })) },
             ]}
           />
-        </Card>
+        </Block>
 
-        <Card icon={<Moon size={15} />} title={t('sleep.title')}>
+        <Block module="sleep" icon={<Moon size={15} />} title={t('sleep.title')}>
           <div className="grid grid-cols-3 gap-2">
             <Stat label={t('sleep.avgDuration')} value={formatDuration(mean(sleepMinutes))} />
             <Stat label={t('sleep.avgQuality')} value={quality.length ? `${round(mean(quality))}%` : '–'} />
@@ -217,13 +220,13 @@ export function MetricsPage() {
           </div>
           {quality.length > 0 && (
             <div>
-              <p className="mb-2 text-xs text-gray-400 dark:text-zinc-500">{t('sleep.qualityChart')}</p>
-              <BarSeries points={asc(sleep).map(e => ({ date: e.date, value: e.quality }))} color="#818cf8" max={100} />
+              <p className="mb-2 text-meta text-ink-mute">{t('sleep.qualityChart')}</p>
+              <BarSeries points={asc(sleep).map(e => ({ date: e.date, value: e.quality }))} color={moduleColor.sleep} max={100} />
             </div>
           )}
-        </Card>
+        </Block>
 
-        <Card icon={<Apple size={15} />} title={t('nutrition.title')}>
+        <Block module="food" icon={<Apple size={15} />} title={t('nutrition.title')}>
           <div className="grid grid-cols-2 gap-2">
             <Stat label={t('nutrition.calories')} value={kcal.length ? round(mean(kcal)) : '–'} hint={t('metrics.perDay')} />
             <Stat label={t('nutrition.protein')} value={protein.length ? `${round(mean(protein))} g` : '–'} hint={t('metrics.perDay')} />
@@ -232,23 +235,23 @@ export function MetricsPage() {
           </div>
           {kcal.length > 0 && (
             <MetricChart
-              series={[{ label: t('nutrition.calories'), color: '#34d399', unit: ' kcal', points: asc(nutrition).map(e => ({ date: e.date, value: e.kcal })) }]}
+              series={[{ label: t('nutrition.calories'), color: moduleColor.food, unit: ' kcal', points: asc(nutrition).map(e => ({ date: e.date, value: e.kcal })) }]}
             />
           )}
-        </Card>
+        </Block>
 
-        <Card icon={<Footprints size={15} />} title={t('activity.title')}>
+        <Block module="move" icon={<Footprints size={15} />} title={t('activity.title')}>
           <div className="grid grid-cols-3 gap-2">
             <Stat label={t('activity.steps')} value={steps.length ? round(mean(steps)) : '–'} hint={t('metrics.perDay')} />
             <Stat label={t('activity.cardio')} value={String(cardioDays)} hint={t('metrics.days', { count: days })} />
             <Stat label={t('activity.cardioMinutes')} value={cardioMinutes.length ? `${round(mean(cardioMinutes))} min` : '–'} />
           </div>
           {steps.length > 0 && (
-            <BarSeries points={asc(activity).map(e => ({ date: e.date, value: e.steps }))} color="#22d3ee" />
+            <BarSeries points={asc(activity).map(e => ({ date: e.date, value: e.steps }))} color={moduleColor.move} />
           )}
-        </Card>
+        </Block>
 
-        <Card icon={<Dumbbell size={15} />} title={t('nav.workouts')}>
+        <Block module="train" icon={<Dumbbell size={15} />} title={t('nav.workouts')}>
           <div className="grid grid-cols-3 gap-2">
             <Stat label={t('metrics.sessions')} value={String(workouts.length)} />
             <Stat label={t('metrics.sets')} value={String(workouts.reduce((s, w) => s + w.setCount, 0))} />
@@ -257,18 +260,18 @@ export function MetricsPage() {
               value={`${Math.round(workouts.reduce((s, w) => s + w.volumeKg, 0) / 1000)} t`}
             />
           </div>
-        </Card>
+        </Block>
 
         {wellbeing.length > 0 && (
-          <Card icon={<Smile size={15} />} title={t('wellbeing.title')}>
+          <Block module="mind" icon={<Smile size={15} />} title={t('wellbeing.title')}>
             <div className="grid grid-cols-2 gap-2">
               <Stat label={t('wellbeing.hunger')} value={hunger.length ? `${round(mean(hunger), 1)}/5` : '–'} hint={t('metrics.perDay')} />
               <Stat label={t('wellbeing.energy')} value={energy.length ? `${round(mean(energy), 1)}/5` : '–'} hint={t('metrics.perDay')} />
             </div>
-          </Card>
+          </Block>
         )}
 
-        <Card icon={<CheckSquare size={15} />} title={t('nav.habits')}>
+        <Block module="mind" icon={<CheckSquare size={15} />} title={t('nav.habits')}>
           <div className="grid grid-cols-2 gap-2">
             <Stat label={t('metrics.todayDone')} value={`${doneToday}/${activeHabits.length}`} />
             <Stat
@@ -276,7 +279,7 @@ export function MetricsPage() {
               value={String(activeHabits.reduce((best, h) => Math.max(best, h.streak), 0))}
             />
           </div>
-        </Card>
+        </Block>
       </div>
     </div>
   )

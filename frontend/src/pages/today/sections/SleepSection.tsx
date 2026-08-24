@@ -78,15 +78,15 @@ function SleepForm({ date, entry, onSelectDate }: {
       />
 
       {tooMuchSleep && (
-        <p className="text-xs text-rose-500 dark:text-rose-400">{t('sleep.asleepExceedsBed')}</p>
+        <p className="text-meta text-bad">{t('sleep.asleepExceedsBed')}</p>
       )}
 
       <div>
         <div className="mb-2 flex items-baseline justify-between">
-          <label className="text-xs text-gray-400 dark:text-zinc-500">
-            {t('sleep.quality')} <span className="text-gray-300 dark:text-zinc-600">Sleep Cycle</span>
+          <label className="text-meta text-ink-mute">
+            {t('sleep.quality')} <span className="text-ink-faint">Sleep Cycle</span>
           </label>
-          <span className="text-sm font-semibold text-gray-900 dark:text-white">
+          <span className="text-body font-semibold text-ink">
             {quality != null ? `${quality}%` : '–'}
           </span>
         </div>
@@ -97,14 +97,14 @@ function SleepForm({ date, entry, onSelectDate }: {
           step={1}
           value={quality ?? 0}
           onChange={e => setQuality(Number(e.target.value))}
-          className="w-full accent-indigo-500"
+          className="w-full accent-[var(--accent)]"
           aria-label={t('sleep.quality')}
         />
       </div>
 
       {efficiency != null && (
-        <p className="text-center text-sm text-gray-500 dark:text-zinc-400">
-          {t('sleep.efficiency')}: <span className="font-semibold text-gray-900 dark:text-white">{efficiency}%</span>
+        <p className="text-center text-body text-ink-mute">
+          {t('sleep.efficiency')}: <span className="font-semibold text-ink">{efficiency}%</span>
         </p>
       )}
 
@@ -113,7 +113,7 @@ function SleepForm({ date, entry, onSelectDate }: {
         placeholder={t('sleep.notePlaceholder')}
         value={notes}
         onChange={e => setNotes(e.target.value)}
-        className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
+        className="w-full rounded-control bg-raised px-3 py-2 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
       />
 
       <SaveStatus
@@ -140,9 +140,9 @@ export function SleepSection({ date, onSelectDate }: {
     : undefined
 
   return (
-    <Section title={t('sleep.title')} icon={<Moon size={15} />} summary={summary || undefined}>
+    <Section module="sleep" title={t('sleep.title')} icon={<Moon size={15} />} summary={summary || undefined}>
       {isLoading
-        ? <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
+        ? <p className="py-4 text-center text-body text-ink-mute">{t('common.loading')}</p>
         : <SleepForm key={date} date={date} entry={entry} onSelectDate={onSelectDate} />}
     </Section>
   )

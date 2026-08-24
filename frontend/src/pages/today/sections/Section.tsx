@@ -2,8 +2,12 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Check, CloudOff, Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { QueuedOfflineError } from '../../../lib/api'
+import { CardSection } from '../../../components/ui/Card'
+import type { ModuleKey } from '../../../lib/modules'
 
 interface Props {
+  /** Colours the section's icon; the forms inside take their cue from it too. */
+  module: ModuleKey
   title: string
   icon: ReactNode
   /** Short summary of what is stored for the day, shown next to the title. */
@@ -11,20 +15,11 @@ interface Props {
   children: ReactNode
 }
 
-export function Section({ title, icon, summary, children }: Props) {
+export function Section({ module, title, icon, summary, children }: Props) {
   return (
-    <section className="rounded-2xl bg-white dark:bg-zinc-900 p-4">
-      <div className="mb-4 flex items-center gap-2">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
-          {icon}
-        </span>
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-zinc-200">{title}</h2>
-        {summary && (
-          <span className="ml-auto truncate text-xs text-gray-400 dark:text-zinc-500">{summary}</span>
-        )}
-      </div>
+    <CardSection module={module} title={title} icon={icon} summary={summary}>
       {children}
-    </section>
+    </CardSection>
   )
 }
 
@@ -58,7 +53,7 @@ export function SaveStatus({ pending, savedAt, error }: StatusProps) {
     // is not the user's problem to solve.
     const queued = error instanceof QueuedOfflineError
     return (
-      <p className={`flex items-center gap-1.5 text-xs ${queued ? 'text-amber-600 dark:text-amber-400' : 'text-rose-500 dark:text-rose-400'}`}>
+      <p className={`flex items-center gap-1.5 text-meta ${queued ? 'text-warn' : 'text-bad'}`}>
         {queued ? <CloudOff size={13} /> : null}
         {queued ? t('outbox.queued') : error.message || t('common.saveFailed')}
       </p>
@@ -67,7 +62,7 @@ export function SaveStatus({ pending, savedAt, error }: StatusProps) {
 
   if (pending) {
     return (
-      <p className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-zinc-500">
+      <p className="flex items-center gap-1.5 text-meta text-ink-faint">
         <Loader2 size={13} className="animate-spin" /> {t('common.saving')}
       </p>
     )
@@ -75,12 +70,12 @@ export function SaveStatus({ pending, savedAt, error }: StatusProps) {
 
   if (showSaved) {
     return (
-      <p className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+      <p className="flex items-center gap-1.5 text-meta text-good">
         <Check size={13} /> {t('common.saved')}
       </p>
     )
   }
 
   // Holds the row's height so the form does not jump as the status appears.
-  return <p className="text-xs text-transparent select-none">&nbsp;</p>
+  return <p className="text-meta text-transparent select-none">&nbsp;</p>
 }

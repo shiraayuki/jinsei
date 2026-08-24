@@ -2,6 +2,11 @@ import { dateLocale } from '../../i18n'
 
 export interface Series {
   label: string
+  /**
+   * The module's colour as a CSS variable, so the series follows the theme.
+   * SVG attributes cannot parse `var()`, which is why everything below paints
+   * through `style` rather than `stroke=` and `fill=`.
+   */
   color: string
   /** Points in chronological order; gaps are allowed and are skipped. */
   points: { date: string; value: number | null }[]
@@ -74,37 +79,48 @@ export function MetricChart({ series, height = 90 }: { series: Series[]; height?
   return (
     <div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full overflow-visible">
-        {paths.map(p => (
-          <g key={p.label}>
-            <polyline
-              points={p.coords.map(c => `${c.x},${c.y}`).join(' ')}
-              fill="none"
-              stroke={p.color}
-              strokeWidth={p.averageCoords.length > 0 ? 1.5 : 2}
-              strokeOpacity={p.averageCoords.length > 0 ? 0.3 : 1}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            {p.averageCoords.length > 0 && (
+        {paths.map(p => {
+          // The line that carries the meaning: the average when there is one,
+          // the raw readings when there is not.
+          const lead = p.averageCoords.length > 0 ? p.averageCoords : p.coords
+          const end = lead[lead.length - 1]
+          return (
+            <g key={p.label}>
+              {lead.length > 1 && (
+                <polygon
+                  points={`${lead[0].x},${H} ${lead.map(c => `${c.x},${c.y}`).join(' ')} ${lead[lead.length - 1].x},${H}`}
+                  style={{ fill: p.color, fillOpacity: 0.12 }}
+                />
+              )}
               <polyline
-                points={p.averageCoords.map(c => `${c.x},${c.y}`).join(' ')}
+                points={p.coords.map(c => `${c.x},${c.y}`).join(' ')}
                 fill="none"
-                stroke={p.color}
-                strokeWidth="2.5"
+                strokeWidth={p.averageCoords.length > 0 ? 1.5 : 2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                style={{ stroke: p.color, strokeOpacity: p.averageCoords.length > 0 ? 0.35 : 1 }}
               />
-            )}
-            {p.coords.map((c, i) => (
-              <circle key={i} cx={c.x} cy={c.y} r="2" fill={p.color} fillOpacity="0.5" />
-            ))}
-          </g>
-        ))}
+              {p.averageCoords.length > 0 && (
+                <polyline
+                  points={p.averageCoords.map(c => `${c.x},${c.y}`).join(' ')}
+                  fill="none"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ stroke: p.color }}
+                />
+              )}
+              {/* The last reading is the one being asked about, so it is the
+                  only point drawn. */}
+              {end && <circle cx={end.x} cy={end.y} r="3" style={{ fill: p.color }} />}
+            </g>
+          )
+        })}
       </svg>
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-gray-400 dark:text-zinc-600">
+      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-label text-ink-faint tabular">
         {paths.map(p => (
           <span key={p.label} className="flex items-center gap-1">
-            <span className="inline-block h-0.5 w-3 rounded" style={{ background: p.color }} />
+            <span className="inline-block h-0.5 w-3 rounded-full" style={{ background: p.color }} />
             {p.label} {p.min === p.max ? p.min : `${p.min}–${p.max}`}{p.unit ?? ''}
           </span>
         ))}

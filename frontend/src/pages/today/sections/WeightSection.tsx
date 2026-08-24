@@ -5,6 +5,7 @@ import { useWeight, useUpsertWeight } from '../../../features/weight/hooks'
 import type { WeightEntry } from '../../../features/weight/api'
 import { MetricChart } from '../../../components/charts/MetricChart'
 import { Section, SaveStatus } from './Section'
+import { moduleColor } from '../../../lib/modules'
 import { useAutosave } from '../../../lib/useAutosave'
 
 function numOrNull(value: string): number | null {
@@ -36,8 +37,8 @@ function BodyForm({ date, entry }: { date: string; entry?: WeightEntry }) {
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-2">
         <label className="flex min-w-0 flex-col gap-1">
-          <span className="text-xs text-gray-400 dark:text-zinc-500">{t('weight.weightKg')}</span>
-          <div className="flex items-baseline gap-1 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2.5">
+          <span className="text-meta text-ink-mute">{t('weight.weightKg')}</span>
+          <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2.5">
             <input
               type="number"
               inputMode="decimal"
@@ -47,15 +48,15 @@ function BodyForm({ date, entry }: { date: string; entry?: WeightEntry }) {
               placeholder="–"
               value={weight}
               onChange={e => setWeight(e.target.value)}
-              className="w-full min-w-0 bg-transparent text-base font-semibold text-gray-900 dark:text-white outline-none"
+              className="w-full min-w-0 bg-transparent text-title font-semibold text-ink outline-none"
             />
-            <span className="text-xs text-gray-400 dark:text-zinc-500">kg</span>
+            <span className="text-meta text-ink-mute">kg</span>
           </div>
         </label>
 
         <label className="flex min-w-0 flex-col gap-1">
-          <span className="text-xs text-gray-400 dark:text-zinc-500">{t('weight.waistCm')}</span>
-          <div className="flex items-baseline gap-1 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2.5">
+          <span className="text-meta text-ink-mute">{t('weight.waistCm')}</span>
+          <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2.5">
             <input
               type="number"
               inputMode="decimal"
@@ -65,9 +66,9 @@ function BodyForm({ date, entry }: { date: string; entry?: WeightEntry }) {
               placeholder="–"
               value={waist}
               onChange={e => setWaist(e.target.value)}
-              className="w-full min-w-0 bg-transparent text-base font-semibold text-gray-900 dark:text-white outline-none"
+              className="w-full min-w-0 bg-transparent text-title font-semibold text-ink outline-none"
             />
-            <span className="text-xs text-gray-400 dark:text-zinc-500">cm</span>
+            <span className="text-meta text-ink-mute">cm</span>
           </div>
         </label>
       </div>
@@ -77,7 +78,7 @@ function BodyForm({ date, entry }: { date: string; entry?: WeightEntry }) {
         placeholder={t('weight.notePlaceholder')}
         value={notes}
         onChange={e => setNotes(e.target.value)}
-        className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
+        className="w-full rounded-control bg-raised px-3 py-2 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
       />
 
       <SaveStatus
@@ -102,16 +103,16 @@ export function WeightSection({ date }: { date: string }) {
   const chronological = [...entries].sort((a, b) => a.date.localeCompare(b.date))
 
   return (
-    <Section title={t('weight.title')} icon={<Scale size={15} />} summary={summary || undefined}>
+    <Section module="body" title={t('weight.title')} icon={<Scale size={15} />} summary={summary || undefined}>
       <div className="space-y-3">
         {isLoading
-          ? <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
+          ? <p className="py-4 text-center text-body text-ink-mute">{t('common.loading')}</p>
           : <BodyForm key={date} date={date} entry={entry} />}
         {chronological.length > 1 && (
           <MetricChart
             series={[
-              { label: t('weight.weightKg'), color: '#6366f1', unit: ' kg', averageOver: 7, points: chronological.map(e => ({ date: e.date, value: e.weightKg })) },
-              { label: t('weight.waistCm'), color: '#f59e0b', unit: ' cm', points: chronological.map(e => ({ date: e.date, value: e.waistCm })) },
+              { label: t('weight.weightKg'), color: moduleColor.body, unit: ' kg', averageOver: 7, points: chronological.map(e => ({ date: e.date, value: e.weightKg })) },
+              { label: t('weight.waistCm'), color: moduleColor.mind, unit: ' cm', points: chronological.map(e => ({ date: e.date, value: e.waistCm })) },
             ]}
           />
         )}

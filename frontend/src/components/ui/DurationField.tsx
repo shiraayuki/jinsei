@@ -64,11 +64,11 @@ export function DurationField({ label, icon, minutes, onChange }: Props) {
 
   return (
     <div>
-      <label className="mb-1 flex items-center gap-1 text-xs text-gray-400 dark:text-zinc-500">
+      <label className="mb-1 flex items-center gap-1 text-meta text-ink-mute">
         {icon} {label}
       </label>
       <div className="flex items-center gap-2">
-        <div className="flex min-w-0 flex-1 items-center gap-1 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2">
+        <div className="flex min-w-0 flex-1 items-center gap-1 rounded-control bg-raised px-3 py-2">
           <input
             type="number"
             inputMode="numeric"
@@ -79,11 +79,11 @@ export function DurationField({ label, icon, minutes, onChange }: Props) {
             value={text.h}
             onChange={e => update({ h: e.target.value, m: text.m })}
             onBlur={normalise}
-            className="w-full min-w-0 bg-transparent text-sm text-gray-900 dark:text-white outline-none"
+            className="w-full min-w-0 bg-transparent text-body text-ink outline-none"
           />
-          <span className="text-xs text-gray-400 dark:text-zinc-500">h</span>
+          <span className="text-meta text-ink-mute">h</span>
         </div>
-        <div className="flex min-w-0 flex-1 items-center gap-1 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2">
+        <div className="flex min-w-0 flex-1 items-center gap-1 rounded-control bg-raised px-3 py-2">
           <input
             type="number"
             inputMode="numeric"
@@ -93,9 +93,9 @@ export function DurationField({ label, icon, minutes, onChange }: Props) {
             value={text.m}
             onChange={e => update({ h: text.h, m: e.target.value })}
             onBlur={normalise}
-            className="w-full min-w-0 bg-transparent text-sm text-gray-900 dark:text-white outline-none"
+            className="w-full min-w-0 bg-transparent text-body text-ink outline-none"
           />
-          <span className="text-xs text-gray-400 dark:text-zinc-500">min</span>
+          <span className="text-meta text-ink-mute">min</span>
         </div>
       </div>
     </div>

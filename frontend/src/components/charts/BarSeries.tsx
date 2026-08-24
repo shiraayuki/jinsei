@@ -6,6 +6,7 @@ export function BarSeries({
   height = 48,
 }: {
   points: { date: string; value: number | null }[]
+  /** The module's colour as a CSS variable — see MetricChart on why. */
   color: string
   /** Fixed ceiling, e.g. 100 for a percentage. Defaults to the largest value. */
   max?: number
@@ -20,10 +21,12 @@ export function BarSeries({
       {points.map(p => (
         <div
           key={p.date}
-          className="flex-1 rounded-t-sm"
+          className="flex-1 rounded-t-[3px]"
           style={{
             height: p.value == null ? 2 : Math.max(2, (p.value / (ceiling || 1)) * (height - 4) + 2),
-            background: p.value == null ? 'rgba(120,120,130,0.18)' : color,
+            // A missing day is drawn as a stub in the hairline colour rather
+            // than in the series colour, so gaps read as gaps.
+            background: p.value == null ? 'var(--line-strong)' : color,
           }}
           title={`${p.date}: ${p.value ?? '–'}`}
         />

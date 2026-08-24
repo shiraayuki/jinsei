@@ -6,6 +6,7 @@ import { useActivityDay, useUpsertActivity } from '../../../features/activity/ho
 import { Section, SaveStatus } from './Section'
 import { useAutosave } from '../../../lib/useAutosave'
 import { GoalBar } from '../../../components/ui/GoalBar'
+import { moduleColor } from '../../../lib/modules'
 import { useAuth } from '../../../app/auth/AuthProvider'
 import type { ActivityEntry } from '../../../features/activity/api'
 
@@ -39,8 +40,8 @@ function ActivityForm({ date, entry }: { date: string; entry?: ActivityEntry }) 
   return (
     <div className="space-y-4">
       <div>
-        <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">{t('activity.steps')}</label>
-        <div className="flex items-baseline gap-2 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2.5">
+        <label className="mb-1 block text-meta text-ink-mute">{t('activity.steps')}</label>
+        <div className="flex items-baseline gap-2 rounded-control bg-raised px-3 py-2.5">
           <input
             type="number"
             inputMode="numeric"
@@ -48,24 +49,24 @@ function ActivityForm({ date, entry }: { date: string; entry?: ActivityEntry }) 
             placeholder="–"
             value={steps}
             onChange={e => setSteps(e.target.value)}
-            className="w-full min-w-0 bg-transparent text-base font-semibold text-gray-900 dark:text-white outline-none"
+            className="w-full min-w-0 bg-transparent text-title font-semibold text-ink outline-none"
           />
-          <span className="text-xs text-gray-400 dark:text-zinc-500">{t('activity.stepsUnit')}</span>
+          <span className="text-meta text-ink-mute">{t('activity.stepsUnit')}</span>
         </div>
         <div className="mt-1.5">
-          <GoalBar value={numOrNull(steps)} goal={user?.stepsGoal ?? null} />
+          <GoalBar value={numOrNull(steps)} goal={user?.stepsGoal ?? null} color={moduleColor.move} />
         </div>
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <span className="text-xs text-gray-400 dark:text-zinc-500">{t('activity.cardio')}</span>
+        <span className="text-meta text-ink-mute">{t('activity.cardio')}</span>
         <button
           type="button"
           role="switch"
           aria-checked={cardio}
           onClick={() => setCardio(v => !v)}
           className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-            cardio ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-zinc-700'
+            cardio ? 'bg-move' : 'bg-line-strong'
           }`}
         >
           <span
@@ -78,8 +79,8 @@ function ActivityForm({ date, entry }: { date: string; entry?: ActivityEntry }) 
 
       {cardio && (
         <div>
-          <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">{t('activity.cardioMinutes')}</label>
-          <div className="flex items-baseline gap-2 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2">
+          <label className="mb-1 block text-meta text-ink-mute">{t('activity.cardioMinutes')}</label>
+          <div className="flex items-baseline gap-2 rounded-control bg-raised px-3 py-2">
             <input
               type="number"
               inputMode="numeric"
@@ -87,9 +88,9 @@ function ActivityForm({ date, entry }: { date: string; entry?: ActivityEntry }) 
               placeholder="–"
               value={cardioMinutes}
               onChange={e => setCardioMinutes(e.target.value)}
-              className="w-full min-w-0 bg-transparent text-sm font-semibold text-gray-900 dark:text-white outline-none"
+              className="w-full min-w-0 bg-transparent text-body font-semibold text-ink outline-none"
             />
-            <span className="text-xs text-gray-400 dark:text-zinc-500">min</span>
+            <span className="text-meta text-ink-mute">min</span>
           </div>
         </div>
       )}
@@ -114,9 +115,9 @@ export function ActivitySection({ date }: { date: string }) {
       : undefined
 
   return (
-    <Section title={t('activity.title')} icon={<Footprints size={15} />} summary={summary}>
+    <Section module="move" title={t('activity.title')} icon={<Footprints size={15} />} summary={summary}>
       {isLoading
-        ? <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
+        ? <p className="py-4 text-center text-body text-ink-mute">{t('common.loading')}</p>
         : <ActivityForm key={date} date={date} entry={entry} />}
     </Section>
   )

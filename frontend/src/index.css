@@ -3,7 +3,49 @@
 
 @custom-variant dark (&:is(.dark, .dark *));
 
+/* ──────────────────────────────────────────────────────────────────────────
+ * Design tokens.
+ *
+ * Every colour, radius and text size in the app comes from here. The values
+ * live on :root so the dark theme can swap them in one place, and @theme
+ * inline re-exports them to Tailwind so `bg-surface` and `text-ink-mute`
+ * follow the theme without a `dark:` twin on every element.
+ * ────────────────────────────────────────────────────────────────────────── */
 :root {
+  /* Grounds. Slightly blue-biased neutrals rather than pure grey, so the
+     module colours below sit on something that shares their temperature. */
+  --ground: #f4f4f7;
+  --surface: #ffffff;
+  --raised: #efeff3;
+  --line: rgba(20, 20, 32, 0.10);
+  --line-strong: rgba(20, 20, 32, 0.18);
+
+  /* Text, from loudest to quietest. */
+  --ink: #16161d;
+  --ink-soft: #45454f;
+  --ink-mute: #6e6e7c;
+  --ink-faint: #9a9aa6;
+
+  /* Brand and navigation only — never a data series, never a state. */
+  --accent: #5b5be8;
+  --accent-soft: rgba(91, 91, 232, 0.10);
+
+  /* State vocabulary. Three meanings, identical on every screen. */
+  --good: #1e9a6e;
+  --warn: #b8811a;
+  --bad: #c9453f;
+
+  /* One colour per module, used for its icon, its chart series and its
+     summary line, so a graph is placeable before the label is read. */
+  --c-sleep: #6f5ce6;
+  --c-food: #1e9a6e;
+  --c-move: #1b8fa6;
+  --c-body: #3a76d8;
+  --c-train: #5b5be8;
+  --c-mind: #b8811a;
+
+  --card-shadow: 0 1px 2px rgba(20, 20, 32, 0.05), 0 8px 24px rgba(20, 20, 32, 0.06);
+
   --bottom-nav-height: 64px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
@@ -11,6 +53,76 @@
   --safe-left: env(safe-area-inset-left, 0px);
   /* Bottom nav plus the home-indicator strip underneath it. */
   --bottom-nav-total: calc(var(--bottom-nav-height) + var(--safe-bottom));
+}
+
+html.dark {
+  --ground: #0b0b11;
+  --surface: #15151c;
+  --raised: #1d1d26;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+
+  --ink: #ececf2;
+  --ink-soft: #c2c2ce;
+  --ink-mute: #8e8e9e;
+  --ink-faint: #62626f;
+
+  --accent: #8b8bfa;
+  --accent-soft: rgba(139, 139, 250, 0.14);
+
+  --good: #47c596;
+  --warn: #e0ae4a;
+  --bad: #e8706a;
+
+  --c-sleep: #9b8bfa;
+  --c-food: #47c596;
+  --c-move: #45bfd6;
+  --c-body: #6ba3f5;
+  --c-train: #8b8bfa;
+  --c-mind: #e0ae4a;
+
+  /* Dark cards separate themselves by lightness, not by a drop shadow. */
+  --card-shadow: none;
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-mute: var(--ink-mute);
+  --color-ink-faint: var(--ink-faint);
+
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-good: var(--good);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+
+  --color-sleep: var(--c-sleep);
+  --color-food: var(--c-food);
+  --color-move: var(--c-move);
+  --color-body: var(--c-body);
+  --color-train: var(--c-train);
+  --color-mind: var(--c-mind);
+
+  /* Seven steps, each with a job. Replaces eleven ad-hoc sizes. */
+  --text-label: 0.6875rem;
+  --text-meta: 0.8125rem;
+  --text-body: 0.9375rem;
+  --text-title: 1.0625rem;
+  --text-value: 1.25rem;
+  --text-head: 1.75rem;
+  --text-lead: 2.5rem;
+
+  --radius-chip: 7px;
+  --radius-control: 11px;
+  --radius-card: 18px;
 }
 
 html {
@@ -23,15 +135,17 @@ html {
 }
 
 body {
-  background-color: #f8f9fa;
-  color: #111827;
+  background-color: var(--ground);
+  color: var(--ink);
   font-family: 'DM Sans', system-ui, sans-serif;
   overscroll-behavior: none;
 }
 
-html.dark body {
-  background-color: #090909;
-  color: #f0f0f0;
+/* Figures line up in columns all over this app, so the tabular set is the
+   default rather than something each card has to remember. */
+input[type='number'],
+.tabular {
+  font-variant-numeric: tabular-nums;
 }
 
 h1, h2, h3, .font-display {
@@ -94,21 +208,13 @@ input[type='range'] {
 input[type='range']::-webkit-slider-runnable-track {
   height: 6px;
   border-radius: 999px;
-  background: #e5e7eb;
-}
-
-html.dark input[type='range']::-webkit-slider-runnable-track {
-  background: #27272a;
+  background: var(--raised);
 }
 
 input[type='range']::-moz-range-track {
   height: 6px;
   border-radius: 999px;
-  background: #e5e7eb;
-}
-
-html.dark input[type='range']::-moz-range-track {
-  background: #27272a;
+  background: var(--raised);
 }
 
 input[type='range']::-webkit-slider-thumb {
@@ -118,7 +224,7 @@ input[type='range']::-webkit-slider-thumb {
   height: 20px;
   width: 20px;
   border-radius: 999px;
-  background: #6366f1;
+  background: var(--accent);
 }
 
 input[type='range']::-moz-range-thumb {
@@ -126,50 +232,27 @@ input[type='range']::-moz-range-thumb {
   width: 20px;
   border: none;
   border-radius: 999px;
-  background: #6366f1;
+  background: var(--accent);
 }
 
-/* Glassmorphism card */
+/*
+ * The card. One definition for every surface in the app: dark separates by
+ * lightness, light by a soft shadow. The glass gradient it replaces only ever
+ * appeared on the dashboard, which is half of why that screen looked like a
+ * different app.
+ */
 .card {
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--card-shadow);
 }
 
-html.dark .card {
-  background: linear-gradient(135deg, rgba(39,39,42,0.8) 0%, rgba(24,24,27,0.9) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(8px);
-  box-shadow: none;
-}
-
-/* App-level backgrounds */
 .app-bg {
-  background-color: #f8f9fa;
-}
-html.dark .app-bg {
-  background-color: #090909;
+  background-color: var(--ground);
 }
 
 .nav-bg {
-  background: rgba(248, 249, 250, 0.92);
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
-html.dark .nav-bg {
-  background: rgba(9, 9, 9, 0.92);
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.surface {
-  background: white;
-}
-html.dark .surface {
-  background: #18181b;
-}
-
-.surface-raised {
-  background: #f3f4f6;
-}
-html.dark .surface-raised {
-  background: #27272a;
+  background: color-mix(in srgb, var(--ground) 92%, transparent);
+  border-top: 1px solid var(--line);
 }

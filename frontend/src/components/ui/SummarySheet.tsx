@@ -31,19 +31,19 @@ export function SummarySheet({ title, text, onClose }: { title: string; text: st
       onClick={onClose}
     >
       <div
-        className="flex flex-col rounded-t-2xl bg-white dark:bg-zinc-900"
+        className="flex flex-col rounded-t-card bg-surface"
         style={{
           maxHeight: 'calc(90dvh - var(--bottom-nav-total))',
           marginBottom: 'var(--bottom-nav-total)',
         }}
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-100 dark:border-zinc-800 px-4 py-3">
-          <h2 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">{title}</h2>
+        <div className="flex flex-shrink-0 items-center justify-between border-b border-line px-4 py-3">
+          <h2 className="text-body font-semibold text-ink">{title}</h2>
           <button
             onClick={onClose}
             aria-label={t('common.close')}
-            className="flex h-9 w-9 items-center justify-center text-gray-400 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-zinc-100"
+            className="flex h-9 w-9 items-center justify-center text-ink-mute hover:text-ink"
           >
             <X size={18} />
           </button>
@@ -55,17 +55,17 @@ export function SummarySheet({ title, text, onClose }: { title: string; text: st
             value={text}
             onFocus={e => e.currentTarget.select()}
             rows={14}
-            className="w-full resize-none rounded-xl bg-gray-50 dark:bg-zinc-800 p-3 font-mono text-xs leading-relaxed text-gray-800 dark:text-zinc-200 outline-none"
+            className="w-full resize-none rounded-control bg-raised p-3 font-mono text-meta leading-relaxed text-ink outline-none"
           />
           {failed && (
-            <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{t('today.copyFailed')}</p>
+            <p className="mt-2 text-meta text-warn">{t('today.copyFailed')}</p>
           )}
         </div>
 
         <div className="flex-shrink-0 px-4 pb-safe">
           <button
             onClick={copy}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500"
+            className="flex w-full items-center justify-center gap-2 rounded-control bg-accent py-3 text-body font-semibold text-white transition hover:brightness-110"
           >
             {copied ? <Check size={16} /> : <Copy size={16} />}
             {copied ? t('today.copied') : t('today.copy')}

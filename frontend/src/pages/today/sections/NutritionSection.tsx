@@ -9,6 +9,7 @@ import { useAutosave } from '../../../lib/useAutosave'
 import { ScreenshotImport } from '../../../components/ui/ScreenshotImport'
 import type { NutritionDraftFields } from '../../../features/import/api'
 import { GoalBar } from '../../../components/ui/GoalBar'
+import { moduleColor } from '../../../lib/modules'
 import { useAuth } from '../../../app/auth/AuthProvider'
 
 function numOrNull(value: string): number | null {
@@ -30,8 +31,8 @@ function MacroField({ label, color, value, onChange }: {
   onChange: (v: string) => void
 }) {
   return (
-    <label className="flex min-w-0 flex-col gap-1 rounded-xl bg-gray-100 dark:bg-zinc-800 p-3">
-      <span className="text-xs font-medium" style={{ color }}>{label}</span>
+    <label className="flex min-w-0 flex-col gap-1 rounded-control bg-raised p-3">
+      <span className="text-meta font-medium" style={{ color }}>{label}</span>
       <div className="flex min-w-0 items-baseline gap-1">
         <input
           type="number"
@@ -39,9 +40,9 @@ function MacroField({ label, color, value, onChange }: {
           placeholder="–"
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="w-full min-w-0 bg-transparent text-base font-semibold text-gray-900 dark:text-white outline-none"
+          className="w-full min-w-0 bg-transparent text-title font-semibold text-ink outline-none"
         />
-        <span className="text-xs text-gray-400 dark:text-zinc-500">g</span>
+        <span className="text-meta text-ink-mute">g</span>
       </div>
     </label>
   )
@@ -61,7 +62,7 @@ function Chips({ amounts, unit, onAdd, onReset }: {
           key={a.value}
           type="button"
           onClick={() => onAdd(a.value)}
-          className="rounded-lg bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-xs font-medium text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
+          className="rounded-chip bg-raised px-3 py-2 text-meta font-medium text-ink-soft hover:bg-line transition-colors"
         >
           +{a.label} {unit}
         </button>
@@ -69,7 +70,7 @@ function Chips({ amounts, unit, onAdd, onReset }: {
       <button
         type="button"
         onClick={onReset}
-        className="ml-auto rounded-lg px-3 py-2 text-xs font-medium text-gray-400 dark:text-zinc-500 hover:text-red-400 transition-colors"
+        className="ml-auto rounded-chip px-3 py-2 text-meta font-medium text-ink-mute hover:text-bad transition-colors"
       >
         {t('nutrition.reset')}
       </button>
@@ -141,8 +142,8 @@ function NutritionForm({ date, entry, onSelectDate }: {
       />
 
       <div>
-        <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">{t('nutrition.calories')}</label>
-        <div className="flex items-baseline gap-2 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2.5">
+        <label className="mb-1 block text-meta text-ink-mute">{t('nutrition.calories')}</label>
+        <div className="flex items-baseline gap-2 rounded-control bg-raised px-3 py-2.5">
           <input
             type="number"
             inputMode="numeric"
@@ -150,30 +151,30 @@ function NutritionForm({ date, entry, onSelectDate }: {
             placeholder="–"
             value={kcal}
             onChange={e => setKcal(e.target.value)}
-            className="w-full min-w-0 bg-transparent text-lg font-bold text-gray-900 dark:text-white outline-none"
+            className="w-full min-w-0 bg-transparent text-value font-bold text-ink outline-none"
           />
-          <span className="text-xs text-gray-400 dark:text-zinc-500">kcal</span>
+          <span className="text-meta text-ink-mute">kcal</span>
         </div>
         <div className="mt-1.5">
-          <GoalBar value={numOrNull(kcal)} goal={user?.kcalGoal ?? null} unit=" kcal" />
+          <GoalBar value={numOrNull(kcal)} goal={user?.kcalGoal ?? null} unit=" kcal" color={moduleColor.food} />
         </div>
       </div>
 
       <div className="space-y-2">
         <div className="grid grid-cols-3 gap-2">
-          <MacroField label={t('nutrition.protein')} color="#818cf8" value={protein} onChange={setProtein} />
-          <MacroField label={t('nutrition.carbs')} color="#34d399" value={carbs} onChange={setCarbs} />
-          <MacroField label={t('nutrition.fat')} color="#fbbf24" value={fat} onChange={setFat} />
+          <MacroField label={t('nutrition.protein')} color={moduleColor.food} value={protein} onChange={setProtein} />
+          <MacroField label={t('nutrition.carbs')} color="color-mix(in srgb, var(--c-food) 65%, var(--ink-mute))" value={carbs} onChange={setCarbs} />
+          <MacroField label={t('nutrition.fat')} color="var(--ink-mute)" value={fat} onChange={setFat} />
         </div>
 
         {macroKcal > 0 && (
           <>
-            <div className="flex h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-zinc-800">
-              <div style={{ width: `${share(p, 4)}%`, background: '#818cf8' }} />
-              <div style={{ width: `${share(c, 4)}%`, background: '#34d399' }} />
-              <div style={{ width: `${share(f, 9)}%`, background: '#fbbf24' }} />
+            <div className="flex h-2 overflow-hidden rounded-full bg-raised">
+              <div style={{ width: `${share(p, 4)}%`, background: moduleColor.food }} />
+              <div style={{ width: `${share(c, 4)}%`, background: 'color-mix(in srgb, var(--c-food) 55%, var(--surface))' }} />
+              <div style={{ width: `${share(f, 9)}%`, background: 'color-mix(in srgb, var(--c-food) 28%, var(--surface))' }} />
             </div>
-            <p className="text-[11px] text-gray-400 dark:text-zinc-500">
+            <p className="text-meta text-ink-mute">
               {share(p, 4)}% · {share(c, 4)}% · {share(f, 9)}% {t('nutrition.ofCalories')}
             </p>
           </>
@@ -182,10 +183,10 @@ function NutritionForm({ date, entry, onSelectDate }: {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
-          <span className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-zinc-500">
+          <span className="flex items-center gap-1.5 text-meta text-ink-mute">
             <Droplet size={13} /> {t('nutrition.water')}
           </span>
-          <div className="flex items-baseline gap-1 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2">
+          <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2">
             <input
               type="number"
               inputMode="decimal"
@@ -193,12 +194,12 @@ function NutritionForm({ date, entry, onSelectDate }: {
               placeholder="0"
               value={water}
               onChange={e => setWater(e.target.value)}
-              className="w-20 min-w-0 bg-transparent text-right text-sm font-semibold text-gray-900 dark:text-white outline-none"
+              className="w-20 min-w-0 bg-transparent text-right text-body font-semibold text-ink outline-none"
             />
-            <span className="text-xs text-gray-400 dark:text-zinc-500">L</span>
+            <span className="text-meta text-ink-mute">L</span>
           </div>
         </div>
-        <GoalBar value={numOrNull(water)} goal={user?.waterGoalL ?? null} unit=" L" />
+        <GoalBar value={numOrNull(water)} goal={user?.waterGoalL ?? null} unit=" L" color={moduleColor.food} />
         <Chips
           amounts={[{ label: '0,25', value: 0.25 }, { label: '0,5', value: 0.5 }, { label: '1', value: 1 }]}
           unit="L"
@@ -209,10 +210,10 @@ function NutritionForm({ date, entry, onSelectDate }: {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
-          <span className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-zinc-500">
+          <span className="flex items-center gap-1.5 text-meta text-ink-mute">
             <Coffee size={13} /> {t('nutrition.coffee')}
           </span>
-          <div className="flex items-baseline gap-1 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2">
+          <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2">
             <input
               type="number"
               inputMode="numeric"
@@ -220,9 +221,9 @@ function NutritionForm({ date, entry, onSelectDate }: {
               placeholder="0"
               value={coffee}
               onChange={e => setCoffee(e.target.value)}
-              className="w-20 min-w-0 bg-transparent text-right text-sm font-semibold text-gray-900 dark:text-white outline-none"
+              className="w-20 min-w-0 bg-transparent text-right text-body font-semibold text-ink outline-none"
             />
-            <span className="text-xs text-gray-400 dark:text-zinc-500">ml</span>
+            <span className="text-meta text-ink-mute">ml</span>
           </div>
         </div>
         <Chips
@@ -234,12 +235,12 @@ function NutritionForm({ date, entry, onSelectDate }: {
       </div>
 
       <div>
-        <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">{t('nutrition.lastCoffee')}</label>
+        <label className="mb-1 block text-meta text-ink-mute">{t('nutrition.lastCoffee')}</label>
         <input
           type="time"
           value={lastCoffee}
           onChange={e => setLastCoffee(e.target.value)}
-          className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full rounded-control bg-raised px-3 py-2 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
         />
       </div>
 
@@ -262,9 +263,9 @@ export function NutritionSection({ date, onSelectDate }: {
   const summary = entry?.kcal != null ? `${entry.kcal.toLocaleString(dateLocale())} kcal` : undefined
 
   return (
-    <Section title={t('nutrition.title')} icon={<Apple size={15} />} summary={summary}>
+    <Section module="food" title={t('nutrition.title')} icon={<Apple size={15} />} summary={summary}>
       {isLoading
-        ? <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
+        ? <p className="py-4 text-center text-body text-ink-mute">{t('common.loading')}</p>
         : <NutritionForm key={date} date={date} entry={entry} onSelectDate={onSelectDate} />}
     </Section>
   )

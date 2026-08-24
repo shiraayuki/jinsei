@@ -11,6 +11,7 @@ import { useActivityDay } from '../features/activity/hooks'
 import { useTranslation } from 'react-i18next'
 import { dateLocale } from '../i18n'
 import { todayIso } from '../lib/date'
+import { moduleColor, moduleTint } from '../lib/modules'
 
 function formatDuration(minutes: number) {
   const h = Math.floor(minutes / 60)
@@ -100,7 +101,7 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="min-h-dvh app-bg" style={{ backgroundImage: 'radial-gradient(ellipse at 50% -10%, rgba(99,102,241,0.07) 0%, transparent 55%)' }}>
+    <div className="min-h-dvh app-bg" style={{ backgroundImage: 'radial-gradient(ellipse at 50% -10%, var(--accent-soft) 0%, transparent 55%)' }}>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
@@ -109,18 +110,18 @@ export function DashboardPage() {
         className="flex items-start gap-3 px-5 pb-5 pt-12"
       >
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium tracking-widest text-zinc-600 uppercase">{formatDate()}</p>
-          <h1 className="mt-1 font-display text-[1.65rem] font-bold leading-tight text-zinc-800 dark:text-zinc-50">
-            {greeting()}, <span className="text-indigo-400">{name}</span>
+          <p className="text-meta font-medium tracking-widest text-ink-mute uppercase">{formatDate()}</p>
+          <h1 className="mt-1 font-display text-head font-bold leading-tight text-ink">
+            {greeting()}, <span className="text-accent">{name}</span>
           </h1>
         </div>
         {/* Profile lost its nav slot when the bar went down to four tabs. */}
         <Link
           to="/profile"
           aria-label={t('nav.profile')}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-400 dark:text-zinc-500 hover:text-indigo-400 transition-colors"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink-mute hover:text-accent transition-colors"
         >
-          <UserCircle size={24} strokeWidth={1.6} />
+          <UserCircle size={24} strokeWidth={1.75} />
         </Link>
       </motion.div>
 
@@ -133,37 +134,31 @@ export function DashboardPage() {
         {/* Habit card */}
         {totalHabits > 0 && (
           <motion.div variants={fadeUp} transition={{ duration: 0.35 }}>
-            <div className="card rounded-2xl p-4 shadow-xl shadow-black/30">
+            <div className="card p-4">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">{t('dashboard.today')}</p>
-                  <p className="mt-0.5 font-display text-xl font-bold text-zinc-800 dark:text-zinc-50">
+                  <p className="text-label font-semibold uppercase tracking-widest text-ink-mute">{t('dashboard.today')}</p>
+                  <p className="mt-0.5 font-display text-value font-bold text-ink">
                     {doneToday}
-                    <span className="text-zinc-500 font-normal text-base">/{totalHabits} Habits</span>
+                    <span className="text-ink-mute font-normal text-title">/{totalHabits} Habits</span>
                   </p>
                 </div>
 
                 {/* Animated progress ring */}
                 <div className="relative flex h-14 w-14 items-center justify-center">
                   <svg className="absolute inset-0 -rotate-90" viewBox="0 0 48 48">
-                    <circle cx="24" cy="24" r="20" fill="none" strokeWidth="3.5" stroke="rgba(255,255,255,0.06)" />
+                    <circle cx="24" cy="24" r="20" fill="none" strokeWidth="3.5" style={{ stroke: 'var(--line)' }} />
                     <motion.circle
                       cx="24" cy="24" r="20" fill="none" strokeWidth="3.5"
                       strokeLinecap="round"
-                      stroke="url(#ringGrad)"
+                      style={{ stroke: moduleColor.mind }}
                       strokeDasharray={circumference}
                       initial={{ strokeDashoffset: circumference }}
                       animate={{ strokeDashoffset: circumference * (1 - pct) }}
                       transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
                     />
-                    <defs>
-                      <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#818cf8" />
-                        <stop offset="100%" stopColor="#6366f1" />
-                      </linearGradient>
-                    </defs>
                   </svg>
-                  <span className="relative font-display text-xs font-bold text-zinc-600 dark:text-zinc-300">
+                  <span className="relative font-display text-meta font-bold text-ink-soft">
                     {Math.round(pct * 100)}%
                   </span>
                 </div>
@@ -171,29 +166,29 @@ export function DashboardPage() {
 
               <div className="space-y-0.5">
                 {activeHabits.slice(0, 4).map(habit => (
-                  <div key={habit.id} className="flex items-center gap-3 rounded-xl px-2 py-1.5">
+                  <div key={habit.id} className="flex items-center gap-3 rounded-control px-2 py-1.5">
                     <motion.button
                       whileTap={{ scale: 0.85 }}
                       onClick={() => toggleHabit(habit.id, habit.completedToday)}
                       disabled={log.isPending}
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-chip transition-colors ${
                         habit.completedToday
-                          ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-900/50'
-                          : 'border border-zinc-700/80 text-zinc-700 hover:border-indigo-500/60'
+                          ? 'bg-mind text-white'
+                          : 'border border-line-strong text-ink-faint hover:border-mind'
                       }`}
                     >
                       <motion.div
                         animate={habit.completedToday ? { scale: [1, 1.3, 1] } : { scale: 1 }}
                         transition={{ duration: 0.25 }}
                       >
-                        <Check size={13} strokeWidth={2.5} />
+                        <Check size={13} strokeWidth={1.75} />
                       </motion.div>
                     </motion.button>
-                    <span className={`flex-1 text-sm ${habit.completedToday ? 'text-gray-400 dark:text-zinc-600 line-through' : 'text-gray-800 dark:text-zinc-200'}`}>
+                    <span className={`flex-1 text-body ${habit.completedToday ? 'text-ink-faint line-through' : 'text-ink'}`}>
                       {habit.name}
                     </span>
                     {habit.streak > 0 && !habit.completedToday && (
-                      <span className="flex items-center gap-0.5 text-xs text-orange-400 font-medium">
+                      <span className="flex items-center gap-0.5 text-meta text-warn font-medium">
                         <Flame size={11} />
                         {habit.streak}
                       </span>
@@ -201,7 +196,7 @@ export function DashboardPage() {
                   </div>
                 ))}
                 {activeHabits.length > 4 && (
-                  <Link to="/habits" className="block px-2 pt-1.5 text-xs text-zinc-600 hover:text-indigo-400 transition-colors">
+                  <Link to="/habits" className="block px-2 pt-1.5 text-meta text-ink-mute hover:text-accent transition-colors">
                     {t('dashboard.moreHabits', { count: activeHabits.length - 4 })}
                   </Link>
                 )}
@@ -212,7 +207,7 @@ export function DashboardPage() {
 
         {totalHabits === 0 && (
           <motion.div variants={fadeUp} transition={{ duration: 0.35 }}>
-            <Link to="/habits/new" className="flex items-center justify-between rounded-2xl border border-dashed border-zinc-800 px-4 py-4 text-sm text-zinc-600 hover:border-indigo-500/40 hover:text-zinc-400 transition-colors">
+            <Link to="/habits/new" className="flex items-center justify-between rounded-card border border-dashed border-line px-4 py-4 text-body text-ink-mute hover:border-accent hover:text-ink-soft transition-colors">
               <span>{t('dashboard.addHabits')}</span>
               <ChevronRight size={16} />
             </Link>
@@ -221,22 +216,22 @@ export function DashboardPage() {
 
         {/* What the day looks like so far */}
         <motion.div variants={fadeUp} transition={{ duration: 0.35 }}>
-          <div className="card rounded-2xl p-4 shadow-xl shadow-black/30">
+          <div className="card p-4">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">{t('dashboard.todaySoFar')}</p>
-              <Link to="/today" className="flex items-center gap-1 text-[11px] text-zinc-600 hover:text-indigo-400 transition-colors">
+              <p className="text-label font-semibold uppercase tracking-widest text-ink-mute">{t('dashboard.todaySoFar')}</p>
+              <Link to="/today" className="flex items-center gap-1 text-meta text-ink-mute hover:text-accent transition-colors">
                 {t('dashboard.logNow')} <ChevronRight size={11} />
               </Link>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <Link to="/today" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
-                <Apple size={15} className="shrink-0 text-emerald-400" strokeWidth={1.8} />
+              <Link to="/today" className="flex items-center gap-2.5 rounded-control bg-raised px-3 py-2.5 hover:bg-line transition-colors">
+                <Apple size={15} className="shrink-0 text-food" strokeWidth={1.75} />
                 <div className="min-w-0">
-                  <p className="truncate text-base font-bold text-zinc-100 leading-none">
+                  <p className="truncate font-display text-title font-semibold text-ink leading-none tabular">
                     {todayNutrition?.kcal != null ? todayNutrition.kcal.toLocaleString(dateLocale()) : '–'}
                   </p>
-                  <p className="mt-0.5 truncate text-[10px] text-zinc-500">
+                  <p className="mt-0.5 truncate text-label text-ink-mute">
                     {todayNutrition?.proteinG != null
                       ? t('dashboard.kcalWithProtein', { protein: todayNutrition.proteinG })
                       : 'kcal'}
@@ -244,38 +239,38 @@ export function DashboardPage() {
                 </div>
               </Link>
 
-              <Link to="/today" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
-                <Footprints size={15} className="shrink-0 text-cyan-400" strokeWidth={1.8} />
+              <Link to="/today" className="flex items-center gap-2.5 rounded-control bg-raised px-3 py-2.5 hover:bg-line transition-colors">
+                <Footprints size={15} className="shrink-0 text-move" strokeWidth={1.75} />
                 <div className="min-w-0">
-                  <p className="truncate text-base font-bold text-zinc-100 leading-none">
+                  <p className="truncate font-display text-title font-semibold text-ink leading-none tabular">
                     {todayActivity?.steps != null ? todayActivity.steps.toLocaleString(dateLocale()) : '–'}
                   </p>
-                  <p className="mt-0.5 truncate text-[10px] text-zinc-500">{t('activity.stepsUnit')}</p>
+                  <p className="mt-0.5 truncate text-label text-ink-mute">{t('activity.stepsUnit')}</p>
                 </div>
               </Link>
 
-              <Link to="/today" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
-                <Moon size={15} className="shrink-0 text-violet-400" strokeWidth={1.8} />
+              <Link to="/today" className="flex items-center gap-2.5 rounded-control bg-raised px-3 py-2.5 hover:bg-line transition-colors">
+                <Moon size={15} className="shrink-0 text-sleep" strokeWidth={1.75} />
                 <div className="min-w-0">
-                  <p className="truncate text-base font-bold text-zinc-100 leading-none">
+                  <p className="truncate font-display text-title font-semibold text-ink leading-none tabular">
                     {lastNightMinutes != null ? formatDuration(lastNightMinutes) : '–'}
                   </p>
-                  <p className="mt-0.5 truncate text-[10px] text-zinc-500">{t('dashboard.lastNight')}</p>
+                  <p className="mt-0.5 truncate text-label text-ink-mute">{t('dashboard.lastNight')}</p>
                 </div>
               </Link>
 
-              <Link to="/today" className="flex items-center gap-2.5 rounded-xl bg-zinc-800/50 px-3 py-2.5 hover:bg-zinc-700/50 transition-colors">
-                <Scale size={15} className="shrink-0 text-sky-400" strokeWidth={1.8} />
+              <Link to="/today" className="flex items-center gap-2.5 rounded-control bg-raised px-3 py-2.5 hover:bg-line transition-colors">
+                <Scale size={15} className="shrink-0 text-body" strokeWidth={1.75} />
                 <div className="min-w-0">
-                  <p className="truncate text-base font-bold text-zinc-100 leading-none">
+                  <p className="truncate font-display text-title font-semibold text-ink leading-none tabular">
                     {latestWeight?.weightKg != null ? `${latestWeight.weightKg} kg` : '–'}
                   </p>
                   {weightDelta != null ? (
-                    <p className={`mt-0.5 text-[10px] ${weightDelta > 0 ? 'text-rose-400' : weightDelta < 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                    <p className={`mt-0.5 text-label ${weightDelta > 0 ? 'text-bad' : weightDelta < 0 ? 'text-good' : 'text-ink-mute'}`}>
                       {weightDelta > 0 ? '+' : ''}{weightDelta} kg
                     </p>
                   ) : (
-                    <p className="mt-0.5 truncate text-[10px] text-zinc-500">{t('dashboard.weight')}</p>
+                    <p className="mt-0.5 truncate text-label text-ink-mute">{t('dashboard.weight')}</p>
                   )}
                 </div>
               </Link>
@@ -284,36 +279,36 @@ export function DashboardPage() {
             {/* Water and coffee are the two things logged repeatedly during the
                 day, so they get a one-tap path that saves straight away. */}
             <div className="mt-2 flex items-center gap-2">
-              <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-xl bg-zinc-800/50 px-3 py-2">
-                <Droplet size={14} className="shrink-0 text-blue-400" strokeWidth={1.8} />
-                <span className="text-sm font-semibold text-zinc-100">
+              <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-control bg-raised px-3 py-2">
+                <Droplet size={14} className="shrink-0 text-food" strokeWidth={1.75} />
+                <span className="text-body font-semibold text-ink">
                   {(todayNutrition?.waterL ?? 0).toLocaleString(dateLocale())}
                 </span>
-                <span className="text-[10px] text-zinc-500">L</span>
+                <span className="text-label text-ink-mute">L</span>
                 <button
                   onClick={() => addDrink({ waterL: (todayNutrition?.waterL ?? 0) + 0.25 })}
                   disabled={quickAdd.isPending}
-                  className="ml-auto rounded-lg bg-zinc-700/60 px-2 py-1 text-[11px] font-medium text-zinc-200 hover:bg-zinc-600/60 disabled:opacity-40"
+                  className="ml-auto rounded-chip bg-line px-2 py-1 text-meta font-medium text-ink hover:bg-line-strong disabled:opacity-40"
                 >
                   +0,25
                 </button>
               </div>
 
-              <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-xl bg-zinc-800/50 px-3 py-2">
-                <Coffee size={14} className="shrink-0 text-amber-400" strokeWidth={1.8} />
-                <span className="text-sm font-semibold text-zinc-100">{todayNutrition?.coffeeMl ?? 0}</span>
-                <span className="text-[10px] text-zinc-500">ml</span>
+              <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-control bg-raised px-3 py-2">
+                <Coffee size={14} className="shrink-0 text-food" strokeWidth={1.75} />
+                <span className="text-body font-semibold text-ink">{todayNutrition?.coffeeMl ?? 0}</span>
+                <span className="text-label text-ink-mute">ml</span>
                 <button
                   onClick={() => addDrink({ coffeeMl: (todayNutrition?.coffeeMl ?? 0) + 200, lastCoffee: nowHhMm() })}
                   disabled={quickAdd.isPending}
-                  className="ml-auto rounded-lg bg-zinc-700/60 px-2 py-1 text-[11px] font-medium text-zinc-200 hover:bg-zinc-600/60 disabled:opacity-40"
+                  className="ml-auto rounded-chip bg-line px-2 py-1 text-meta font-medium text-ink hover:bg-line-strong disabled:opacity-40"
                 >
                   +200
                 </button>
               </div>
             </div>
 
-            <Link to="/metrics" className="mt-2 flex items-center justify-end gap-1 text-[11px] text-zinc-600 hover:text-indigo-400 transition-colors">
+            <Link to="/metrics" className="mt-2 flex items-center justify-end gap-1 text-meta text-ink-mute hover:text-accent transition-colors">
               {t('metrics.title')} <ChevronRight size={11} />
             </Link>
           </div>
@@ -322,21 +317,23 @@ export function DashboardPage() {
         {/* Workout section */}
         <motion.div variants={fadeUp} transition={{ duration: 0.35 }} className="space-y-2">
           {lastWorkout && (
-            <Link to={`/workouts/${lastWorkout.id}`} className="card flex items-center gap-3 rounded-2xl px-4 py-3 hover:border-white/10 transition-colors">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                style={{ background: 'rgba(99,102,241,0.1)' }}>
-                <Dumbbell size={18} strokeWidth={1.8} className="text-indigo-400" />
+            <Link to={`/workouts/${lastWorkout.id}`} className="card flex items-center gap-3 rounded-card px-4 py-3 hover:border-white/10 transition-colors">
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control"
+                style={{ background: moduleTint('train'), color: moduleColor.train }}
+              >
+                <Dumbbell size={18} strokeWidth={1.75} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs text-gray-400 dark:text-zinc-600">{t('dashboard.lastWorkout')}</p>
-                <p className="text-sm font-semibold text-gray-800 dark:text-zinc-200">{lastWorkout.title}</p>
-                <p className="text-xs text-gray-400 dark:text-zinc-600">
+                <p className="text-meta text-ink-faint">{t('dashboard.lastWorkout')}</p>
+                <p className="text-body font-semibold text-ink">{lastWorkout.title}</p>
+                <p className="text-meta text-ink-faint">
                   {new Date(lastWorkout.date + 'T00:00:00').toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric', month: 'short' })}
                   {lastWorkout.durationMinutes ? ` · ${lastWorkout.durationMinutes} min` : ''}
                   {` · ${lastWorkout.setCount} Sets`}
                 </p>
               </div>
-              <ChevronRight size={15} className="text-zinc-700" />
+              <ChevronRight size={15} className="text-ink-faint" />
             </Link>
           )}
         </motion.div>

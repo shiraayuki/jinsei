@@ -13,7 +13,7 @@ function Scale({ label, value, onChange }: {
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">{label}</label>
+      <label className="mb-1 block text-meta text-ink-mute">{label}</label>
       <div className="flex gap-1.5">
         {[1, 2, 3, 4, 5].map(n => (
           <button
@@ -21,10 +21,10 @@ function Scale({ label, value, onChange }: {
             type="button"
             // Tapping the active value clears it, so a day can stay unanswered.
             onClick={() => onChange(value === n ? null : n)}
-            className={`h-10 flex-1 rounded-xl text-sm font-semibold transition-colors ${
+            className={`h-10 flex-1 rounded-control text-body font-semibold transition-colors ${
               value === n
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                ? 'bg-accent text-white'
+                : 'bg-raised text-ink-soft hover:bg-line'
             }`}
           >
             {n}
@@ -58,7 +58,7 @@ function WellbeingForm({ date, entry }: { date: string; entry?: WellbeingEntry }
         placeholder={t('wellbeing.notePlaceholder')}
         value={notes}
         onChange={e => setNotes(e.target.value)}
-        className="w-full resize-none rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
+        className="w-full resize-none rounded-control bg-raised px-3 py-2 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
       />
 
       <SaveStatus
@@ -80,9 +80,9 @@ export function WellbeingSection({ date }: { date: string }) {
   ].filter(Boolean).join(' · ')
 
   return (
-    <Section title={t('wellbeing.title')} icon={<Smile size={15} />} summary={summary || undefined}>
+    <Section module="mind" title={t('wellbeing.title')} icon={<Smile size={15} />} summary={summary || undefined}>
       {isLoading
-        ? <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
+        ? <p className="py-4 text-center text-body text-ink-mute">{t('common.loading')}</p>
         : <WellbeingForm key={date} date={date} entry={entry} />}
     </Section>
   )

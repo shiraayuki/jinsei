@@ -32,7 +32,7 @@ export function AppShell() {
       </main>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-50 nav-bg border-t border-black/[0.06] dark:border-white/[0.04]"
+        className="fixed inset-x-0 bottom-0 z-50 nav-bg"
         style={{
           backdropFilter: 'blur(20px)',
           // Keep the labels clear of the home indicator.
@@ -57,25 +57,19 @@ export function AppShell() {
                   {isActive && (
                     <motion.div
                       layoutId="navPill"
-                      className="absolute inset-x-1 inset-y-1 rounded-xl"
-                      style={{ background: 'rgba(99,102,241,0.12)' }}
+                      className="absolute inset-x-1 inset-y-1 rounded-control"
+                      style={{ background: 'var(--accent-soft)' }}
                       transition={{ type: 'spring', bounce: 0.2, duration: 0.35 }}
                     />
                   )}
-                  <motion.div
-                    animate={{ scale: isActive ? 1.05 : 1 }}
-                    transition={{ type: 'spring', bounce: 0.3, duration: 0.25 }}
-                    className="relative flex flex-col items-center gap-1"
-                  >
-                    <Icon
-                      size={21}
-                      strokeWidth={isActive ? 2.2 : 1.7}
-                      className={isActive ? 'text-indigo-400' : 'text-gray-400 dark:text-zinc-600'}
-                    />
-                    <span className={`text-[11px] font-semibold tracking-wide ${isActive ? 'text-indigo-400' : 'text-gray-400 dark:text-zinc-600'}`}>
+                  {/* The pill and the colour already say which tab is active;
+                      scaling the icon on top of that only made the row wobble. */}
+                  <div className="relative flex flex-col items-center gap-1">
+                    <Icon size={20} strokeWidth={1.75} className={isActive ? 'text-accent' : 'text-ink-faint'} />
+                    <span className={`text-meta font-semibold tracking-wide ${isActive ? 'text-accent' : 'text-ink-faint'}`}>
                       {label}
                     </span>
-                  </motion.div>
+                  </div>
                 </>
               )}
             </NavLink>
