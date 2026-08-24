@@ -84,6 +84,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
+// The hook belongs with the provider it reads; splitting it costs more than
+// the lost hot update while this file is being edited.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(Ctx)
 }

@@ -5,7 +5,7 @@ import { PageHeader } from '../../components/ui/PageHeader'
 import { Button } from '../../components/ui/Button'
 import { useHabits, useHabitEntries, useLogEntry, useArchiveHabit, useHabitStats } from '../../features/habits/hooks'
 import type { HabitStats } from '../../features/habits/api'
-import { toIsoDate } from '../../lib/date'
+import { shiftIso, toIsoDate } from '../../lib/date'
 
 function isoDate(d: Date) {
   return toIsoDate(d)
@@ -99,7 +99,10 @@ export function HabitDetailPage() {
   const habit = habits?.find(h => h.id === id)
 
   const today = isoDate(new Date())
-  const fromDate = isoDate(new Date(Date.now() - 89 * 86400000))
+  // Derived from the day itself rather than a timestamp: reading the clock
+  // twice in one render can straddle midnight, and a raw millisecond offset
+  // ignores daylight saving.
+  const fromDate = shiftIso(today, -89)
   const { data: entries } = useHabitEntries(id!, fromDate, today)
 
   const log = useLogEntry()
