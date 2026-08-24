@@ -17,8 +17,18 @@ class QueuedOfflineError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+interface Options {
+  /**
+   * Whether a write that never reached the server should be parked in the
+   * outbox. Only true for writes that are upserts — replaying anything else
+   * later would apply it to a day the user has long moved on from.
+   */
+  queueOffline?: boolean
+}
+
+async function request<T>(path: string, init?: RequestInit, opts?: Options): Promise<T> {
   const method = init?.method ?? 'GET'
+  const queueOffline = opts?.queueOffline ?? true
 
   let res: Response
   try {
@@ -30,7 +40,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   } catch (cause) {
     // The request never reached the server. Writes are upserts, so parking one
     // and replaying it later lands the same row; a read has nothing to park.
-    if (method !== 'GET') {
+    if (method !== 'GET' && queueOffline) {
       enqueue(`${BASE}${path}`, method, init?.body as string | undefined)
       throw new QueuedOfflineError()
     }
@@ -54,8 +64,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, body?: unknown) =>
-    request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+  post: <T>(path: string, body?: unknown, opts?: Options) =>
+    request<T>(path, { method: 'POST', body: JSON.stringify(body) }, opts),
   put: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),

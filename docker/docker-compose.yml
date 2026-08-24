@@ -22,6 +22,10 @@ services:
       # itself as unconfigured and nothing else changes.
       Hevy__ApiKey: ${HEVY_API_KEY:-}
       Hevy__TimeZone: ${TZ:-Europe/Vienna}
+      # Reads screenshots of Sleep Cycle / FatSecret into a draft. Without a
+      # key the import button stays hidden and everything is entered by hand.
+      Anthropic__ApiKey: ${ANTHROPIC_API_KEY:-}
+      Anthropic__Model: ${ANTHROPIC_MODEL:-claude-opus-5}
     volumes:
       - dataprotection_keys:/root/.aspnet/DataProtection-Keys
     depends_on:

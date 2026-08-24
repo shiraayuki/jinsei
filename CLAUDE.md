@@ -54,3 +54,4 @@ The backend container exposes 8080 internally only (no host port mapping), so it
 - **Sleep** is stored as durations, not clock times: `time_in_bed_minutes`, `actual_sleep_minutes`, and `quality` as the 0–100 percentage Sleep Cycle reports. Efficiency is derived, never stored.
 - **Nutrition** is one hand-entered row per day (calories, macros, water, coffee, time of the last coffee). There is no food database and no external nutrition source.
 - Sleep and nutrition are unique per `(user_id, date)` and written through upserts keyed on the date.
+- **Screenshot import** (`POST /api/import/screenshot`) reads a Sleep Cycle or FatSecret screenshot with the Claude API and returns a *draft* — it never writes. The client fills the normal form with it and the day still goes through the sleep/nutrition upserts on confirm. Needs `Anthropic:ApiKey`; without it `GET /api/import/status` reports `configured: false` and the frontend hides the button.

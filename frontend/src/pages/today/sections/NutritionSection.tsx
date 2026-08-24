@@ -5,6 +5,8 @@ import { dateLocale } from '../../../i18n'
 import { useNutritionDay, useUpsertNutrition } from '../../../features/nutrition/hooks'
 import type { NutritionEntry } from '../../../features/nutrition/api'
 import { Section, SaveButton } from './Section'
+import { ScreenshotImport } from '../../../components/ui/ScreenshotImport'
+import type { NutritionDraftFields } from '../../../features/import/api'
 import { GoalBar } from '../../../components/ui/GoalBar'
 import { useAuth } from '../../../app/auth/AuthProvider'
 
@@ -78,7 +80,11 @@ function Chips({ amounts, unit, onAdd, onReset }: {
  * Remounted by the parent whenever the loaded day changes, so the fields can be
  * seeded from the entry once instead of being synced in an effect.
  */
-function NutritionForm({ date, entry }: { date: string; entry?: NutritionEntry }) {
+function NutritionForm({ date, entry, onSelectDate }: {
+  date: string
+  entry?: NutritionEntry
+  onSelectDate?: (date: string) => void
+}) {
   const { t } = useTranslation()
   const upsert = useUpsertNutrition()
   const { user } = useAuth()
@@ -119,6 +125,20 @@ function NutritionForm({ date, entry }: { date: string; entry?: NutritionEntry }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      <ScreenshotImport<NutritionDraftFields>
+        kind="nutrition"
+        date={date}
+        onSelectDate={onSelectDate}
+        // Water and coffee are not in a FatSecret screenshot, so they are left
+        // to the chips below; a macro the screenshot did not show stays as it is.
+        onApply={f => {
+          if (f.kcal != null) setKcal(String(f.kcal))
+          if (f.proteinG != null) setProtein(String(f.proteinG))
+          if (f.carbsG != null) setCarbs(String(f.carbsG))
+          if (f.fatG != null) setFat(String(f.fatG))
+        }}
+      />
+
       <div>
         <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">{t('nutrition.calories')}</label>
         <div className="flex items-baseline gap-2 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2.5">
@@ -227,7 +247,10 @@ function NutritionForm({ date, entry }: { date: string; entry?: NutritionEntry }
   )
 }
 
-export function NutritionSection({ date }: { date: string }) {
+export function NutritionSection({ date, onSelectDate }: {
+  date: string
+  onSelectDate?: (date: string) => void
+}) {
   const { t } = useTranslation()
   const { data: entry, isLoading } = useNutritionDay(date)
 
@@ -237,7 +260,7 @@ export function NutritionSection({ date }: { date: string }) {
     <Section title={t('nutrition.title')} icon={<Apple size={15} />} summary={summary}>
       {isLoading
         ? <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
-        : <NutritionForm key={`${date}:${entry?.id ?? 'new'}`} date={date} entry={entry} />}
+        : <NutritionForm key={`${date}:${entry?.id ?? 'new'}`} date={date} entry={entry} onSelectDate={onSelectDate} />}
     </Section>
   )
 }

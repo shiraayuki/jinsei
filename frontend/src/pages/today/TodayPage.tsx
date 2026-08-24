@@ -91,9 +91,9 @@ export function TodayPage() {
       )}
 
       <div className="space-y-3 p-4">
-        <NutritionSection date={date} />
+        <NutritionSection date={date} onSelectDate={setDate} />
         <ActivitySection date={date} />
-        <SleepSection date={date} />
+        <SleepSection date={date} onSelectDate={setDate} />
         <WeightSection date={date} />
         <WellbeingSection date={date} />
       </div>

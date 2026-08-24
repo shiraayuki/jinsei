@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { useSleep, useUpsertSleep } from '../../../features/sleep/hooks'
 import type { SleepEntry } from '../../../features/sleep/api'
 import { DurationField } from '../../../components/ui/DurationField'
+import { ScreenshotImport } from '../../../components/ui/ScreenshotImport'
+import type { SleepDraftFields } from '../../../features/import/api'
 import { Section, SaveButton } from './Section'
 
 function formatDuration(minutes: number | null) {
@@ -18,7 +20,11 @@ function formatDuration(minutes: number | null) {
  * changes: the fields are seeded from the entry once, which keeps the form from
  * having to sync itself in an effect.
  */
-function SleepForm({ date, entry }: { date: string; entry?: SleepEntry }) {
+function SleepForm({ date, entry, onSelectDate }: {
+  date: string
+  entry?: SleepEntry
+  onSelectDate?: (date: string) => void
+}) {
   const { t } = useTranslation()
   const upsert = useUpsertSleep()
 
@@ -47,6 +53,19 @@ function SleepForm({ date, entry }: { date: string; entry?: SleepEntry }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <ScreenshotImport<SleepDraftFields>
+        kind="sleep"
+        date={date}
+        onSelectDate={onSelectDate}
+        // A field the screenshot did not show keeps whatever is already in the
+        // form instead of being wiped.
+        onApply={f => {
+          if (f.timeInBedMinutes != null) setInBed(f.timeInBedMinutes)
+          if (f.actualSleepMinutes != null) setAsleep(f.actualSleepMinutes)
+          if (f.quality != null) setQuality(f.quality)
+        }}
+      />
+
       <DurationField
         label={t('sleep.timeInBed')}
         icon={<Bed size={13} />}
@@ -109,7 +128,10 @@ function SleepForm({ date, entry }: { date: string; entry?: SleepEntry }) {
   )
 }
 
-export function SleepSection({ date }: { date: string }) {
+export function SleepSection({ date, onSelectDate }: {
+  date: string
+  onSelectDate?: (date: string) => void
+}) {
   const { t } = useTranslation()
   const { data: entries = [], isLoading } = useSleep(180)
   const entry = entries.find(e => e.date === date)
@@ -124,7 +146,7 @@ export function SleepSection({ date }: { date: string }) {
     <Section title={t('sleep.title')} icon={<Moon size={15} />} summary={summary || undefined}>
       {isLoading
         ? <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
-        : <SleepForm key={`${date}:${entry?.id ?? 'new'}`} date={date} entry={entry} />}
+        : <SleepForm key={`${date}:${entry?.id ?? 'new'}`} date={date} entry={entry} onSelectDate={onSelectDate} />}
     </Section>
   )
 }
