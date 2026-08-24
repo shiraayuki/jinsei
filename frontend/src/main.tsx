@@ -8,6 +8,7 @@ import { ThemeProvider } from './app/theme/ThemeProvider'
 import { AppRouter } from './app/router'
 import { ErrorBoundary } from './components/layout/ErrorBoundary'
 import { queryClient } from './app/queryClient'
+import { resetColdStartRoute } from './lib/coldStart'
 import './index.css'
 
 // A lazy route whose chunk is missing (the client is running a build that has
@@ -25,6 +26,8 @@ window.addEventListener('vite:preloadError', event => {
   sessionStorage.setItem(RELOAD_KEY, String(Date.now()))
   window.location.reload()
 })
+
+resetColdStartRoute()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { dateLocale } from '../../../i18n'
 import { useNutritionDay, useUpsertNutrition } from '../../../features/nutrition/hooks'
 import type { NutritionEntry } from '../../../features/nutrition/api'
-import { Section, SaveButton } from './Section'
+import { Section, SaveStatus } from './Section'
+import { useAutosave } from '../../../lib/useAutosave'
 import { ScreenshotImport } from '../../../components/ui/ScreenshotImport'
 import type { NutritionDraftFields } from '../../../features/import/api'
 import { GoalBar } from '../../../components/ui/GoalBar'
@@ -108,9 +109,8 @@ function NutritionForm({ date, entry, onSelectDate }: {
   const share = (grams: number, perGram: number) =>
     macroKcal > 0 ? Math.round((grams * perGram * 100) / macroKcal) : 0
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    upsert.mutate({
+  useAutosave(
+    {
       date,
       kcal: numOrNull(kcal),
       proteinG: numOrNull(protein),
@@ -120,11 +120,12 @@ function NutritionForm({ date, entry, onSelectDate }: {
       coffeeMl: numOrNull(coffee),
       lastCoffee: lastCoffee || null,
       notes: null,
-    })
-  }
+    },
+    values => upsert.mutate(values),
+  )
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <div className="space-y-5">
       <ScreenshotImport<NutritionDraftFields>
         kind="nutrition"
         date={date}
@@ -242,8 +243,12 @@ function NutritionForm({ date, entry, onSelectDate }: {
         />
       </div>
 
-      <SaveButton pending={upsert.isPending} label={t('common.save')} />
-    </form>
+      <SaveStatus
+        pending={upsert.isPending}
+        savedAt={upsert.isSuccess ? upsert.submittedAt : undefined}
+        error={upsert.error}
+      />
+    </div>
   )
 }
 
@@ -260,7 +265,7 @@ export function NutritionSection({ date, onSelectDate }: {
     <Section title={t('nutrition.title')} icon={<Apple size={15} />} summary={summary}>
       {isLoading
         ? <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
-        : <NutritionForm key={`${date}:${entry?.id ?? 'new'}`} date={date} entry={entry} onSelectDate={onSelectDate} />}
+        : <NutritionForm key={date} date={date} entry={entry} onSelectDate={onSelectDate} />}
     </Section>
   )
 }

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 interface Props {
   label: string
@@ -8,23 +8,58 @@ interface Props {
   onChange: (minutes: number | null) => void
 }
 
+function split(total: number | null) {
+  if (total == null) return { h: '', m: '' }
+  return { h: String(Math.floor(total / 60)), m: String(total % 60) }
+}
+
 /**
  * Hours and minutes as two number fields. A duration is what Sleep Cycle
  * reports, and entering "7 h 20" is quicker on a phone than deriving it from
  * two clock times.
+ *
+ * What is typed is kept as text and only turned into a number on the way out.
+ * Rewriting the fields from the parsed value on every keystroke made them
+ * impossible to type in: clearing one field refilled it with "0", and a
+ * half-typed number was clamped before it was finished.
  */
 export function DurationField({ label, icon, minutes, onChange }: Props) {
-  const hours = minutes == null ? '' : String(Math.floor(minutes / 60))
-  const mins = minutes == null ? '' : String(minutes % 60)
+  const [text, setText] = useState(() => split(minutes))
 
-  function update(nextHours: string, nextMins: string) {
-    if (nextHours === '' && nextMins === '') {
+  // Follow the value when it is changed from outside — a screenshot import, or
+  // switching to another day — without disturbing what is being typed.
+  const own = useRef<number | null>(minutes)
+  useEffect(() => {
+    if (minutes === own.current) return
+    own.current = minutes
+    setText(split(minutes))
+  }, [minutes])
+
+  function update(next: { h: string; m: string }) {
+    setText(next)
+
+    if (next.h.trim() === '' && next.m.trim() === '') {
+      own.current = null
       onChange(null)
       return
     }
-    const h = Math.min(24, Math.max(0, Number(nextHours) || 0))
-    const m = Math.min(59, Math.max(0, Number(nextMins) || 0))
-    onChange(h * 60 + m)
+
+    // Minutes past 59 carry into hours, so "95" in the minute field is a
+    // perfectly good way to say an hour and a half.
+    const total = Math.max(0, Math.min(1440, (Number(next.h) || 0) * 60 + (Number(next.m) || 0)))
+    own.current = total
+    onChange(total)
+  }
+
+  /**
+   * Tidies "70" minutes into "1 h 10" once the field is left, never while
+   * typing. Only the carry is rewritten: filling an empty field with "0"
+   * because the other one has a value is what made these impossible to type
+   * in to begin with.
+   */
+  function normalise() {
+    if (text.m.trim() === '' || Number(text.m) <= 59) return
+    setText(split(own.current))
   }
 
   return (
@@ -39,9 +74,11 @@ export function DurationField({ label, icon, minutes, onChange }: Props) {
             inputMode="numeric"
             min={0}
             max={24}
+            step={1}
             placeholder="–"
-            value={hours}
-            onChange={e => update(e.target.value, mins)}
+            value={text.h}
+            onChange={e => update({ h: e.target.value, m: text.m })}
+            onBlur={normalise}
             className="w-full min-w-0 bg-transparent text-sm text-gray-900 dark:text-white outline-none"
           />
           <span className="text-xs text-gray-400 dark:text-zinc-500">h</span>
@@ -51,11 +88,11 @@ export function DurationField({ label, icon, minutes, onChange }: Props) {
             type="number"
             inputMode="numeric"
             min={0}
-            max={59}
-            step={5}
+            step={1}
             placeholder="–"
-            value={mins}
-            onChange={e => update(hours, e.target.value)}
+            value={text.m}
+            onChange={e => update({ h: text.h, m: e.target.value })}
+            onBlur={normalise}
             className="w-full min-w-0 bg-transparent text-sm text-gray-900 dark:text-white outline-none"
           />
           <span className="text-xs text-gray-400 dark:text-zinc-500">min</span>

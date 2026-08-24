@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { useWeight, useUpsertWeight } from '../../../features/weight/hooks'
 import type { WeightEntry } from '../../../features/weight/api'
 import { MetricChart } from '../../../components/charts/MetricChart'
-import { Section, SaveButton } from './Section'
+import { Section, SaveStatus } from './Section'
+import { useAutosave } from '../../../lib/useAutosave'
 
 function numOrNull(value: string): number | null {
   if (value.trim() === '') return null
@@ -23,14 +24,16 @@ function BodyForm({ date, entry }: { date: string; entry?: WeightEntry }) {
   const weightKg = numOrNull(weight)
   const waistCm = numOrNull(waist)
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (weightKg == null && waistCm == null) return
-    upsert.mutate({ date, weightKg, waistCm, notes: notes || undefined })
-  }
+  // An untouched empty day has nothing to write; the entry is only created
+  // once a number is actually in it.
+  useAutosave(
+    { date, weightKg, waistCm, notes: notes || undefined },
+    values => upsert.mutate(values),
+    { enabled: weightKg != null || waistCm != null },
+  )
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <div className="space-y-3">
       <div className="grid grid-cols-2 gap-2">
         <label className="flex min-w-0 flex-col gap-1">
           <span className="text-xs text-gray-400 dark:text-zinc-500">{t('weight.weightKg')}</span>
@@ -77,12 +80,12 @@ function BodyForm({ date, entry }: { date: string; entry?: WeightEntry }) {
         className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
       />
 
-      <SaveButton
+      <SaveStatus
         pending={upsert.isPending}
-        disabled={weightKg == null && waistCm == null}
-        label={t('common.save')}
+        savedAt={upsert.isSuccess ? upsert.submittedAt : undefined}
+        error={upsert.error}
       />
-    </form>
+    </div>
   )
 }
 
@@ -103,7 +106,7 @@ export function WeightSection({ date }: { date: string }) {
       <div className="space-y-3">
         {isLoading
           ? <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
-          : <BodyForm key={`${date}:${entry?.id ?? 'new'}`} date={date} entry={entry} />}
+          : <BodyForm key={date} date={date} entry={entry} />}
         {chronological.length > 1 && (
           <MetricChart
             series={[

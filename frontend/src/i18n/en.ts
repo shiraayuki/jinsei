@@ -9,7 +9,9 @@ export default {
   },
   common: {
     save: 'Save',
-    saved: '✓ Saved',
+    saved: 'Saved',
+    saving: 'Saving…',
+    saveFailed: 'Not saved.',
     cancel: 'Cancel',
     delete: 'Delete',
     create: 'Create',

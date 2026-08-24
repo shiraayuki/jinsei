@@ -3,7 +3,8 @@ import { Footprints } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { dateLocale } from '../../../i18n'
 import { useActivityDay, useUpsertActivity } from '../../../features/activity/hooks'
-import { Section, SaveButton } from './Section'
+import { Section, SaveStatus } from './Section'
+import { useAutosave } from '../../../lib/useAutosave'
 import { GoalBar } from '../../../components/ui/GoalBar'
 import { useAuth } from '../../../app/auth/AuthProvider'
 import type { ActivityEntry } from '../../../features/activity/api'
@@ -25,18 +26,18 @@ function ActivityForm({ date, entry }: { date: string; entry?: ActivityEntry }) 
     entry?.cardioMinutes == null ? '' : String(entry.cardioMinutes),
   )
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    upsert.mutate({
+  useAutosave(
+    {
       date,
       steps: numOrNull(steps),
       cardio,
       cardioMinutes: cardio ? numOrNull(cardioMinutes) : null,
-    })
-  }
+    },
+    values => upsert.mutate(values),
+  )
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="space-y-4">
       <div>
         <label className="mb-1 block text-xs text-gray-400 dark:text-zinc-500">{t('activity.steps')}</label>
         <div className="flex items-baseline gap-2 rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2.5">
@@ -82,7 +83,7 @@ function ActivityForm({ date, entry }: { date: string; entry?: ActivityEntry }) 
             <input
               type="number"
               inputMode="numeric"
-              step={5}
+              step={1}
               placeholder="–"
               value={cardioMinutes}
               onChange={e => setCardioMinutes(e.target.value)}
@@ -93,8 +94,12 @@ function ActivityForm({ date, entry }: { date: string; entry?: ActivityEntry }) 
         </div>
       )}
 
-      <SaveButton pending={upsert.isPending} label={t('common.save')} />
-    </form>
+      <SaveStatus
+        pending={upsert.isPending}
+        savedAt={upsert.isSuccess ? upsert.submittedAt : undefined}
+        error={upsert.error}
+      />
+    </div>
   )
 }
 
@@ -112,7 +117,7 @@ export function ActivitySection({ date }: { date: string }) {
     <Section title={t('activity.title')} icon={<Footprints size={15} />} summary={summary}>
       {isLoading
         ? <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
-        : <ActivityForm key={`${date}:${entry?.id ?? 'new'}`} date={date} entry={entry} />}
+        : <ActivityForm key={date} date={date} entry={entry} />}
     </Section>
   )
 }

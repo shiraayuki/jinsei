@@ -3,7 +3,8 @@ import { Smile } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useWellbeingDay, useUpsertWellbeing } from '../../../features/wellbeing/hooks'
 import type { WellbeingEntry } from '../../../features/wellbeing/api'
-import { Section, SaveButton } from './Section'
+import { Section, SaveStatus } from './Section'
+import { useAutosave } from '../../../lib/useAutosave'
 
 function Scale({ label, value, onChange }: {
   label: string
@@ -42,13 +43,13 @@ function WellbeingForm({ date, entry }: { date: string; entry?: WellbeingEntry }
   const [energy, setEnergy] = useState<number | null>(entry?.energy ?? null)
   const [notes, setNotes] = useState(entry?.notes ?? '')
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    upsert.mutate({ date, hunger, energy, notes: notes || null })
-  }
+  useAutosave(
+    { date, hunger, energy, notes: notes || null },
+    values => upsert.mutate(values),
+  )
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="space-y-4">
       <Scale label={t('wellbeing.hunger')} value={hunger} onChange={setHunger} />
       <Scale label={t('wellbeing.energy')} value={energy} onChange={setEnergy} />
 
@@ -60,12 +61,12 @@ function WellbeingForm({ date, entry }: { date: string; entry?: WellbeingEntry }
         className="w-full resize-none rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
       />
 
-      <SaveButton
+      <SaveStatus
         pending={upsert.isPending}
-        disabled={hunger == null && energy == null && !notes}
-        label={t('common.save')}
+        savedAt={upsert.isSuccess ? upsert.submittedAt : undefined}
+        error={upsert.error}
       />
-    </form>
+    </div>
   )
 }
 
@@ -82,7 +83,7 @@ export function WellbeingSection({ date }: { date: string }) {
     <Section title={t('wellbeing.title')} icon={<Smile size={15} />} summary={summary || undefined}>
       {isLoading
         ? <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
-        : <WellbeingForm key={`${date}:${entry?.id ?? 'new'}`} date={date} entry={entry} />}
+        : <WellbeingForm key={date} date={date} entry={entry} />}
     </Section>
   )
 }

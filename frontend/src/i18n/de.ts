@@ -9,7 +9,9 @@ export default {
   },
   common: {
     save: 'Speichern',
-    saved: '✓ Gespeichert',
+    saved: 'Gespeichert',
+    saving: 'Speichern…',
+    saveFailed: 'Nicht gespeichert.',
     cancel: 'Abbrechen',
     delete: 'Löschen',
     create: 'Erstellen',

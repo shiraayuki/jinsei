@@ -6,7 +6,8 @@ import type { SleepEntry } from '../../../features/sleep/api'
 import { DurationField } from '../../../components/ui/DurationField'
 import { ScreenshotImport } from '../../../components/ui/ScreenshotImport'
 import type { SleepDraftFields } from '../../../features/import/api'
-import { Section, SaveButton } from './Section'
+import { Section, SaveStatus } from './Section'
+import { useAutosave } from '../../../lib/useAutosave'
 
 function formatDuration(minutes: number | null) {
   if (minutes == null) return null
@@ -39,20 +40,16 @@ function SleepForm({ date, entry, onSelectDate }: {
 
   const tooMuchSleep = inBed != null && asleep != null && asleep > inBed
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (tooMuchSleep) return
-    upsert.mutate({
-      date,
-      timeInBedMinutes: inBed,
-      actualSleepMinutes: asleep,
-      quality,
-      notes: notes || undefined,
-    })
-  }
+  // The upsert rejects that pair, so it is held back until it makes sense
+  // again rather than autosaved into a 400.
+  useAutosave(
+    { date, timeInBedMinutes: inBed, actualSleepMinutes: asleep, quality, notes: notes || undefined },
+    values => upsert.mutate(values),
+    { enabled: !tooMuchSleep },
+  )
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="space-y-4">
       <ScreenshotImport<SleepDraftFields>
         kind="sleep"
         date={date}
@@ -119,12 +116,12 @@ function SleepForm({ date, entry, onSelectDate }: {
         className="w-full rounded-xl bg-gray-100 dark:bg-zinc-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
       />
 
-      <SaveButton
+      <SaveStatus
         pending={upsert.isPending}
-        disabled={tooMuchSleep || (inBed == null && asleep == null && quality == null)}
-        label={t('common.save')}
+        savedAt={upsert.isSuccess ? upsert.submittedAt : undefined}
+        error={upsert.error}
       />
-    </form>
+    </div>
   )
 }
 
@@ -146,7 +143,7 @@ export function SleepSection({ date, onSelectDate }: {
     <Section title={t('sleep.title')} icon={<Moon size={15} />} summary={summary || undefined}>
       {isLoading
         ? <p className="py-4 text-center text-sm text-gray-400 dark:text-zinc-500">{t('common.loading')}</p>
-        : <SleepForm key={`${date}:${entry?.id ?? 'new'}`} date={date} entry={entry} onSelectDate={onSelectDate} />}
+        : <SleepForm key={date} date={date} entry={entry} onSelectDate={onSelectDate} />}
     </Section>
   )
 }

@@ -3,9 +3,11 @@ import { LayoutDashboard, CheckSquare, CalendarDays, Dumbbell, LineChart } from 
 import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { OutboxBanner } from './OutboxBanner'
+import { useResumeToHome } from '../../app/useResumeToHome'
 
 export function AppShell() {
   const { t } = useTranslation()
+  useResumeToHome()
   // Four destinations: the overview, habits, everything that is logged per day,
   // and the training log. Profile lives in the dashboard header — it is opened
   // rarely and does not deserve a permanent slot.
