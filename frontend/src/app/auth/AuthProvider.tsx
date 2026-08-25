@@ -11,6 +11,8 @@ export interface Goals {
   weightGoalKg: number | null
   weeklyWorkoutsGoal: number | null
   weeklySetsGoal: number | null
+  /** Pace of the cut as a percentage of body weight per week. */
+  weeklyRatePercent: number | null
 }
 
 /** What an energy formula needs and the daily logs cannot supply. */
@@ -24,6 +26,8 @@ export interface BodyProfileFields {
 }
 
 export interface User extends Goals, BodyProfileFields {
+  /** Whether a phone shortcut can currently post data; the token itself is never returned. */
+  hasIngestToken: boolean
   id: string
   email: string
   displayName?: string
@@ -36,6 +40,8 @@ interface AuthCtx {
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, displayName?: string) => Promise<void>
   logout: () => Promise<void>
+  /** Re-reads the account, for changes the server made that no patch describes. */
+  refresh: () => Promise<void>
   updateProfile: (
     patch: Partial<Goals> & Partial<BodyProfileFields> & { displayName?: string; language?: string },
   ) => Promise<void>
@@ -80,6 +86,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * changed has to be sent back as it stands — otherwise saving a name would
    * clear the goals.
    */
+  async function refresh() {
+    const u = await api.get<User>('/auth/me')
+    applyUser(u)
+  }
+
   async function updateProfile(
     patch: Partial<Goals> & Partial<BodyProfileFields> & { displayName?: string; language?: string },
   ) {
@@ -94,6 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       weightGoalKg: user?.weightGoalKg ?? null,
       weeklyWorkoutsGoal: user?.weeklyWorkoutsGoal ?? null,
       weeklySetsGoal: user?.weeklySetsGoal ?? null,
+      weeklyRatePercent: user?.weeklyRatePercent ?? null,
       birthDate: user?.birthDate ?? null,
       heightCm: user?.heightCm ?? null,
       sex: user?.sex ?? null,
@@ -104,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <Ctx.Provider value={{ user, loading, login, register, logout, updateProfile }}>
+    <Ctx.Provider value={{ user, loading, login, register, logout, refresh, updateProfile }}>
       {children}
     </Ctx.Provider>
   )

@@ -7,6 +7,9 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { LogOut, Sun, Moon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { RATE_PRESETS, rateKeyFor } from '../lib/energy'
+import { api } from '../lib/api'
+import { dateLocale } from '../i18n'
 
 function numOrNull(value: string): number | null {
   if (value.trim() === '') return null
@@ -126,6 +129,156 @@ function GoalsCard() {
   )
 }
 
+/**
+ * The pace of the cut, as a share of body weight rather than a fixed number of
+ * kilos: half a kilo a week is gentle at 100 kg and brutal at 60. The three
+ * choices are the three things that happen to fat-free mass, which is the part
+ * worth deciding about.
+ */
+function RateCard() {
+  const { user, updateProfile } = useAuth()
+  const { t } = useTranslation()
+  const [saving, setSaving] = useState<string | null>(null)
+  const active = rateKeyFor(user?.weeklyRatePercent ?? null)
+
+  async function choose(percent: number | null, key: string) {
+    setSaving(key)
+    try {
+      await updateProfile({ weeklyRatePercent: percent })
+    } finally {
+      setSaving(null)
+    }
+  }
+
+  return (
+    <Card className="space-y-3 p-4">
+      <div>
+        <p className="text-body font-medium text-ink-soft">{t('rate.title')}</p>
+        <p className="mt-0.5 text-meta text-ink-mute">{t('rate.hint')}</p>
+      </div>
+
+      <div className="space-y-2">
+        {RATE_PRESETS.map(preset => {
+          const selected = active === preset.key && user?.weeklyRatePercent != null
+          return (
+            <button
+              key={preset.key}
+              onClick={() => choose(selected ? null : preset.percent, preset.key)}
+              disabled={saving != null}
+              aria-pressed={selected}
+              className={`w-full rounded-control px-3 py-2.5 text-left transition-colors ${
+                selected ? 'bg-accent text-white' : 'bg-raised hover:bg-line'
+              }`}
+            >
+              <span className="flex items-baseline gap-2">
+                <span className={`text-body font-medium ${selected ? 'text-white' : 'text-ink'}`}>
+                  {t(`rate.levels.${preset.key}`)}
+                </span>
+                <span className={`ml-auto shrink-0 text-meta tabular ${selected ? 'text-white/80' : 'text-ink-mute'}`}>
+                  {preset.percent.toLocaleString(dateLocale(), { minimumFractionDigits: 2 })} %
+                </span>
+              </span>
+              <span className={`mt-0.5 block text-label ${selected ? 'text-white/75' : 'text-ink-faint'}`}>
+                {t(`rate.effects.${preset.key}`)}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      <p className="text-label text-ink-faint">{t('rate.anchor')}</p>
+    </Card>
+  )
+}
+
+/**
+ * The credential a phone shortcut carries. Shown once when it is issued and
+ * never again — the server keeps only its hash, so "replace" is the only way
+ * back, which is the right trade for a secret that lives next to its data.
+ */
+function IngestCard() {
+  const { user, refresh } = useAuth()
+  const { t } = useTranslation()
+  const [token, setToken] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  async function issue() {
+    setBusy(true)
+    try {
+      const res = await api.post<{ token: string }>('/auth/ingest-token', {})
+      setToken(res.token)
+      await refresh()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function revoke() {
+    setBusy(true)
+    try {
+      await api.delete('/auth/ingest-token')
+      setToken(null)
+      await refresh()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function copy(value: string) {
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Clipboard access is refused often enough that the token stays on
+      // screen to be selected by hand.
+    }
+  }
+
+  return (
+    <Card className="space-y-3 p-4">
+      <div>
+        <p className="text-body font-medium text-ink-soft">{t('ingest.title')}</p>
+        <p className="mt-0.5 text-meta text-ink-mute">{t('ingest.hint')}</p>
+      </div>
+
+      {token && (
+        <div className="space-y-2 rounded-control bg-raised p-3">
+          <p className="text-label text-warn">{t('ingest.onceOnly')}</p>
+          <p className="break-all font-mono text-meta text-ink">{token}</p>
+          <button
+            onClick={() => copy(token)}
+            className="w-full rounded-chip bg-line py-2 text-meta font-medium text-ink hover:bg-line-strong"
+          >
+            {copied ? t('common.saved') : t('ingest.copy')}
+          </button>
+        </div>
+      )}
+
+      <div className="space-y-1.5 rounded-control bg-raised p-3 text-label text-ink-mute">
+        <p className="font-semibold uppercase tracking-widest text-ink-faint">{t('ingest.howTo')}</p>
+        <p>{t('ingest.step1')}</p>
+        <p>{t('ingest.step2')}</p>
+        <p className="break-all font-mono text-ink-soft">POST {window.location.origin}/api/ingest/activity</p>
+        <p className="break-all font-mono text-ink-soft">{'{"entries":[{"date":"2026-08-25","steps":10432}]}'}</p>
+        <p>{t('ingest.step3')}</p>
+      </div>
+
+      <div className="flex gap-2">
+        <Button onClick={issue} loading={busy} className="flex-1">
+          {user?.hasIngestToken ? t('ingest.replace') : t('ingest.create')}
+        </Button>
+        {user?.hasIngestToken && (
+          <Button variant="danger" onClick={revoke} loading={busy} className="flex-1">
+            {t('ingest.revoke')}
+          </Button>
+        )}
+      </div>
+    </Card>
+  )
+}
+
 export function ProfilePage() {
   const { user, logout, updateProfile } = useAuth()
   const { theme, toggle } = useTheme()
@@ -153,6 +306,8 @@ export function ProfilePage() {
 
       <div className="space-y-4 p-4">
         <GoalsCard />
+        <RateCard />
+        <IngestCard />
 
         <Card className="space-y-4 p-4">
           <div>

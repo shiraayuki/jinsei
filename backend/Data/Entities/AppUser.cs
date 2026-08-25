@@ -38,5 +38,20 @@ public class AppUser : IdentityUser
     /// </summary>
     public decimal? ActivityLevel { get; set; }
 
+    /// <summary>
+    /// How fast to move, as a percentage of body weight per week. Positive is
+    /// downward — 0.6 means half a percent and a bit off the trend weight every
+    /// week. Null means no rate is being steered towards.
+    /// </summary>
+    public decimal? WeeklyRatePercent { get; set; }
+
+    /// <summary>
+    /// SHA-256 of the ingest token, which lets a phone shortcut post steps
+    /// without a session. The token itself is never stored: it is shown once
+    /// when it is created and can only be replaced, not recovered.
+    /// </summary>
+    public string? IngestTokenHash { get; set; }
+    public DateTimeOffset? IngestTokenCreatedAt { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 }

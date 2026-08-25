@@ -86,6 +86,7 @@ public class AuthController : ControllerBase
         if (req.WeightGoalKg is < 0 or > 500) return BadRequest("Weight goal out of range.");
         if (req.WeeklyWorkoutsGoal is < 0 or > 21) return BadRequest("Workout goal out of range.");
         if (req.WeeklySetsGoal is < 0 or > 500) return BadRequest("Set goal out of range.");
+        if (req.WeeklyRatePercent is < 0 or > 2) return BadRequest("Weekly rate out of range.");
         if (req.HeightCm is < 50 or > 260) return BadRequest("Height out of range.");
         if (req.ActivityLevel is < 1.0m or > 2.5m) return BadRequest("Activity level out of range.");
         if (req.Sex is not (null or "male" or "female")) return BadRequest("Unknown sex.");
@@ -103,12 +104,45 @@ public class AuthController : ControllerBase
         user.WeightGoalKg = req.WeightGoalKg;
         user.WeeklyWorkoutsGoal = req.WeeklyWorkoutsGoal;
         user.WeeklySetsGoal = req.WeeklySetsGoal;
+        user.WeeklyRatePercent = req.WeeklyRatePercent;
         user.BirthDate = req.BirthDate;
         user.HeightCm = req.HeightCm;
         user.Sex = req.Sex;
         user.ActivityLevel = req.ActivityLevel;
         await _userManager.UpdateAsync(user);
         return Ok(ToDto(user));
+    }
+
+    /// <summary>
+    /// Issues a fresh ingest token, replacing any earlier one. The plaintext is
+    /// in this response and nowhere else — the row keeps only its hash.
+    /// </summary>
+    [Authorize]
+    [HttpPost("ingest-token")]
+    public async Task<IActionResult> CreateIngestToken()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+
+        var token = IngestTokens.Create();
+        user.IngestTokenHash = IngestTokens.Hash(token);
+        user.IngestTokenCreatedAt = DateTimeOffset.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        return Ok(new { token, createdAt = user.IngestTokenCreatedAt });
+    }
+
+    [Authorize]
+    [HttpDelete("ingest-token")]
+    public async Task<IActionResult> RevokeIngestToken()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+
+        user.IngestTokenHash = null;
+        user.IngestTokenCreatedAt = null;
+        await _userManager.UpdateAsync(user);
+        return NoContent();
     }
 
     private static object ToDto(AppUser u) => new
@@ -125,6 +159,8 @@ public class AuthController : ControllerBase
         u.WeightGoalKg,
         u.WeeklyWorkoutsGoal,
         u.WeeklySetsGoal,
+        u.WeeklyRatePercent,
+        HasIngestToken = u.IngestTokenHash != null,
         BirthDate = u.BirthDate?.ToString("yyyy-MM-dd"),
         u.HeightCm,
         u.Sex,
@@ -145,6 +181,7 @@ public record UpdateProfileRequest(
     decimal? WeightGoalKg,
     int? WeeklyWorkoutsGoal,
     int? WeeklySetsGoal,
+    decimal? WeeklyRatePercent,
     DateOnly? BirthDate,
     int? HeightCm,
     string? Sex,

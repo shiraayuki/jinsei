@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Flame, Scale } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Chart } from '../../../components/charts/Chart'
@@ -7,7 +8,11 @@ import { useWeight } from '../../../features/weight/hooks'
 import { useNutrition } from '../../../features/nutrition/hooks'
 import { moduleColor } from '../../../lib/modules'
 import { defined, latest, mean, movingAverage, slopePerDay } from '../../../lib/stats'
-import { KCAL_PER_KG, MIN_KCAL_DAYS, MIN_WEIGH_INS, measuredTdee, weeklyChangeFor } from '../../../lib/energy'
+import {
+  KCAL_PER_KG, MIN_KCAL_DAYS, MIN_WEIGH_INS, anchorWeight, measuredTdee,
+  targetIntake, weeklyChangeFor, weeklyLossKg,
+} from '../../../lib/energy'
+import { todayIso } from '../../../lib/date'
 import { Block, EmptyHint } from '../Block'
 import { num, series } from '../shared'
 
@@ -29,7 +34,8 @@ function Progress({ label, have, need, missing }: { label: string; have: number;
 
 export function BodySection({ days }: { days: number }) {
   const { t } = useTranslation()
-  const { user } = useAuth()
+  const { user, updateProfile } = useAuth()
+  const [adopting, setAdopting] = useState(false)
   const { data: weight = [] } = useWeight(days)
   const { data: nutrition = [] } = useNutrition(days)
 
@@ -81,6 +87,24 @@ export function BodySection({ days }: { days: number }) {
   // on the scale.
   const balance = tdee != null && kcalMean != null ? kcalMean - tdee : null
   const balanceRate = balance != null ? weeklyChangeFor(balance) : null
+
+  // The week's target: the chosen pace applied to the weight the week started
+  // at, subtracted from what maintenance turned out to be.
+  const rate = user?.weeklyRatePercent ?? null
+  const anchor = anchorWeight(weightPoints, todayIso())
+  const weeklyKg = rate != null && anchor != null ? weeklyLossKg(anchor, rate) : null
+  const weekTarget = tdee != null && weeklyKg != null ? targetIntake(tdee, weeklyKg) : null
+  const adopted = weekTarget != null && user?.kcalGoal === Math.round(weekTarget)
+
+  async function adoptTarget() {
+    if (weekTarget == null) return
+    setAdopting(true)
+    try {
+      await updateProfile({ kcalGoal: Math.round(weekTarget) })
+    } finally {
+      setAdopting(false)
+    }
+  }
   const cutKcal = tdee != null ? tdee - (0.5 * KCAL_PER_KG) / 7 : null
 
   return (
@@ -155,6 +179,39 @@ export function BodySection({ days }: { days: number }) {
             hint={t('metrics.perDay')}
           />
         </div>
+
+        {/* The target only exists once maintenance does; before that the
+            counters below explain why. */}
+        {weekTarget != null && weeklyKg != null && rate != null && (
+          <div className="space-y-2 rounded-control bg-raised p-3">
+            <div className="flex items-baseline gap-2">
+              <span className="min-w-0 flex-1 truncate text-meta text-ink-soft">
+                {t('metrics.body.weekTarget')}
+              </span>
+              <span className="shrink-0 font-display text-value font-semibold text-ink tabular">
+                {num(weekTarget)}
+              </span>
+              <span className="shrink-0 text-meta text-ink-mute">kcal</span>
+            </div>
+            <p className="text-label text-ink-faint">
+              {t('metrics.body.weekTargetHint', { rate: num(rate, 2), kg: num(weeklyKg, 2) })}
+              {anchor != null && ` · ${t('metrics.body.anchorWeight', { value: num(anchor, 1) })}`}
+            </p>
+            <button
+              onClick={adoptTarget}
+              disabled={adopting || adopted}
+              className={`w-full rounded-chip py-2 text-meta font-medium transition-colors ${
+                adopted ? 'bg-good/12 text-good' : 'bg-line text-ink hover:bg-line-strong'
+              }`}
+            >
+              {adopted ? t('metrics.body.targetAdopted') : t('metrics.body.adoptTarget')}
+            </button>
+          </div>
+        )}
+
+        {tdee != null && rate == null && (
+          <p className="text-label text-ink-faint">{t('metrics.body.noRate')}</p>
+        )}
 
         {/* Until it can answer, the card says how far off the answer is —
             two counters beat a dash that never explains itself. */}
