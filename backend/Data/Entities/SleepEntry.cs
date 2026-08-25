@@ -16,6 +16,17 @@ public class SleepEntry
     /// <summary>Sleep quality as the percentage Sleep Cycle reports, 0–100.</summary>
     public int? Quality { get; set; }
 
+    /// <summary>
+    /// Clock time the night started, on the day before <see cref="Date"/> —
+    /// unless it was already past midnight, in which case it is on Date itself.
+    /// Kept as a time of day rather than a timestamp: what a bedtime decision
+    /// needs is "half past ten", not an instant on a UTC axis.
+    /// </summary>
+    public TimeOnly? BedTime { get; set; }
+
+    /// <summary>Clock time of getting up, on <see cref="Date"/>.</summary>
+    public TimeOnly? WakeTime { get; set; }
+
     public string? Notes { get; set; }
     public DateTimeOffset LoggedAt { get; set; } = DateTimeOffset.UtcNow;
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Moon, Bed } from 'lucide-react'
+import { Moon, Bed, Sunrise } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useSleep, useUpsertSleep } from '../../../features/sleep/hooks'
 import type { SleepEntry } from '../../../features/sleep/api'
@@ -8,6 +8,19 @@ import { ScreenshotImport } from '../../../components/ui/ScreenshotImport'
 import type { SleepDraftFields } from '../../../features/import/api'
 import { Section, SaveStatus } from './Section'
 import { useAutosave } from '../../../lib/useAutosave'
+
+/**
+ * Minutes from one clock time to the other, wrapping over midnight: 22:30 to
+ * 07:30 is nine hours, not minus fifteen. Null unless both are filled in.
+ */
+function spanMinutes(bed: string, wake: string): number | null {
+  if (!bed || !wake) return null
+  const [bh, bm] = bed.split(':').map(Number)
+  const [wh, wm] = wake.split(':').map(Number)
+  if ([bh, bm, wh, wm].some(v => !Number.isFinite(v))) return null
+  const minutes = wh * 60 + wm - (bh * 60 + bm)
+  return minutes > 0 ? minutes : minutes + 24 * 60
+}
 
 function formatDuration(minutes: number | null) {
   if (minutes == null) return null
@@ -29,6 +42,8 @@ function SleepForm({ date, entry, onSelectDate }: {
   const { t } = useTranslation()
   const upsert = useUpsertSleep()
 
+  const [bedTime, setBedTime] = useState(entry?.bedTime ?? '')
+  const [wakeTime, setWakeTime] = useState(entry?.wakeTime ?? '')
   const [inBed, setInBed] = useState<number | null>(entry?.timeInBedMinutes ?? null)
   const [asleep, setAsleep] = useState<number | null>(entry?.actualSleepMinutes ?? null)
   const [quality, setQuality] = useState<number | null>(entry?.quality ?? null)
@@ -43,7 +58,15 @@ function SleepForm({ date, entry, onSelectDate }: {
   // The upsert rejects that pair, so it is held back until it makes sense
   // again rather than autosaved into a 400.
   useAutosave(
-    { date, timeInBedMinutes: inBed, actualSleepMinutes: asleep, quality, notes: notes || undefined },
+    {
+      date,
+      timeInBedMinutes: inBed,
+      actualSleepMinutes: asleep,
+      quality,
+      bedTime: bedTime || null,
+      wakeTime: wakeTime || null,
+      notes: notes || undefined,
+    },
     values => upsert.mutate(values),
     { enabled: !tooMuchSleep },
   )
@@ -62,6 +85,40 @@ function SleepForm({ date, entry, onSelectDate }: {
           if (f.quality != null) setQuality(f.quality)
         }}
       />
+
+      {/* Entering the two clock times fills in the time in bed, since they
+          already say it. It stays editable: the phone was put down before the
+          light went out often enough that the two disagree. */}
+      <div className="grid grid-cols-2 gap-3">
+        <label className="flex flex-col gap-1">
+          <span className="flex items-center gap-1 text-meta text-ink-mute">
+            <Bed size={13} /> {t('sleep.bedTime')}
+          </span>
+          <input
+            type="time"
+            value={bedTime}
+            onChange={e => {
+              setBedTime(e.target.value)
+              setInBed(spanMinutes(e.target.value, wakeTime) ?? inBed)
+            }}
+            className="rounded-control bg-raised px-3 py-2.5 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
+          />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="flex items-center gap-1 text-meta text-ink-mute">
+            <Sunrise size={13} /> {t('sleep.wakeTime')}
+          </span>
+          <input
+            type="time"
+            value={wakeTime}
+            onChange={e => {
+              setWakeTime(e.target.value)
+              setInBed(spanMinutes(bedTime, e.target.value) ?? inBed)
+            }}
+            className="rounded-control bg-raised px-3 py-2.5 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
+          />
+        </label>
+      </div>
 
       <DurationField
         label={t('sleep.timeInBed')}

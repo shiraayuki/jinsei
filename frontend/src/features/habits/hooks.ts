@@ -11,6 +11,10 @@ export function useHabitStats(id: string, days = 90) {
   })
 }
 
+export function useHabitOverview(days = 90) {
+  return useQuery({ queryKey: [KEY, 'overview', days], queryFn: () => habitsApi.overview(days) })
+}
+
 export function useHabits() {
   return useQuery({ queryKey: [KEY], queryFn: habitsApi.list })
 }

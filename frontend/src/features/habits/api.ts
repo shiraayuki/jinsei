@@ -58,6 +58,7 @@ export const habitsApi = {
     api.post(`/habits/${id}/entries`, { date, completedCount, notes }),
   deleteEntry: (entryId: string) => api.delete(`/habits/entries/${entryId}`),
   getStats: (id: string, days = 90) => api.get<HabitStats>(`/habits/${id}/stats?days=${days}`),
+  overview: (days = 90) => api.get<HabitOverview>(`/habits/overview?days=${days}`),
 }
 
 export interface WeeklyHabitStat {
@@ -73,4 +74,20 @@ export interface HabitStats {
   longestStreak: number
   weekdayCounts: number[]
   completionByWeek: WeeklyHabitStat[]
+}
+
+export interface DailyHabitStat {
+  date: string
+  /** How many habits were due that day by their schedule. */
+  due: number
+  done: number
+}
+
+export interface HabitOverview {
+  days: number
+  habitCount: number
+  daily: DailyHabitStat[]
+  /** Completion rate per weekday in percent, Monday first. */
+  weekdayRates: number[]
+  completionPercent: number
 }

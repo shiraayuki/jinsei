@@ -3,9 +3,11 @@ import { Scale } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useWeight, useUpsertWeight } from '../../../features/weight/hooks'
 import type { WeightEntry } from '../../../features/weight/api'
-import { MetricChart } from '../../../components/charts/MetricChart'
+import { Chart } from '../../../components/charts/Chart'
+import { useAuth } from '../../../app/auth/AuthProvider'
 import { Section, SaveStatus } from './Section'
 import { moduleColor } from '../../../lib/modules'
+import { dateLocale } from '../../../i18n'
 import { useAutosave } from '../../../lib/useAutosave'
 
 function numOrNull(value: string): number | null {
@@ -92,6 +94,7 @@ function BodyForm({ date, entry }: { date: string; entry?: WeightEntry }) {
 
 export function WeightSection({ date }: { date: string }) {
   const { t } = useTranslation()
+  const { user } = useAuth()
   const { data: entries = [], isLoading } = useWeight(180)
   const entry = entries.find(e => e.date === date)
 
@@ -109,11 +112,13 @@ export function WeightSection({ date }: { date: string }) {
           ? <p className="py-4 text-center text-body text-ink-mute">{t('common.loading')}</p>
           : <BodyForm key={date} date={date} entry={entry} />}
         {chronological.length > 1 && (
-          <MetricChart
+          <Chart
             series={[
               { label: t('weight.weightKg'), color: moduleColor.body, unit: ' kg', averageOver: 7, points: chronological.map(e => ({ date: e.date, value: e.weightKg })) },
-              { label: t('weight.waistCm'), color: moduleColor.mind, unit: ' cm', points: chronological.map(e => ({ date: e.date, value: e.waistCm })) },
+              { label: t('weight.waistCm'), color: moduleColor.mind, unit: ' cm', points: chronological.map(e => ({ date: e.date, value: e.waistCm })), scaleWith: 'waist' },
             ]}
+            goal={user?.weightGoalKg != null ? { value: user.weightGoalKg, label: t('metrics.goal') } : undefined}
+            format={v => v.toLocaleString(dateLocale(), { maximumFractionDigits: 1 })}
           />
         )}
       </div>

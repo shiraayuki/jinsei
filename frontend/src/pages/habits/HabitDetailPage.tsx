@@ -6,78 +6,70 @@ import { Button } from '../../components/ui/Button'
 import { useHabits, useHabitEntries, useLogEntry, useArchiveHabit, useHabitStats } from '../../features/habits/hooks'
 import type { HabitStats } from '../../features/habits/api'
 import { shiftIso, toIsoDate } from '../../lib/date'
+import { useTranslation } from 'react-i18next'
+import { dateLocale } from '../../i18n'
+import { Card } from '../../components/ui/Card'
+import { Chart } from '../../components/charts/Chart'
+import { BarRow } from '../../components/charts/BarRow'
+import { StatTile } from '../../components/charts/StatTile'
 
 function isoDate(d: Date) {
   return toIsoDate(d)
 }
 
-const WEEKDAY_LABELS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
+/**
+ * Weekday initials in the app's language rather than a hardcoded German list.
+ * The backend counts by `DayOfWeek`, so index 0 is Sunday and stays that way.
+ */
+function weekdayLabels(): string[] {
+  const format = new Intl.DateTimeFormat(dateLocale(), { weekday: 'short' })
+  // 2024-01-07 was a Sunday, which lines the array up with the backend's index.
+  return Array.from({ length: 7 }, (_, i) => format.format(new Date(2024, 0, 7 + i)))
+}
 
 function HabitStatsSection({ stats, color }: { stats: HabitStats; color: string }) {
+  const { t } = useTranslation()
+  const labels = weekdayLabels()
   const maxWeekday = Math.max(...stats.weekdayCounts, 1)
-  const maxWeekly = Math.max(...stats.completionByWeek.map(w => w.completedCount), 1)
 
   return (
-    <div className="space-y-4">
-      {/* KPI row */}
+    <div className="space-y-3">
       <div className="grid grid-cols-3 gap-2">
-        <div className="card p-3 text-center">
-          <p className="font-display text-value font-semibold text-ink tabular">{stats.compliancePercent}%</p>
-          <p className="text-meta text-ink-mute">Einhaltung</p>
-        </div>
-        <div className="card p-3 text-center">
-          <p className="font-display text-value font-semibold text-ink tabular">{stats.longestStreak}</p>
-          <p className="text-meta text-ink-mute">Längster Streak</p>
-        </div>
-        <div className="card p-3 text-center">
-          <p className="font-display text-value font-semibold text-ink tabular">{stats.completedCount}</p>
-          <p className="text-meta text-ink-mute">Mal erledigt</p>
-        </div>
+        <StatTile label={t('habits.compliance')} value={`${stats.compliancePercent}%`} />
+        <StatTile label={t('habits.longestStreak')} value={String(stats.longestStreak)} />
+        <StatTile label={t('habits.completed')} value={String(stats.completedCount)} />
       </div>
 
-      {/* Weekday pattern */}
-      <div className="card p-4">
-        <p className="mb-3 text-meta font-semibold text-ink-mute">Wochentag-Muster</p>
-        <div className="flex items-end gap-1.5" style={{ height: 56 }}>
-          {stats.weekdayCounts.map((count, i) => {
-            const barH = Math.max((count / maxWeekday) * 44, count > 0 ? 4 : 0)
-            return (
-              <div key={i} className="flex flex-1 flex-col items-center gap-1">
-                <div
-                  className="w-full rounded-t-[3px] transition-all"
-                  style={{ height: barH, backgroundColor: count > 0 ? color : undefined }}
-                  aria-hidden
-                />
-                {count === 0 && (
-                  <div className="w-full rounded-t-[3px] bg-raised" style={{ height: 4 }} />
-                )}
-                <span className="text-label text-ink-faint">{WEEKDAY_LABELS[i]}</span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
+      <Card className="space-y-1.5 p-4">
+        <p className="mb-2 text-meta font-semibold text-ink-mute">{t('habits.weekdayPattern')}</p>
+        {stats.weekdayCounts.map((count, i) => (
+          <BarRow
+            key={labels[i]}
+            label={labels[i]}
+            value={count}
+            max={maxWeekday}
+            color={color}
+            hint={`${count}×`}
+          />
+        ))}
+      </Card>
 
-      {/* Weekly history */}
-      <div className="card p-4">
-        <p className="mb-3 text-meta font-semibold text-ink-mute">Wöchentlicher Verlauf</p>
-        <div className="flex items-end gap-0.5" style={{ height: 48 }}>
-          {stats.completionByWeek.map(w => {
-            const barH = Math.max((w.completedCount / maxWeekly) * 36, w.completedCount > 0 ? 3 : 0)
-            return (
-              <div
-                key={w.weekStart}
-                className="flex-1 rounded-t-[3px]"
-                style={{
-                  height: barH || 3,
-                  backgroundColor: w.completedCount > 0 ? color : undefined,
-                }}
-                title={`KW ${new Date(w.weekStart + 'T00:00:00').toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}: ${w.completedCount}×`}
-              />
-            )
-          })}
-        </div>
-      </div>
+      <Card className="p-4">
+        <p className="mb-2 text-meta font-semibold text-ink-mute">{t('habits.weeklyHistory')}</p>
+        <Chart
+          series={[
+            {
+              label: t('habits.weeklyHistory'),
+              color,
+              kind: 'bar',
+              points: stats.completionByWeek.map(w => ({ date: w.weekStart, value: w.completedCount })),
+            },
+          ]}
+          zeroBased
+          height={84}
+          format={v => String(Math.round(v))}
+        />
+      </Card>
     </div>
   )
 }
@@ -93,6 +85,7 @@ function last90Days() {
 }
 
 export function HabitDetailPage() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data: habits } = useHabits()
@@ -118,7 +111,7 @@ export function HabitDetailPage() {
 
   async function handleArchive() {
     if (!id) return
-    if (!confirm('Habit archivieren?')) return
+    if (!confirm(t('habits.archiveConfirm'))) return
     await archive.mutateAsync(id)
     navigate('/habits')
   }
@@ -132,8 +125,8 @@ export function HabitDetailPage() {
   if (!habit) {
     return (
       <div>
-        <PageHeader title="Habit" back />
-        <p className="p-4 text-ink-mute">Nicht gefunden.</p>
+        <PageHeader title={t('habits.title')} back />
+        <p className="p-4 text-ink-mute">{t('habits.notFound')}</p>
       </div>
     )
   }
@@ -164,7 +157,7 @@ export function HabitDetailPage() {
             {habit.streak > 0 && (
               <p className="flex items-center gap-1 text-body text-warn">
                 <Flame size={14} />
-                {habit.streak} Tag{habit.streak !== 1 ? 'e' : ''} Streak
+                {t('habits.daysStreak', { count: habit.streak })}
               </p>
             )}
             {habit.description && <p className="text-body text-ink-mute">{habit.description}</p>}
@@ -173,7 +166,7 @@ export function HabitDetailPage() {
 
         {/* 90-day grid */}
         <div>
-          <p className="mb-2 text-meta text-ink-mute">Letzte 90 Tage</p>
+          <p className="mb-2 text-meta text-ink-mute">{t('habits.last90days')}</p>
           <div className="grid grid-cols-13 gap-1" style={{ gridTemplateColumns: 'repeat(13, 1fr)' }}>
             {days.map(day => {
               const done = completedDates.has(day)
@@ -204,17 +197,19 @@ export function HabitDetailPage() {
         {/* Schedule info */}
         {habit.schedule && (
           <div className="rounded-control border border-line bg-surface p-3 text-body text-ink-mute">
-            {habit.schedule.type === 'daily' && `Täglich, Ziel: ${habit.schedule.targetCount}×`}
+            {habit.schedule.type === 'daily' && t('habits.scheduleDaily', { count: habit.schedule.targetCount })}
             {habit.schedule.type === 'weekly' &&
-              `Wöchentlich an: ${habit.schedule.daysOfWeek?.map(d => ['So','Mo','Di','Mi','Do','Fr','Sa'][d]).join(', ') ?? '–'}`}
+              t('habits.scheduleWeekly', {
+                days: habit.schedule.daysOfWeek?.map(d => weekdayLabels()[d]).join(', ') ?? '–',
+              })}
             {habit.schedule.type === 'interval' &&
-              `Alle ${habit.schedule.intervalDays} Tage`}
+              t('habits.scheduleInterval', { days: habit.schedule.intervalDays })}
           </div>
         )}
 
         <Button variant="danger" className="w-full" onClick={handleArchive} loading={archive.isPending}>
           <Trash2 size={16} />
-          Habit archivieren
+          {t('habits.archive')}
         </Button>
       </div>
     </div>

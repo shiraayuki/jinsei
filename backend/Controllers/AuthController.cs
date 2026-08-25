@@ -82,6 +82,10 @@ public class AuthController : ControllerBase
         if (req.ProteinGoal is < 0 or > 1000) return BadRequest("Protein goal out of range.");
         if (req.WaterGoalL is < 0 or > 30) return BadRequest("Water goal out of range.");
         if (req.StepsGoal is < 0 or > 200000) return BadRequest("Steps goal out of range.");
+        if (req.SleepGoalMinutes is < 0 or > 1440) return BadRequest("Sleep goal out of range.");
+        if (req.WeightGoalKg is < 0 or > 500) return BadRequest("Weight goal out of range.");
+        if (req.WeeklyWorkoutsGoal is < 0 or > 21) return BadRequest("Workout goal out of range.");
+        if (req.WeeklySetsGoal is < 0 or > 500) return BadRequest("Set goal out of range.");
 
         // A goal is cleared by sending null, so these are assigned rather than
         // merged.
@@ -89,6 +93,10 @@ public class AuthController : ControllerBase
         user.ProteinGoal = req.ProteinGoal;
         user.WaterGoalL = req.WaterGoalL;
         user.StepsGoal = req.StepsGoal;
+        user.SleepGoalMinutes = req.SleepGoalMinutes;
+        user.WeightGoalKg = req.WeightGoalKg;
+        user.WeeklyWorkoutsGoal = req.WeeklyWorkoutsGoal;
+        user.WeeklySetsGoal = req.WeeklySetsGoal;
         await _userManager.UpdateAsync(user);
         return Ok(ToDto(user));
     }
@@ -103,6 +111,10 @@ public class AuthController : ControllerBase
         u.ProteinGoal,
         u.WaterGoalL,
         u.StepsGoal,
+        u.SleepGoalMinutes,
+        u.WeightGoalKg,
+        u.WeeklyWorkoutsGoal,
+        u.WeeklySetsGoal,
     };
 }
 
@@ -114,4 +126,8 @@ public record UpdateProfileRequest(
     int? KcalGoal,
     int? ProteinGoal,
     decimal? WaterGoalL,
-    int? StepsGoal);
+    int? StepsGoal,
+    int? SleepGoalMinutes,
+    decimal? WeightGoalKg,
+    int? WeeklyWorkoutsGoal,
+    int? WeeklySetsGoal);

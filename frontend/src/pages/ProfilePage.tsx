@@ -14,7 +14,44 @@ function numOrNull(value: string): number | null {
   return Number.isFinite(n) ? n : null
 }
 
-/** Daily targets. An empty field means no target, not zero. */
+type Field = [label: string, unit: string, value: string, set: (v: string) => void, step: string]
+
+/**
+ * Declared outside the card: a component defined in a render body is a new type
+ * on every render, so React would remount the inputs and typing would lose the
+ * caret after each keystroke.
+ */
+function Fields({ items }: { items: Field[] }) {
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {items.map(([label, unit, value, setValue, step]) => (
+        <label key={label} className="flex min-w-0 flex-col gap-1">
+          <span className="text-meta text-ink-mute">{label}</span>
+          <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2.5">
+            <input
+              type="number"
+              inputMode="decimal"
+              step={step}
+              placeholder="–"
+              value={value}
+              onChange={e => setValue(e.target.value)}
+              className="w-full min-w-0 bg-transparent text-title font-semibold text-ink outline-none"
+            />
+            {unit && <span className="text-meta text-ink-mute">{unit}</span>}
+          </div>
+        </label>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * The targets every chart draws its line from.
+ *
+ * Split in two because they are set at different moments: the daily numbers get
+ * revisited when a diet changes, the training and body ones when a block does.
+ * An empty field means no target, not zero — the line simply does not appear.
+ */
 function GoalsCard() {
   const { user, updateProfile } = useAuth()
   const { t } = useTranslation()
@@ -22,6 +59,14 @@ function GoalsCard() {
   const [protein, setProtein] = useState(user?.proteinGoal == null ? '' : String(user.proteinGoal))
   const [water, setWater] = useState(user?.waterGoalL == null ? '' : String(user.waterGoalL))
   const [steps, setSteps] = useState(user?.stepsGoal == null ? '' : String(user.stepsGoal))
+  // Sleep is stored in minutes but entered in hours, which is how a bedtime is
+  // decided.
+  const [sleep, setSleep] = useState(
+    user?.sleepGoalMinutes == null ? '' : String(Math.round((user.sleepGoalMinutes / 60) * 100) / 100),
+  )
+  const [weight, setWeight] = useState(user?.weightGoalKg == null ? '' : String(user.weightGoalKg))
+  const [workouts, setWorkouts] = useState(user?.weeklyWorkoutsGoal == null ? '' : String(user.weeklyWorkoutsGoal))
+  const [sets, setSets] = useState(user?.weeklySetsGoal == null ? '' : String(user.weeklySetsGoal))
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -29,11 +74,16 @@ function GoalsCard() {
     setSaving(true)
     setSaved(false)
     try {
+      const sleepHours = numOrNull(sleep)
       await updateProfile({
         kcalGoal: numOrNull(kcal),
         proteinGoal: numOrNull(protein),
         waterGoalL: numOrNull(water),
         stepsGoal: numOrNull(steps),
+        sleepGoalMinutes: sleepHours == null ? null : Math.round(sleepHours * 60),
+        weightGoalKg: numOrNull(weight),
+        weeklyWorkoutsGoal: numOrNull(workouts),
+        weeklySetsGoal: numOrNull(sets),
       })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
@@ -42,11 +92,18 @@ function GoalsCard() {
     }
   }
 
-  const fields: [string, string, string, (v: string) => void, string][] = [
+  const daily: Field[] = [
     [t('goals.kcal'), 'kcal', kcal, setKcal, '10'],
     [t('goals.protein'), 'g', protein, setProtein, '5'],
     [t('goals.water'), 'L', water, setWater, '0.25'],
     [t('goals.steps'), '', steps, setSteps, '500'],
+    [t('goals.sleep'), 'h', sleep, setSleep, '0.25'],
+  ]
+
+  const training: Field[] = [
+    [t('goals.weight'), 'kg', weight, setWeight, '0.5'],
+    [t('goals.weeklyWorkouts'), '', workouts, setWorkouts, '1'],
+    [t('goals.weeklySets'), '', sets, setSets, '5'],
   ]
 
   return (
@@ -56,25 +113,11 @@ function GoalsCard() {
         <p className="mt-0.5 text-meta text-ink-mute">{t('goals.hint')}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        {fields.map(([label, unit, value, setValue, step]) => (
-          <label key={label} className="flex min-w-0 flex-col gap-1">
-            <span className="text-meta text-ink-mute">{label}</span>
-            <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2.5">
-              <input
-                type="number"
-                inputMode="decimal"
-                step={step}
-                placeholder="–"
-                value={value}
-                onChange={e => setValue(e.target.value)}
-                className="w-full min-w-0 bg-transparent text-title font-semibold text-ink outline-none"
-              />
-              {unit && <span className="text-meta text-ink-mute">{unit}</span>}
-            </div>
-          </label>
-        ))}
-      </div>
+      <p className="text-label font-semibold uppercase tracking-widest text-ink-faint">{t('goals.daily')}</p>
+      <Fields items={daily} />
+
+      <p className="pt-1 text-label font-semibold uppercase tracking-widest text-ink-faint">{t('goals.training')}</p>
+      <Fields items={training} />
 
       <Button onClick={save} loading={saving} className="w-full">
         {saved ? t('common.saved') : t('common.save')}

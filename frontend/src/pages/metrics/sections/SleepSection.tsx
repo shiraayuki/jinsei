@@ -1,0 +1,171 @@
+import { Clock, Moon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Chart } from '../../../components/charts/Chart'
+import { StatTile } from '../../../components/charts/StatTile'
+import { BarRow } from '../../../components/charts/BarRow'
+import { useAuth } from '../../../app/auth/AuthProvider'
+import { useSleep } from '../../../features/sleep/hooks'
+import { moduleColor } from '../../../lib/modules'
+import {
+  byWeekday, clockToNightAxis, defined, latest, mean, nightAxisToClock,
+  runningDebt, sleepMidpoint, stdDev,
+} from '../../../lib/stats'
+import { Block, EmptyHint } from '../Block'
+import { duration, num, perWeekIfDense, series, splitWindow } from '../shared'
+
+const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
+
+export function SleepSection({ days }: { days: number }) {
+  const { t } = useTranslation()
+  const { user } = useAuth()
+  const { data: sleep = [] } = useSleep(days)
+
+  // Time asleep is the number worth trending; time in bed stands in only where
+  // the night was logged without it.
+  const minutes = series(sleep, e => e.actualSleepMinutes ?? e.timeInBedMinutes, days)
+  const quality = series(sleep, e => e.quality, days)
+
+  const nights = defined(minutes)
+  if (nights.length === 0) {
+    return (
+      <Block module="sleep" icon={<Moon size={15} />} title={t('sleep.title')}>
+        <EmptyHint text={t('metrics.empty')} />
+      </Block>
+    )
+  }
+
+  const goal = user?.sleepGoalMinutes ?? null
+  const { current, previous } = splitWindow(minutes, 7)
+  const weekMean = mean(defined(current))
+  const prevMean = mean(defined(previous))
+
+  // Debt is only meaningful against a target, and only over a window short
+  // enough to still be recoverable — a year of missing half-hours is history,
+  // not a decision.
+  const debt = goal != null ? latest(runningDebt(minutes.slice(-14), goal)) : null
+  const spread = stdDev(nights)
+  const weekday = byWeekday(minutes)
+  const weekdayMax = Math.max(...weekday.map(v => v ?? 0), 1)
+  const qualityBars = perWeekIfDense(quality, 'mean')
+
+  // Clock times live on an axis anchored at noon, so an evening and the small
+  // hours after it are neighbours rather than twenty hours apart.
+  const bedPoints = series(sleep, e => (e.bedTime ? clockToNightAxis(e.bedTime) : null), days)
+  const wakePoints = series(sleep, e => (e.wakeTime ? clockToNightAxis(e.wakeTime) : null), days)
+  const midpoints = series(sleep, e => sleepMidpoint(e.bedTime, e.wakeTime), days)
+
+  const bedMean = mean(defined(bedPoints))
+  const wakeMean = mean(defined(wakePoints))
+  // Regularity is the spread of the midpoint, not of the duration: a night
+  // shifted later as a whole is a shifted night, not a broken one.
+  const regularity = stdDev(defined(midpoints))
+  const hasTimes = defined(bedPoints).length > 0
+
+  return (
+    <>
+      <Block module="sleep" icon={<Moon size={15} />} title={t('metrics.sleep.duration')}>
+        <div className="grid grid-cols-2 gap-2">
+          <StatTile
+            label={t('sleep.avgDuration')}
+            value={duration(weekMean)}
+            hint={t('metrics.trend')}
+            delta={weekMean != null && prevMean != null ? (weekMean - prevMean) / 60 : null}
+            deltaUnit=" h"
+            spark={minutes}
+            color={moduleColor.sleep}
+            smooth={7}
+          />
+          <StatTile
+            label={t('metrics.sleep.debt')}
+            value={debt != null ? duration(debt) : '–'}
+            hint={goal != null ? t('metrics.sleep.debtHint') : t('metrics.noGoal')}
+          />
+          <StatTile
+            label={t('metrics.sleep.consistency')}
+            value={spread != null ? `± ${duration(spread)}` : '–'}
+            hint={t('metrics.sleep.consistencyHint')}
+          />
+          <StatTile
+            label={t('metrics.sleep.quality')}
+            value={defined(quality).length ? `${num(mean(defined(quality)))} %` : '–'}
+            spark={quality}
+            color={moduleColor.sleep}
+            smooth={7}
+          />
+        </div>
+
+        <Chart
+          series={[{ label: t('sleep.avgDuration'), color: moduleColor.sleep, points: minutes, unit: ' h', averageOver: 7 }]}
+          goal={goal != null ? { value: goal, label: t('metrics.goal') } : undefined}
+          format={v => num(v / 60, 1)}
+          empty={t('metrics.empty')}
+        />
+      </Block>
+
+      <Block module="sleep" icon={<Clock size={15} />} title={t('metrics.sleep.clockChart')}>
+        {hasTimes ? (
+          <>
+            <div className="grid grid-cols-3 gap-2">
+              <StatTile
+                label={t('metrics.sleep.bedAvg')}
+                value={bedMean != null ? nightAxisToClock(bedMean) : '–'}
+              />
+              <StatTile
+                label={t('metrics.sleep.wakeAvg')}
+                value={wakeMean != null ? nightAxisToClock(wakeMean) : '–'}
+              />
+              <StatTile
+                label={t('metrics.sleep.regularity')}
+                value={regularity != null ? `± ${duration(regularity)}` : '–'}
+                hint={t('metrics.sleep.regularityHint')}
+              />
+            </div>
+
+            {/* Both lines share one scale, so the band between them is the
+                night itself. */}
+            <Chart
+              series={[
+                { label: t('metrics.sleep.bedAvg'), color: moduleColor.sleep, points: bedPoints, scaleWith: 'clock' },
+                { label: t('metrics.sleep.wakeAvg'), color: moduleColor.mind, points: wakePoints, scaleWith: 'clock' },
+              ]}
+              format={nightAxisToClock}
+              empty={t('metrics.sleep.needsTimes')}
+            />
+          </>
+        ) : (
+          <EmptyHint text={t('metrics.sleep.needsTimes')} />
+        )}
+      </Block>
+
+      <Block module="sleep" icon={<Moon size={15} />} title={t('metrics.sleep.byWeekday')}>
+        <div className="space-y-1.5">
+          {weekday.map((value, i) => (
+            <BarRow
+              key={WEEKDAYS[i]}
+              label={WEEKDAYS[i]}
+              value={value ?? 0}
+              max={weekdayMax}
+              color={moduleColor.sleep}
+              hint={value != null ? duration(value) : '–'}
+            />
+          ))}
+        </div>
+      </Block>
+
+      {defined(quality).length > 0 && (
+        <Block
+          module="sleep"
+          icon={<Moon size={15} />}
+          title={t('metrics.sleep.quality')}
+          summary={qualityBars.weekly ? t('metrics.weekly') : undefined}
+        >
+          <Chart
+            series={[{ label: t('sleep.quality'), color: moduleColor.sleep, points: qualityBars.points, kind: 'bar', unit: ' %' }]}
+            zeroBased
+            format={v => num(v)}
+          />
+        </Block>
+      )}
+    </>
+  )
+}

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Microsoft.Extensions.Caching.Memory;
 
 /// <summary>
 /// Client for the official Hevy API (api.hevyapp.com/v1). Auth is a single
@@ -11,11 +12,20 @@ public class HevyClient
 {
     private readonly HttpClient _http;
     private readonly IConfiguration _config;
+    private readonly IMemoryCache _cache;
 
-    public HevyClient(HttpClient http, IConfiguration config)
+    /// <summary>
+    /// The exercise catalogue changes about as often as Hevy ships a release,
+    /// so it is fetched once a day rather than on every sync — it is a dozen
+    /// pages, and the sync itself is only four.
+    /// </summary>
+    private const string TemplateCacheKey = "hevy:exercise-templates";
+
+    public HevyClient(HttpClient http, IConfiguration config, IMemoryCache cache)
     {
         _http = http;
         _config = config;
+        _cache = cache;
         _http.Timeout = TimeSpan.FromSeconds(20);
     }
 
@@ -90,7 +100,71 @@ public class HevyClient
             }
         }
 
+        // Muscle groups are not part of the session payload, only of the
+        // exercise catalogue, so they are resolved afterwards in one pass. A
+        // catalogue that cannot be reached is not worth failing a sync over:
+        // the sets are still the sets, they just group as "other".
+        var templates = await FetchMuscleGroupsAsync(ct);
+        if (templates.Count > 0)
+        {
+            foreach (var w in result)
+            {
+                for (var i = 0; i < w.Exercises.Count; i++)
+                {
+                    var ex = w.Exercises[i];
+                    if (ex.TemplateId is { Length: > 0 } id && templates.TryGetValue(id, out var group))
+                        w.Exercises[i] = ex with { MuscleGroup = group };
+                }
+            }
+        }
+
         return result;
+    }
+
+    /// <summary>Exercise template id to primary muscle group, cached for a day.</summary>
+    public async Task<Dictionary<string, string>> FetchMuscleGroupsAsync(CancellationToken ct = default)
+    {
+        if (ApiKey is null) return [];
+        if (_cache.TryGetValue<Dictionary<string, string>>(TemplateCacheKey, out var cached) && cached is not null)
+            return cached;
+
+        var baseUrl = (_config["Hevy:BaseUrl"] ?? "https://api.hevyapp.com").TrimEnd('/');
+        var map = new Dictionary<string, string>();
+
+        try
+        {
+            for (var page = 1; page <= 20; page++)
+            {
+                using var req = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/v1/exercise_templates?page={page}&pageSize=100");
+                req.Headers.Add("api-key", ApiKey);
+                req.Headers.Add("Accept", "application/json");
+
+                var res = await _http.SendAsync(req, ct);
+                if (!res.IsSuccessStatusCode) break;
+
+                using var doc = JsonDocument.Parse(await res.Content.ReadAsStringAsync(ct));
+                if (!doc.RootElement.TryGetProperty("exercise_templates", out var items) || items.GetArrayLength() == 0)
+                    break;
+
+                foreach (var item in items.EnumerateArray())
+                {
+                    var id = item.TryGetProperty("id", out var i) ? i.GetString() : null;
+                    var group = item.TryGetProperty("primary_muscle_group", out var g) ? g.GetString() : null;
+                    if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(group)) map[id] = group;
+                }
+
+                var pageCount = doc.RootElement.TryGetProperty("page_count", out var pc) ? pc.GetInt32() : page;
+                if (page >= pageCount) break;
+            }
+        }
+        catch (Exception exc) when (exc is HttpRequestException or TaskCanceledException or JsonException)
+        {
+            return map;
+        }
+
+        if (map.Count > 0)
+            _cache.Set(TemplateCacheKey, map, TimeSpan.FromHours(24));
+        return map;
     }
 
     private HevyWorkout Convert(JsonElement raw)
@@ -120,7 +194,8 @@ public class HevyClient
                     }
                 }
 
-                exercises.Add(new HevyExercise(name, sets));
+                var templateId = ex.TryGetProperty("exercise_template_id", out var tid) ? tid.GetString() : null;
+                exercises.Add(new HevyExercise(name, sets, templateId, null));
             }
         }
 
@@ -159,7 +234,7 @@ public class HevyException : Exception
 
 public record HevySet(decimal? WeightKg, int? Reps, int? DurationSeconds, decimal? DistanceMeters);
 
-public record HevyExercise(string Name, List<HevySet> Sets);
+public record HevyExercise(string Name, List<HevySet> Sets, string? TemplateId = null, string? MuscleGroup = null);
 
 public record HevyWorkout(
     string Id,

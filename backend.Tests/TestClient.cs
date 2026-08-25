@@ -34,6 +34,18 @@ public sealed class TestApp : IDisposable
         return new TestApp(factory, client);
     }
 
+    /// <summary>A client that never signed in, for checking what is behind auth.</summary>
+    public static TestApp Anonymous()
+    {
+        var factory = new TestWebAppFactory(null, null);
+        var client = factory.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions
+        {
+            HandleCookies = true,
+            AllowAutoRedirect = false,
+        });
+        return new TestApp(factory, client);
+    }
+
     public void Dispose()
     {
         Client.Dispose();

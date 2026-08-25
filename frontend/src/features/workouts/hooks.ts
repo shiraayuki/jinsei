@@ -15,6 +15,10 @@ export function useWorkout(id: string | undefined) {
   })
 }
 
+export function useWorkoutAnalytics(days = 90) {
+  return useQuery({ queryKey: [KEY, 'analytics', days], queryFn: () => workoutsApi.analytics(days) })
+}
+
 export function useSyncStatus() {
   return useQuery({ queryKey: [KEY, 'syncStatus'], queryFn: () => workoutsApi.syncStatus() })
 }

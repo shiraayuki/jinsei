@@ -120,4 +120,51 @@ public class DayApiTests
         Assert.NotNull(entries);
         Assert.Empty(entries);
     }
+
+    [Fact]
+    public async Task Sleep_DerivesTimeInBedFromTheClockTimesAcrossMidnight()
+    {
+        using var app = await TestApp.SignedInAsync();
+
+        var res = await app.Client.PostAsJsonAsync("/api/sleep", new
+        {
+            date = "2026-08-22",
+            timeInBedMinutes = (int?)null,
+            actualSleepMinutes = (int?)null,
+            quality = (int?)null,
+            bedTime = "22:30",
+            wakeTime = "07:30",
+        });
+        res.EnsureSuccessStatusCode();
+
+        var entries = await app.Client.GetFromJsonAsync<JsonElement>("/api/sleep?days=30");
+        var entry = entries.EnumerateArray().Single();
+
+        Assert.Equal(540, entry.GetProperty("timeInBedMinutes").GetInt32());
+        Assert.Equal("22:30", entry.GetProperty("bedTime").GetString());
+        Assert.Equal("07:30", entry.GetProperty("wakeTime").GetString());
+    }
+
+    [Fact]
+    public async Task Sleep_KeepsAnExplicitDurationOverTheClockTimes()
+    {
+        using var app = await TestApp.SignedInAsync();
+
+        await app.Client.PostAsJsonAsync("/api/sleep", new
+        {
+            date = "2026-08-22",
+            timeInBedMinutes = 500,
+            actualSleepMinutes = 470,
+            quality = 80,
+            bedTime = "22:30",
+            wakeTime = "07:30",
+        });
+
+        var entries = await app.Client.GetFromJsonAsync<JsonElement>("/api/sleep?days=30");
+        var entry = entries.EnumerateArray().Single();
+
+        // The phone was put down before the light went out often enough that
+        // the two disagree; what was typed wins.
+        Assert.Equal(500, entry.GetProperty("timeInBedMinutes").GetInt32());
+    }
 }

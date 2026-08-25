@@ -7,6 +7,10 @@ export interface Goals {
   proteinGoal: number | null
   waterGoalL: number | null
   stepsGoal: number | null
+  sleepGoalMinutes: number | null
+  weightGoalKg: number | null
+  weeklyWorkoutsGoal: number | null
+  weeklySetsGoal: number | null
 }
 
 export interface User extends Goals {

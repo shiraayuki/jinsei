@@ -58,6 +58,27 @@ public class WorkoutsController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// The training numbers that need the set payload: weekly load, sets per
+    /// muscle group and progression per exercise. Computed on request rather
+    /// than stored, since the input is a few hundred rows and a stored roll-up
+    /// would have to be invalidated by every sync.
+    /// </summary>
+    [HttpGet("analytics")]
+    public async Task<IActionResult> Analytics([FromQuery] int days = 90)
+    {
+        days = Math.Clamp(days, 7, 730);
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var from = today.AddDays(-(days - 1));
+
+        var logs = await _db.WorkoutLogs
+            .Where(w => w.UserId == UserId && w.Date >= from)
+            .OrderBy(w => w.Date)
+            .ToListAsync();
+
+        return Ok(WorkoutAnalyticsService.Build(logs, today, days));
+    }
+
     [HttpGet("sync/status")]
     public IActionResult SyncStatus() => Ok(new { configured = _sync.IsConfigured, source = "hevy" });
 

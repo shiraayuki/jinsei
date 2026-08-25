@@ -49,7 +49,13 @@ public class SleepController : ControllerBase
             _db.SleepEntries.Add(existing);
         }
 
-        existing.TimeInBedMinutes = req.TimeInBedMinutes;
+        // Two clock times already say how long the night was, so the duration
+        // is filled in from them when it was not sent — a night entered by its
+        // times should not also have to be entered by its length.
+        existing.TimeInBedMinutes = req.TimeInBedMinutes
+            ?? SpanBetween(req.BedTime, req.WakeTime);
+        existing.BedTime = req.BedTime;
+        existing.WakeTime = req.WakeTime;
         existing.ActualSleepMinutes = req.ActualSleepMinutes;
         existing.Quality = req.Quality;
         existing.Notes = req.Notes;
@@ -69,6 +75,18 @@ public class SleepController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Minutes from one clock time to the other, wrapping over midnight: going
+    /// to bed at 22:30 and getting up at 07:30 is nine hours, not minus fifteen.
+    /// </summary>
+    private static int? SpanBetween(TimeOnly? from, TimeOnly? to)
+    {
+        if (from is not TimeOnly start || to is not TimeOnly end) return null;
+        var minutes = (int)(end - start).TotalMinutes;
+        if (minutes <= 0) minutes += 24 * 60;
+        return minutes;
+    }
+
     private static object ToDto(SleepEntry e) => new
     {
         e.Id,
@@ -76,6 +94,8 @@ public class SleepController : ControllerBase
         e.TimeInBedMinutes,
         e.ActualSleepMinutes,
         e.Quality,
+        BedTime = e.BedTime?.ToString("HH:mm"),
+        WakeTime = e.WakeTime?.ToString("HH:mm"),
         // Share of the time in bed actually spent asleep — the number Sleep
         // Cycle calls efficiency.
         Efficiency = e.TimeInBedMinutes is > 0 && e.ActualSleepMinutes is not null
@@ -91,4 +111,6 @@ public record UpsertSleepRequest(
     int? TimeInBedMinutes,
     int? ActualSleepMinutes,
     int? Quality,
+    TimeOnly? BedTime,
+    TimeOnly? WakeTime,
     string? Notes);

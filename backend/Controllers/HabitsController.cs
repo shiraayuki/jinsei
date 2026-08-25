@@ -148,6 +148,74 @@ public class HabitsController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// The habits taken together rather than one at a time: how many were due
+    /// on a day and how many were done. It answers whether the list as a whole
+    /// is being kept, which the per-habit streaks cannot — five habits at 80 %
+    /// each is a different situation from four perfect ones and one abandoned.
+    /// </summary>
+    [HttpGet("overview")]
+    public async Task<IActionResult> Overview([FromQuery] int days = 90)
+    {
+        days = Math.Clamp(days, 7, 730);
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var from = today.AddDays(-(days - 1));
+
+        var habits = await _db.Habits
+            .Include(h => h.Schedule)
+            .Include(h => h.Entries.Where(e => e.Date >= from))
+            .Where(h => h.UserId == UserId && !h.Archived)
+            .ToListAsync();
+
+        var daily = new List<DailyHabitDto>();
+        var weekdayDue = new int[7];
+        var weekdayDone = new int[7];
+
+        for (var day = from; day <= today; day = day.AddDays(1))
+        {
+            var due = 0;
+            var done = 0;
+            foreach (var habit in habits)
+            {
+                if (!IsScheduledOn(habit.Schedule, day)) continue;
+                due++;
+                var target = habit.Schedule?.TargetCount ?? 1;
+                if (habit.Entries.Any(e => e.Date == day && e.CompletedCount >= target)) done++;
+            }
+
+            // Monday first, so the weekday chart reads the way a week does.
+            var weekday = ((int)day.DayOfWeek + 6) % 7;
+            weekdayDue[weekday] += due;
+            weekdayDone[weekday] += done;
+
+            daily.Add(new DailyHabitDto(day.ToString("yyyy-MM-dd"), due, done));
+        }
+
+        var totalDue = daily.Sum(d => d.Due);
+        return Ok(new HabitOverviewDto(
+            days,
+            habits.Count,
+            daily,
+            weekdayDue.Select((due, i) => due == 0 ? 0.0 : Math.Round(weekdayDone[i] / (double)due * 100, 1)).ToArray(),
+            totalDue == 0 ? 0.0 : Math.Round(daily.Sum(d => d.Done) / (double)totalDue * 100, 1)));
+    }
+
+    /// <summary>Whether a habit was due on a day, by its schedule.</summary>
+    private static bool IsScheduledOn(HabitSchedule? schedule, DateOnly day)
+    {
+        if (schedule is null) return true;
+        if (day < schedule.ActiveFrom) return false;
+        return schedule.ScheduleType switch
+        {
+            ScheduleType.Daily => true,
+            ScheduleType.Weekly when schedule.DaysOfWeek is { Length: > 0 } =>
+                schedule.DaysOfWeek.Contains((int)day.DayOfWeek),
+            ScheduleType.Interval when schedule.IntervalDays is > 0 =>
+                (day.DayNumber - schedule.ActiveFrom.DayNumber) % schedule.IntervalDays.Value == 0,
+            _ => true,
+        };
+    }
+
     // GET /api/habits/{id}/stats?days=90
     [HttpGet("{id:guid}/stats")]
     public async Task<IActionResult> GetStats(Guid id, [FromQuery] int days = 90)
@@ -386,6 +454,15 @@ public record HabitEntryDto(
 );
 
 public record WeeklyHabitDto(DateOnly WeekStart, int CompletedCount);
+
+public record DailyHabitDto(string Date, int Due, int Done);
+
+public record HabitOverviewDto(
+    int Days,
+    int HabitCount,
+    List<DailyHabitDto> Daily,
+    double[] WeekdayRates,
+    double CompletionPercent);
 
 public record HabitStatsDto(
     int Days,

@@ -6,6 +6,10 @@ export interface SleepEntry {
   timeInBedMinutes: number | null
   actualSleepMinutes: number | null
   quality: number | null
+  /** "HH:mm" the night started; the evening before the date, or after midnight on it. */
+  bedTime: string | null
+  /** "HH:mm" of getting up, on the entry's date. */
+  wakeTime: string | null
   /** Share of the time in bed actually spent asleep, in percent. */
   efficiency: number | null
   notes?: string
@@ -17,6 +21,8 @@ export interface SleepInput {
   timeInBedMinutes: number | null
   actualSleepMinutes: number | null
   quality: number | null
+  bedTime?: string | null
+  wakeTime?: string | null
   notes?: string
 }
 
