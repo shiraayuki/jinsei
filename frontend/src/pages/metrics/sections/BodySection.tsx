@@ -102,8 +102,8 @@ export function BodySection({ days }: { days: number }) {
 
       <Block module="body" icon={<Scale size={15} />} title={t('metrics.body.tdee')}>
         <StatTile
-          label={t('metrics.body.tdee')}
-          value={tdee != null ? `${num(tdee)} kcal` : '–'}
+          label={`kcal · ${t('metrics.body.tdee')}`}
+          value={tdee != null ? num(tdee) : '–'}
           hint={tdee != null ? t('metrics.body.tdeeHint') : t('metrics.body.tdeeNeeds')}
         />
         {tdee != null && (

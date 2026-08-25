@@ -42,12 +42,24 @@ export function StatTile({
 }) {
   return (
     <div className="min-w-0 rounded-control bg-raised p-3">
+      {/* The number is never clipped: it is the whole point of the tile. The
+          sparkline gives up its width first and disappears entirely when the
+          value needs the room — a shape without its number says nothing, a
+          number without its shape still says what it is. */}
       <div className="flex items-start justify-between gap-2">
-        <p className="truncate font-display text-value font-semibold text-ink tabular">{value}</p>
-        {spark && color && <Sparkline points={spark} color={color} smooth={smooth} />}
+        <p className="min-w-0 flex-1 font-display text-value font-semibold leading-tight text-ink tabular">
+          {value}
+        </p>
+        {spark && color && (
+          <span className="hidden shrink-0 min-[340px]:block">
+            <Sparkline points={spark} color={color} smooth={smooth} width={52} />
+          </span>
+        )}
       </div>
       <p className="truncate text-meta text-ink-mute">{label}</p>
-      {hint && <p className="truncate text-label text-ink-faint">{hint}</p>}
+      {/* Two lines rather than one, so a hint that explains a missing value —
+          "set a goal in your profile" — is readable instead of cut mid-word. */}
+      {hint && <p className="line-clamp-2 text-label text-ink-faint">{hint}</p>}
       {delta !== undefined && (
         <Delta value={delta} unit={deltaUnit} lowerIsBetter={lowerIsBetter} neutral={neutral} digits={digits} />
       )}

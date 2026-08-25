@@ -56,10 +56,13 @@ export function FoodSection({ days }: { days: number }) {
       <Block module="food" icon={<Apple size={15} />} title={t('metrics.food.calories')}>
         <div className="grid grid-cols-2 gap-2">
           <StatTile
-            label={t('metrics.food.rolling')}
-            value={rollingNow != null ? `${num(rollingNow)} kcal` : '–'}
+            // The unit rides in the label: four digits plus "kcal" is wider
+            // than half a phone, and the label has room to spare.
+            label={`kcal · ${t('metrics.food.rolling')}`}
+            value={rollingNow != null ? num(rollingNow) : '–'}
             delta={kcalNow != null && kcalBefore != null ? kcalNow - kcalBefore : null}
             deltaUnit=" kcal"
+            digits={0}
             neutral
             spark={kcal}
             color={moduleColor.food}

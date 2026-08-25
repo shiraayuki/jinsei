@@ -71,6 +71,7 @@ export function OverviewSection({ days }: { days: number }) {
             value={num(sessionWeek.now)}
             hint={t('metrics.perWeek')}
             delta={sessionWeek.now - sessionWeek.before}
+            digits={0}
             spark={sessions}
             color={moduleColor.train}
           />
@@ -89,6 +90,7 @@ export function OverviewSection({ days }: { days: number }) {
             hint={t('metrics.perDay')}
             delta={kcalWeek.now != null && kcalWeek.before != null ? kcalWeek.now - kcalWeek.before : null}
             deltaUnit=" kcal"
+            digits={0}
             neutral
             spark={kcal}
             color={moduleColor.food}
