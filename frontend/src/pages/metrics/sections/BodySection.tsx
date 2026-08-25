@@ -1,4 +1,4 @@
-import { Scale } from 'lucide-react'
+import { Flame, Scale } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Chart } from '../../../components/charts/Chart'
 import { StatTile } from '../../../components/charts/StatTile'
@@ -7,11 +7,10 @@ import { useWeight } from '../../../features/weight/hooks'
 import { useNutrition } from '../../../features/nutrition/hooks'
 import { moduleColor } from '../../../lib/modules'
 import { defined, latest, mean, movingAverage, slopePerDay } from '../../../lib/stats'
+import { KCAL_PER_KG } from '../../../lib/energy'
+import { formulaTdee, measuredTdee, restingRate, weeklyChangeFor } from '../../../lib/energy'
 import { Block, EmptyHint } from '../Block'
 import { num, series } from '../shared'
-
-/** A kilogram of body mass is roughly this many kilocalories of stored energy. */
-const KCAL_PER_KG = 7700
 
 export function BodySection({ days }: { days: number }) {
   const { t } = useTranslation()
@@ -47,13 +46,36 @@ export function BodySection({ days }: { days: number }) {
 
   // Maintenance from what actually happened: average intake plus the energy the
   // body took out of, or put into, storage. Beats any formula once there are
-  // two weeks of both.
+  // two weeks of both — until then the formula stands in.
   const kcalMean = mean(defined(kcalPoints))
   const kcalDays = defined(kcalPoints).length
-  const tdee =
+  const measured =
     kcalMean != null && ratePerWeek != null && kcalDays >= 14 && readings.length >= 8
-      ? kcalMean - (ratePerWeek / 7) * KCAL_PER_KG
+      ? measuredTdee(kcalMean, ratePerWeek)
       : null
+
+  const profile = {
+    birthDate: user?.birthDate ?? null,
+    heightCm: user?.heightCm ?? null,
+    sex: user?.sex ?? null,
+    activityLevel: user?.activityLevel ?? null,
+  }
+  const currentWeight = trendNow ?? latest(weightPoints)
+  const formula = currentWeight != null ? formulaTdee(currentWeight, profile) : null
+  const resting = currentWeight != null ? restingRate(currentWeight, profile) : null
+
+  // The measured number wins wherever it exists: it already contains the
+  // activity the formula only guesses at.
+  const tdee = measured ?? formula
+  const source = measured != null ? t('metrics.body.measured') : t('metrics.body.formula')
+
+  // What the current intake does against that need, and what it works out to
+  // on the scale.
+  const balance = tdee != null && kcalMean != null ? kcalMean - tdee : null
+  const balanceRate = balance != null ? weeklyChangeFor(balance) : null
+  // A half-kilo a week is the cut most people can hold; shown as the intake it
+  // would take rather than as a deficit to do arithmetic on.
+  const cutKcal = tdee != null ? tdee - (0.5 * KCAL_PER_KG) / 7 : null
 
   return (
     <>
@@ -100,13 +122,50 @@ export function BodySection({ days }: { days: number }) {
         )}
       </Block>
 
-      <Block module="body" icon={<Scale size={15} />} title={t('metrics.body.tdee')}>
-        <StatTile
-          label={`kcal · ${t('metrics.body.tdee')}`}
-          value={tdee != null ? num(tdee) : '–'}
-          hint={tdee != null ? t('metrics.body.tdeeHint') : t('metrics.body.tdeeNeeds')}
-        />
-        {tdee != null && (
+      <Block
+        module="body"
+        icon={<Flame size={15} />}
+        title={t('metrics.body.tdee')}
+        summary={tdee != null ? source : undefined}
+      >
+        <div className="grid grid-cols-2 gap-2">
+          <StatTile
+            label={`kcal · ${t('metrics.body.tdee')}`}
+            value={tdee != null ? num(tdee) : '–'}
+            hint={
+              measured != null
+                ? t('metrics.body.tdeeHint')
+                : formula != null
+                  ? t('metrics.body.tdeeFormulaHint')
+                  : t('metrics.body.tdeeNeedsBody')
+            }
+          />
+          <StatTile
+            label={`kcal · ${t('metrics.body.restingRate')}`}
+            value={resting != null ? num(resting) : '–'}
+            hint={resting == null ? t('metrics.body.tdeeNeedsBody') : undefined}
+          />
+          <StatTile
+            label={`kcal · ${t('metrics.body.balance')}`}
+            value={balance != null ? `${balance > 0 ? '+' : ''}${num(balance)}` : '–'}
+            hint={
+              balanceRate != null
+                ? t('metrics.body.balanceRate', { value: num(balanceRate, 2) })
+                : t('metrics.body.tdeeNeeds')
+            }
+          />
+          <StatTile
+            label={`kcal · ${t('metrics.body.cutTarget', { rate: '0,5' })}`}
+            value={cutKcal != null ? num(cutKcal) : '–'}
+            hint={t('metrics.perDay')}
+          />
+        </div>
+
+        {measured == null && formula != null && (
+          <p className="text-label text-ink-faint">{t('metrics.body.tdeeNeeds')}</p>
+        )}
+
+        {measured != null && (
           <Chart
             series={[
               { label: t('nutrition.calories'), color: moduleColor.food, points: kcalPoints, unit: ' kcal', averageOver: 7 },

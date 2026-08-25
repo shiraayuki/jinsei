@@ -86,6 +86,12 @@ public class AuthController : ControllerBase
         if (req.WeightGoalKg is < 0 or > 500) return BadRequest("Weight goal out of range.");
         if (req.WeeklyWorkoutsGoal is < 0 or > 21) return BadRequest("Workout goal out of range.");
         if (req.WeeklySetsGoal is < 0 or > 500) return BadRequest("Set goal out of range.");
+        if (req.HeightCm is < 50 or > 260) return BadRequest("Height out of range.");
+        if (req.ActivityLevel is < 1.0m or > 2.5m) return BadRequest("Activity level out of range.");
+        if (req.Sex is not (null or "male" or "female")) return BadRequest("Unknown sex.");
+        if (req.BirthDate is DateOnly born
+            && (born > DateOnly.FromDateTime(DateTime.Today) || born.Year < 1900))
+            return BadRequest("Birth date out of range.");
 
         // A goal is cleared by sending null, so these are assigned rather than
         // merged.
@@ -97,6 +103,10 @@ public class AuthController : ControllerBase
         user.WeightGoalKg = req.WeightGoalKg;
         user.WeeklyWorkoutsGoal = req.WeeklyWorkoutsGoal;
         user.WeeklySetsGoal = req.WeeklySetsGoal;
+        user.BirthDate = req.BirthDate;
+        user.HeightCm = req.HeightCm;
+        user.Sex = req.Sex;
+        user.ActivityLevel = req.ActivityLevel;
         await _userManager.UpdateAsync(user);
         return Ok(ToDto(user));
     }
@@ -115,6 +125,10 @@ public class AuthController : ControllerBase
         u.WeightGoalKg,
         u.WeeklyWorkoutsGoal,
         u.WeeklySetsGoal,
+        BirthDate = u.BirthDate?.ToString("yyyy-MM-dd"),
+        u.HeightCm,
+        u.Sex,
+        u.ActivityLevel,
     };
 }
 
@@ -130,4 +144,8 @@ public record UpdateProfileRequest(
     int? SleepGoalMinutes,
     decimal? WeightGoalKg,
     int? WeeklyWorkoutsGoal,
-    int? WeeklySetsGoal);
+    int? WeeklySetsGoal,
+    DateOnly? BirthDate,
+    int? HeightCm,
+    string? Sex,
+    decimal? ActivityLevel);

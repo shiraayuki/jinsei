@@ -13,7 +13,17 @@ export interface Goals {
   weeklySetsGoal: number | null
 }
 
-export interface User extends Goals {
+/** What an energy formula needs and the daily logs cannot supply. */
+export interface BodyProfileFields {
+  birthDate: string | null
+  heightCm: number | null
+  /** "male", "female", or null when it was not given. */
+  sex: string | null
+  /** Multiplier on the resting rate, 1.2 (desk) to 1.9 (manual job plus training). */
+  activityLevel: number | null
+}
+
+export interface User extends Goals, BodyProfileFields {
   id: string
   email: string
   displayName?: string
@@ -26,7 +36,9 @@ interface AuthCtx {
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, displayName?: string) => Promise<void>
   logout: () => Promise<void>
-  updateProfile: (patch: Partial<Goals> & { displayName?: string; language?: string }) => Promise<void>
+  updateProfile: (
+    patch: Partial<Goals> & Partial<BodyProfileFields> & { displayName?: string; language?: string },
+  ) => Promise<void>
 }
 
 const Ctx = createContext<AuthCtx>(null!)
@@ -68,7 +80,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * changed has to be sent back as it stands — otherwise saving a name would
    * clear the goals.
    */
-  async function updateProfile(patch: Partial<Goals> & { displayName?: string; language?: string }) {
+  async function updateProfile(
+    patch: Partial<Goals> & Partial<BodyProfileFields> & { displayName?: string; language?: string },
+  ) {
     const u = await api.put<User>('/auth/profile', {
       displayName: user?.displayName ?? null,
       language: user?.language,
@@ -76,6 +90,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       proteinGoal: user?.proteinGoal ?? null,
       waterGoalL: user?.waterGoalL ?? null,
       stepsGoal: user?.stepsGoal ?? null,
+      sleepGoalMinutes: user?.sleepGoalMinutes ?? null,
+      weightGoalKg: user?.weightGoalKg ?? null,
+      weeklyWorkoutsGoal: user?.weeklyWorkoutsGoal ?? null,
+      weeklySetsGoal: user?.weeklySetsGoal ?? null,
+      birthDate: user?.birthDate ?? null,
+      heightCm: user?.heightCm ?? null,
+      sex: user?.sex ?? null,
+      activityLevel: user?.activityLevel ?? null,
       ...patch,
     })
     applyUser(u)
