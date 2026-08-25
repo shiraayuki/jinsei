@@ -26,11 +26,13 @@ public class IngestController : ControllerBase
     [HttpPost("activity")]
     public async Task<IActionResult> Activity([FromBody] IngestActivityRequest req, CancellationToken ct)
     {
-        if (req.Entries is null or { Count: 0 }) return BadRequest(new { message = "No entries." });
-        if (req.Entries.Count > 400) return BadRequest(new { message = "Too many entries in one request." });
-
+        // Who before what: an unauthenticated caller learns nothing about the
+        // shape this endpoint expects.
         var user = await ResolveUserAsync(ct);
         if (user is null) return Unauthorized(new { message = "Unknown or missing ingest token." });
+
+        if (req.Entries is null or { Count: 0 }) return BadRequest(new { message = "No entries." });
+        if (req.Entries.Count > 400) return BadRequest(new { message = "Too many entries in one request." });
 
         var days = req.Entries.Select(e => e.Date).Distinct().ToList();
         var existing = await _db.ActivityEntries

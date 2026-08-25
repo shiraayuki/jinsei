@@ -138,6 +138,18 @@ public class IngestTests
     }
 
     [Fact]
+    public async Task Ingest_AnswersUnauthorizedBeforeItLooksAtTheBody()
+    {
+        using var app = await TestApp.SignedInAsync();
+        await IssueTokenAsync(app);
+
+        // An empty payload is invalid, but a caller without a token should not
+        // find that out.
+        var res = await app.Client.SendAsync(Post(null, new { entries = Array.Empty<object>() }));
+        Assert.Equal(HttpStatusCode.Unauthorized, res.StatusCode);
+    }
+
+    [Fact]
     public async Task Ingest_RejectsAnImpossibleStepCount()
     {
         using var app = await TestApp.SignedInAsync();
