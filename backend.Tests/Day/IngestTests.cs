@@ -160,4 +160,115 @@ public class IngestTests
         var entries = await app.Client.GetFromJsonAsync<JsonElement>("/api/activity?days=30");
         Assert.Empty(entries.EnumerateArray().Where(e => e.GetProperty("steps").ValueKind != JsonValueKind.Null));
     }
+
+    // --- nutrition ---------------------------------------------------------
+
+    private static HttpRequestMessage PostNutrition(string? token, object payload)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, "/api/ingest/nutrition")
+        {
+            Content = JsonContent.Create(payload),
+        };
+        if (token is not null) req.Headers.Add("X-Ingest-Token", token);
+        return req;
+    }
+
+    private static async Task<JsonElement> NutritionDayAsync(TestApp app, string date) =>
+        await app.Client.GetFromJsonAsync<JsonElement>($"/api/nutrition/{date}");
+
+    [Fact]
+    public async Task IngestNutrition_WritesEverythingFatSecretSends()
+    {
+        using var app = await TestApp.SignedInAsync();
+        var token = await IssueTokenAsync(app);
+
+        var res = await app.Client.SendAsync(PostNutrition(token, new
+        {
+            entries = new[]
+            {
+                new { date = "2026-08-25", kcal = 2310, proteinG = 194, carbsG = 197, fatG = 71, fiberG = 33, waterL = 3.0 },
+            },
+        }));
+        res.EnsureSuccessStatusCode();
+
+        var day = await NutritionDayAsync(app, "2026-08-25");
+        Assert.Equal(2310, day.GetProperty("kcal").GetInt32());
+        Assert.Equal(194, day.GetProperty("proteinG").GetInt32());
+        Assert.Equal(197, day.GetProperty("carbsG").GetInt32());
+        Assert.Equal(71, day.GetProperty("fatG").GetInt32());
+        Assert.Equal(33, day.GetProperty("fiberG").GetInt32());
+        Assert.Equal(3.0m, day.GetProperty("waterL").GetDecimal());
+    }
+
+    [Fact]
+    public async Task IngestNutrition_LeavesOutFieldsAlone()
+    {
+        using var app = await TestApp.SignedInAsync();
+        var token = await IssueTokenAsync(app);
+
+        await app.Client.PostAsJsonAsync("/api/nutrition", new
+        {
+            date = "2026-08-25",
+            kcal = 1000,
+            waterL = 2.5,
+            coffeeMl = 400,
+            lastCoffee = "14:30",
+            notes = "von Hand",
+        });
+
+        // The shortcut only ever knows what Health knows: calories and macros.
+        await app.Client.SendAsync(PostNutrition(token, new
+        {
+            entries = new[] { new { date = "2026-08-25", kcal = 2310, proteinG = 194 } },
+        }));
+
+        var day = await NutritionDayAsync(app, "2026-08-25");
+        Assert.Equal(2310, day.GetProperty("kcal").GetInt32());
+        Assert.Equal(194, day.GetProperty("proteinG").GetInt32());
+        Assert.Equal(2.5m, day.GetProperty("waterL").GetDecimal());
+        Assert.Equal(400, day.GetProperty("coffeeMl").GetInt32());
+        Assert.Equal("14:30", day.GetProperty("lastCoffee").GetString());
+        Assert.Equal("von Hand", day.GetProperty("notes").GetString());
+    }
+
+    [Fact]
+    public async Task IngestNutrition_ReplacesTheDayWhenItComesAgain()
+    {
+        using var app = await TestApp.SignedInAsync();
+        var token = await IssueTokenAsync(app);
+
+        await app.Client.SendAsync(PostNutrition(token, new { entries = new[] { new { date = "2026-08-25", kcal = 1800 } } }));
+        await app.Client.SendAsync(PostNutrition(token, new { entries = new[] { new { date = "2026-08-25", kcal = 2310 } } }));
+
+        var day = await NutritionDayAsync(app, "2026-08-25");
+        Assert.Equal(2310, day.GetProperty("kcal").GetInt32());
+    }
+
+    [Fact]
+    public async Task IngestNutrition_SkipsAReadingThatCannotBeRight()
+    {
+        using var app = await TestApp.SignedInAsync();
+        var token = await IssueTokenAsync(app);
+
+        await app.Client.SendAsync(PostNutrition(token, new
+        {
+            entries = new[] { new { date = "2026-08-25", kcal = 90_000, proteinG = 194 } },
+        }));
+
+        var day = await NutritionDayAsync(app, "2026-08-25");
+        Assert.Equal(JsonValueKind.Null, day.GetProperty("kcal").ValueKind);
+        Assert.Equal(194, day.GetProperty("proteinG").GetInt32());
+    }
+
+    [Fact]
+    public async Task IngestNutrition_RefusesAWrongOrMissingToken()
+    {
+        using var app = await TestApp.SignedInAsync();
+        await IssueTokenAsync(app);
+
+        var payload = new { entries = new[] { new { date = "2026-08-25", kcal = 2310 } } };
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await app.Client.SendAsync(PostNutrition("not-the-token", payload))).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await app.Client.SendAsync(PostNutrition(null, payload))).StatusCode);
+    }
 }

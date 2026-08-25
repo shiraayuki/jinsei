@@ -13,6 +13,7 @@ export interface NutritionDraftFields {
   proteinG: number | null
   carbsG: number | null
   fatG: number | null
+  fiberG: number | null
 }
 
 export interface ImportDraft<F> {

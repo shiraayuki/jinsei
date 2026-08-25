@@ -11,6 +11,10 @@ public class NutritionEntry
     public int? CarbsG { get; set; }
     public int? FatG { get; set; }
 
+    /// <summary>Fibre in grams. FatSecret reports it, and it is the one carb
+    /// number that says something on its own.</summary>
+    public int? FiberG { get; set; }
+
     public decimal? WaterL { get; set; }
     public int? CoffeeMl { get; set; }
 

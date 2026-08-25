@@ -98,6 +98,7 @@ public class ScreenshotImportService
         - proteinG: Eiweiß (g)
         - carbsG: Kohlenhydrate (g)
         - fatG: Fett (g) — das Gesamtfett, nicht "Gesättigte Fette".
+        - fiberG: Ballaststoffe (g). Steht die Zeile nicht im Bild, gib null zurück.
         - date: das Datum aus der Kopfzeile als YYYY-MM-DD. "22 Aug 26" heißt
           Tag Monat zweistelliges Jahr, also 2026-08-22. Bezugstag ist
           {contextDate:yyyy-MM-dd}. Ist kein Datum lesbar, gib null zurück.
@@ -153,6 +154,7 @@ public class ScreenshotImportService
             proteinG = NullableInt("Eiweiß in Gramm."),
             carbsG = NullableInt("Kohlenhydrate in Gramm."),
             fatG = NullableInt("Fett in Gramm."),
+            fiberG = NullableInt("Ballaststoffe in Gramm."),
             lowConfidence = new
             {
                 type = "array",
@@ -252,6 +254,7 @@ public class ScreenshotImportService
                 ["proteinG"] = InRange(Int(root, "proteinG"), 0, 1000, "Eiweiß", warnings),
                 ["carbsG"] = InRange(Int(root, "carbsG"), 0, 2000, "Kohlenhydrate", warnings),
                 ["fatG"] = InRange(Int(root, "fatG"), 0, 1000, "Fett", warnings),
+                ["fiberG"] = InRange(Int(root, "fiberG"), 0, 500, "Ballaststoffe", warnings),
             },
             LowConfidence: Strings(root, "lowConfidence"),
             Warnings: warnings,

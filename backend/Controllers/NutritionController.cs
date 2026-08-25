@@ -43,7 +43,7 @@ public class NutritionController : ControllerBase
     public async Task<IActionResult> Upsert([FromBody] UpsertNutritionRequest req)
     {
         if (req.Kcal is < 0 or > 20000) return BadRequest("Kcal out of range.");
-        if (req.ProteinG is < 0 || req.CarbsG is < 0 || req.FatG is < 0)
+        if (req.ProteinG is < 0 || req.CarbsG is < 0 || req.FatG is < 0 || req.FiberG is < 0)
             return BadRequest("Macros cannot be negative.");
         if (req.WaterL is < 0 or > 30) return BadRequest("Water out of range.");
         if (req.CoffeeMl is < 0 or > 5000) return BadRequest("Coffee out of range.");
@@ -61,6 +61,7 @@ public class NutritionController : ControllerBase
         existing.ProteinG = req.ProteinG;
         existing.CarbsG = req.CarbsG;
         existing.FatG = req.FatG;
+        existing.FiberG = req.FiberG;
         existing.WaterL = req.WaterL;
         existing.CoffeeMl = req.CoffeeMl;
         existing.LastCoffee = req.LastCoffee;
@@ -89,6 +90,7 @@ public class NutritionController : ControllerBase
         ProteinG = (int?)null,
         CarbsG = (int?)null,
         FatG = (int?)null,
+        FiberG = (int?)null,
         WaterL = (decimal?)null,
         CoffeeMl = (int?)null,
         LastCoffee = (string?)null,
@@ -103,6 +105,7 @@ public class NutritionController : ControllerBase
         e.ProteinG,
         e.CarbsG,
         e.FatG,
+        e.FiberG,
         e.WaterL,
         e.CoffeeMl,
         LastCoffee = e.LastCoffee?.ToString("HH:mm"),
@@ -117,6 +120,7 @@ public record UpsertNutritionRequest(
     int? ProteinG,
     int? CarbsG,
     int? FatG,
+    int? FiberG,
     decimal? WaterL,
     int? CoffeeMl,
     TimeOnly? LastCoffee,

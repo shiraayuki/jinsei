@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Apple, Coffee, Droplet } from 'lucide-react'
+import { Apple, Coffee, Droplet, Wheat } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { dateLocale } from '../../../i18n'
 import { useNutritionDay, useUpsertNutrition } from '../../../features/nutrition/hooks'
@@ -97,6 +97,7 @@ function NutritionForm({ date, entry, onSelectDate }: {
   const [protein, setProtein] = useState(str(entry?.proteinG))
   const [carbs, setCarbs] = useState(str(entry?.carbsG))
   const [fat, setFat] = useState(str(entry?.fatG))
+  const [fiber, setFiber] = useState(str(entry?.fiberG))
   const [water, setWater] = useState(str(entry?.waterL))
   const [coffee, setCoffee] = useState(str(entry?.coffeeMl))
   const [lastCoffee, setLastCoffee] = useState(entry?.lastCoffee ?? '')
@@ -117,6 +118,7 @@ function NutritionForm({ date, entry, onSelectDate }: {
       proteinG: numOrNull(protein),
       carbsG: numOrNull(carbs),
       fatG: numOrNull(fat),
+      fiberG: numOrNull(fiber),
       waterL: numOrNull(water),
       coffeeMl: numOrNull(coffee),
       lastCoffee: lastCoffee || null,
@@ -138,6 +140,7 @@ function NutritionForm({ date, entry, onSelectDate }: {
           if (f.proteinG != null) setProtein(String(f.proteinG))
           if (f.carbsG != null) setCarbs(String(f.carbsG))
           if (f.fatG != null) setFat(String(f.fatG))
+          if (f.fiberG != null) setFiber(String(f.fiberG))
         }}
       />
 
@@ -179,6 +182,23 @@ function NutritionForm({ date, entry, onSelectDate }: {
             </p>
           </>
         )}
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex items-center gap-1.5 text-meta text-ink-mute">
+          <Wheat size={13} /> {t('nutrition.fiber')}
+        </span>
+        <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2">
+          <input
+            type="number"
+            inputMode="numeric"
+            placeholder="–"
+            value={fiber}
+            onChange={e => setFiber(e.target.value)}
+            className="w-20 min-w-0 bg-transparent text-right text-body font-semibold text-ink outline-none"
+          />
+          <span className="text-meta text-ink-mute">g</span>
+        </div>
       </div>
 
       <div className="space-y-2">
