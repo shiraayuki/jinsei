@@ -7,7 +7,6 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { LogOut, Sun, Moon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { JOB_LEVELS } from '../lib/energy'
 
 function numOrNull(value: string): number | null {
   if (value.trim() === '') return null
@@ -127,120 +126,6 @@ function GoalsCard() {
   )
 }
 
-/**
- * The facts an energy formula needs and the daily logs cannot supply. All of
- * them optional: without them the metrics page falls back to what it measured,
- * which is the better number anyway once there are two weeks of it.
- */
-function BodyCard() {
-  const { user, updateProfile } = useAuth()
-  const { t } = useTranslation()
-  const [birthDate, setBirthDate] = useState(user?.birthDate ?? '')
-  const [height, setHeight] = useState(user?.heightCm == null ? '' : String(user.heightCm))
-  const [sex, setSex] = useState(user?.sex ?? '')
-  const [activity, setActivity] = useState(user?.activityLevel == null ? '' : String(user.activityLevel))
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-
-  async function save() {
-    setSaving(true)
-    setSaved(false)
-    try {
-      await updateProfile({
-        birthDate: birthDate || null,
-        heightCm: numOrNull(height),
-        sex: sex || null,
-        activityLevel: numOrNull(activity),
-      })
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <Card className="space-y-3 p-4">
-      <div>
-        <p className="text-body font-medium text-ink-soft">{t('body.title')}</p>
-        <p className="mt-0.5 text-meta text-ink-mute">{t('body.hint')}</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <label className="flex min-w-0 flex-col gap-1">
-          <span className="text-meta text-ink-mute">{t('body.birthDate')}</span>
-          <input
-            type="date"
-            value={birthDate}
-            onChange={e => setBirthDate(e.target.value)}
-            className="rounded-control bg-raised px-3 py-2.5 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
-          />
-        </label>
-
-        <label className="flex min-w-0 flex-col gap-1">
-          <span className="text-meta text-ink-mute">{t('body.height')}</span>
-          <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2.5">
-            <input
-              type="number"
-              inputMode="numeric"
-              step="1"
-              placeholder="–"
-              value={height}
-              onChange={e => setHeight(e.target.value)}
-              className="w-full min-w-0 bg-transparent text-title font-semibold text-ink outline-none"
-            />
-            <span className="text-meta text-ink-mute">cm</span>
-          </div>
-        </label>
-      </div>
-
-      <label className="flex flex-col gap-1">
-        <span className="text-meta text-ink-mute">{t('body.sex')}</span>
-        <div className="flex gap-2">
-          {[
-            ['male', t('body.male')],
-            ['female', t('body.female')],
-            ['', t('body.unstated')],
-          ].map(([value, label]) => (
-            <button
-              key={value || 'none'}
-              type="button"
-              onClick={() => setSex(value)}
-              aria-pressed={sex === value}
-              className={`flex-1 rounded-chip py-2 text-meta font-medium transition-colors ${
-                sex === value ? 'bg-accent text-white' : 'bg-raised text-ink-soft hover:bg-line'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </label>
-
-      <label className="flex flex-col gap-1">
-        <span className="text-meta text-ink-mute">{t('body.activity')}</span>
-        <p className="text-label text-ink-faint">{t('body.activityHint')}</p>
-        <select
-          value={activity}
-          onChange={e => setActivity(e.target.value)}
-          className="rounded-control bg-raised px-3 py-2.5 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
-        >
-          <option value="">{t('body.unstated')}</option>
-          {JOB_LEVELS.map(level => (
-            <option key={level.value} value={level.value}>
-              {t(`body.levels.${level.key}`)}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <Button onClick={save} loading={saving} className="w-full">
-        {saved ? t('common.saved') : t('common.save')}
-      </Button>
-    </Card>
-  )
-}
-
 export function ProfilePage() {
   const { user, logout, updateProfile } = useAuth()
   const { theme, toggle } = useTheme()
@@ -267,7 +152,6 @@ export function ProfilePage() {
       <PageHeader title={t('profile.title')} />
 
       <div className="space-y-4 p-4">
-        <BodyCard />
         <GoalsCard />
 
         <Card className="space-y-4 p-4">
