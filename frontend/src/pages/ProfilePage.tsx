@@ -7,7 +7,7 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { LogOut, Sun, Moon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { ACTIVITY_LEVELS } from '../lib/energy'
+import { JOB_LEVELS } from '../lib/energy'
 
 function numOrNull(value: string): number | null {
   if (value.trim() === '') return null
@@ -219,13 +219,14 @@ function BodyCard() {
 
       <label className="flex flex-col gap-1">
         <span className="text-meta text-ink-mute">{t('body.activity')}</span>
+        <p className="text-label text-ink-faint">{t('body.activityHint')}</p>
         <select
           value={activity}
           onChange={e => setActivity(e.target.value)}
           className="rounded-control bg-raised px-3 py-2.5 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
         >
           <option value="">{t('body.unstated')}</option>
-          {ACTIVITY_LEVELS.map(level => (
+          {JOB_LEVELS.map(level => (
             <option key={level.value} value={level.value}>
               {t(`body.levels.${level.key}`)}
             </option>
