@@ -196,6 +196,24 @@ input[type='datetime-local']::-webkit-date-and-time-value {
   text-align: left;
 }
 
+/*
+ * The spinner arrows on number fields are noise here: every number is typed or
+ * dictated, none is nudged by one, and on a phone they only shrink the tap
+ * target. `field-sizing` stays untouched — this hides the buttons, not the
+ * input's own sizing.
+ */
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
 /* Range inputs default to a bright native track, which reads as a white bar on
    the dark theme. Draw the track ourselves and keep the thumb on the accent. */
 input[type='range'] {
