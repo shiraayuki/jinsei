@@ -29,7 +29,7 @@ function MacroField({ label, color, value, onChange }: {
   onChange: (v: string) => void
 }) {
   return (
-    <label className="flex min-w-0 flex-col gap-1 rounded-control bg-raised p-3">
+    <label className="flex min-w-0 flex-col gap-1 rounded-control border border-line bg-raised p-3">
       <span className="text-meta font-medium" style={{ color }}>{label}</span>
       <div className="flex min-w-0 items-baseline gap-1">
         <input
@@ -126,7 +126,7 @@ function NutritionForm({ date, entry }: {
     <div className="space-y-5">
       <div>
         <label className="mb-1 block text-meta text-ink-mute">{t('nutrition.calories')}</label>
-        <div className="flex items-baseline gap-2 rounded-control bg-raised px-3 py-2.5">
+        <div className="flex items-baseline gap-2 rounded-control border border-line bg-raised px-3 py-2.5">
           <input
             type="number"
             inputMode="numeric"
@@ -169,7 +169,7 @@ function NutritionForm({ date, entry }: {
           <span className="flex items-center gap-1.5 text-meta text-ink-mute">
             <Droplet size={13} /> {t('nutrition.water')}
           </span>
-          <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2">
+          <div className="flex items-baseline gap-1 rounded-control border border-line bg-raised px-3 py-2">
             <input
               type="number"
               inputMode="decimal"
@@ -196,7 +196,7 @@ function NutritionForm({ date, entry }: {
           <span className="flex items-center gap-1.5 text-meta text-ink-mute">
             <Coffee size={13} /> {t('nutrition.coffee')}
           </span>
-          <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2">
+          <div className="flex items-baseline gap-1 rounded-control border border-line bg-raised px-3 py-2">
             <input
               type="number"
               inputMode="numeric"
@@ -223,7 +223,7 @@ function NutritionForm({ date, entry }: {
           type="time"
           value={lastCoffee}
           onChange={e => setLastCoffee(e.target.value)}
-          className="w-full rounded-control bg-raised px-3 py-2 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
+          className="w-full rounded-control border border-line bg-raised px-3 py-2 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
         />
       </div>
 

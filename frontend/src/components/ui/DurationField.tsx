@@ -68,7 +68,7 @@ export function DurationField({ label, icon, minutes, onChange }: Props) {
         {icon} {label}
       </label>
       <div className="flex items-center gap-2">
-        <div className="flex min-w-0 flex-1 items-center gap-1 rounded-control bg-raised px-3 py-2">
+        <div className="flex min-w-0 flex-1 items-center gap-1 rounded-control border border-line bg-raised px-3 py-2">
           <input
             type="number"
             inputMode="numeric"
@@ -83,7 +83,7 @@ export function DurationField({ label, icon, minutes, onChange }: Props) {
           />
           <span className="text-meta text-ink-mute">h</span>
         </div>
-        <div className="flex min-w-0 flex-1 items-center gap-1 rounded-control bg-raised px-3 py-2">
+        <div className="flex min-w-0 flex-1 items-center gap-1 rounded-control border border-line bg-raised px-3 py-2">
           <input
             type="number"
             inputMode="numeric"

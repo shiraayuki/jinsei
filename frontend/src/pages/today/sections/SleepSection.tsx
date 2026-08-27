@@ -124,7 +124,7 @@ function SleepForm({ date, entry, onSelectDate }: {
               setBedTime(e.target.value)
               setInBed(spanMinutes(e.target.value, wakeTime) ?? inBed)
             }}
-            className="rounded-control bg-raised px-3 py-2.5 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
+            className="rounded-control border border-line bg-raised px-3 py-2.5 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
           />
         </label>
         <label className="flex flex-col gap-1">
@@ -138,7 +138,7 @@ function SleepForm({ date, entry, onSelectDate }: {
               setWakeTime(e.target.value)
               setInBed(spanMinutes(bedTime, e.target.value) ?? inBed)
             }}
-            className="rounded-control bg-raised px-3 py-2.5 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
+            className="rounded-control border border-line bg-raised px-3 py-2.5 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
           />
         </label>
       </div>
@@ -159,7 +159,7 @@ function SleepForm({ date, entry, onSelectDate }: {
 
       {/* The phases are their own group: four durations that are read off one
           screenshot together and mean little apart. */}
-      <div className="space-y-2 rounded-control bg-raised/60 p-3">
+      <div className="space-y-2 rounded-control border border-line-strong p-3">
         <p className="text-meta text-ink-mute">
           {t('sleep.phases')}
           {phaseSleep != null && (
@@ -172,10 +172,11 @@ function SleepForm({ date, entry, onSelectDate }: {
         <DurationField label={t('sleep.awake')} minutes={awake} onChange={setAwake} />
 
         {/* Minutes only: falling asleep is a handful of them, and an hours
-            field next to a 9 would only be a zero to tab past. */}
-        <div className="flex items-center justify-between gap-3">
+            field next to a 9 would only be a zero to tab past. It is not one of
+            the four phases, so a rule separates it from them. */}
+        <div className="mt-3 flex items-center justify-between gap-3 border-t border-line pt-3">
           <span className="text-meta text-ink-mute">{t('sleep.onset')}</span>
-          <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2">
+          <div className="flex items-baseline gap-1 rounded-control border border-line bg-raised px-3 py-2">
             <input
               type="number"
               inputMode="numeric"
@@ -206,7 +207,7 @@ function SleepForm({ date, entry, onSelectDate }: {
         placeholder={t('sleep.notePlaceholder')}
         value={notes}
         onChange={e => setNotes(e.target.value)}
-        className="w-full rounded-control bg-raised px-3 py-2 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
+        className="w-full rounded-control border border-line bg-raised px-3 py-2 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
       />
 
       <SaveStatus

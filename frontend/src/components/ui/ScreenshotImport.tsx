@@ -55,6 +55,13 @@ export function ScreenshotImport<F>({ kind, date, onApply, onSelectDate }: Props
 
   const otherDay = draft?.date != null && draft.date !== date
 
+  // The fields fill in visibly, so saying so was a line to dismiss on every
+  // scan. What is left is only what the reader could not see for themselves:
+  // a guessed field, a dropped value, a screenshot from another day.
+  const worthSaying =
+    draft != null &&
+    (draft.lowConfidence.length > 0 || draft.warnings.length > 0 || otherDay || !!draft.notes)
+
   return (
     <div className="space-y-2">
       <input
@@ -91,10 +98,8 @@ export function ScreenshotImport<F>({ kind, date, onApply, onSelectDate }: Props
         </p>
       )}
 
-      {draft && (
+      {draft && worthSaying && (
         <div className="space-y-1 rounded-control bg-accent/5 px-3 py-2">
-          <p className="text-meta text-accent">{t('import.applied')}</p>
-
           {draft.lowConfidence.length > 0 && (
             <p className="text-meta text-warn">
               {t('import.uncertain', {

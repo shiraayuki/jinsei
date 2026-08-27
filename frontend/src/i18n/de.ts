@@ -327,7 +327,6 @@ export default {
   import: {
     button: 'Screenshot auswerten',
     reading: 'Wird gelesen…',
-    applied: 'Übernommen — bitte prüfen und speichern.',
     failed: 'Auswertung fehlgeschlagen.',
     unreadable: 'Das Bild konnte nicht gelesen werden.',
     uncertain: 'Unsicher gelesen: {{fields}}',

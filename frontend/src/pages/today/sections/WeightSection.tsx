@@ -36,7 +36,7 @@ function BodyForm({ date, entry }: { date: string; entry?: WeightEntry }) {
       <div className="grid grid-cols-2 gap-2">
         <label className="flex min-w-0 flex-col gap-1">
           <span className="text-meta text-ink-mute">{t('weight.weightKg')}</span>
-          <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2.5">
+          <div className="flex items-baseline gap-1 rounded-control border border-line bg-raised px-3 py-2.5">
             <input
               type="number"
               inputMode="decimal"
@@ -54,7 +54,7 @@ function BodyForm({ date, entry }: { date: string; entry?: WeightEntry }) {
 
         <label className="flex min-w-0 flex-col gap-1">
           <span className="text-meta text-ink-mute">{t('weight.waistCm')}</span>
-          <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2.5">
+          <div className="flex items-baseline gap-1 rounded-control border border-line bg-raised px-3 py-2.5">
             <input
               type="number"
               inputMode="decimal"
@@ -76,7 +76,7 @@ function BodyForm({ date, entry }: { date: string; entry?: WeightEntry }) {
         placeholder={t('weight.notePlaceholder')}
         value={notes}
         onChange={e => setNotes(e.target.value)}
-        className="w-full rounded-control bg-raised px-3 py-2 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
+        className="w-full rounded-control border border-line bg-raised px-3 py-2 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
       />
 
       <SaveStatus

@@ -41,7 +41,7 @@ function ActivityForm({ date, entry }: { date: string; entry?: ActivityEntry }) 
     <div className="space-y-4">
       <div>
         <label className="mb-1 block text-meta text-ink-mute">{t('activity.steps')}</label>
-        <div className="flex items-baseline gap-2 rounded-control bg-raised px-3 py-2.5">
+        <div className="flex items-baseline gap-2 rounded-control border border-line bg-raised px-3 py-2.5">
           <input
             type="number"
             inputMode="numeric"
@@ -80,7 +80,7 @@ function ActivityForm({ date, entry }: { date: string; entry?: ActivityEntry }) 
       {cardio && (
         <div>
           <label className="mb-1 block text-meta text-ink-mute">{t('activity.cardioMinutes')}</label>
-          <div className="flex items-baseline gap-2 rounded-control bg-raised px-3 py-2">
+          <div className="flex items-baseline gap-2 rounded-control border border-line bg-raised px-3 py-2">
             <input
               type="number"
               inputMode="numeric"

@@ -16,15 +16,18 @@
      module colours below sit on something that shares their temperature. */
   --ground: #f4f4f7;
   --surface: #ffffff;
-  --raised: #efeff3;
-  --line: rgba(20, 20, 32, 0.10);
-  --line-strong: rgba(20, 20, 32, 0.18);
+  /* A field has to be visible as a field against the card it sits on. The two
+     used to be four percent apart, which reads as one surface on a phone held
+     at arm's length in daylight. */
+  --raised: #e7e7ee;
+  --line: rgba(20, 20, 32, 0.14);
+  --line-strong: rgba(20, 20, 32, 0.24);
 
   /* Text, from loudest to quietest. */
   --ink: #16161d;
-  --ink-soft: #45454f;
-  --ink-mute: #6e6e7c;
-  --ink-faint: #9a9aa6;
+  --ink-soft: #3d3d47;
+  --ink-mute: #61616f;
+  --ink-faint: #8a8a97;
 
   /* Brand and navigation only — never a data series, never a state. */
   --accent: #5b5be8;
@@ -58,14 +61,14 @@
 html.dark {
   --ground: #0b0b11;
   --surface: #15151c;
-  --raised: #1d1d26;
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(255, 255, 255, 0.16);
+  --raised: #262633;
+  --line: rgba(255, 255, 255, 0.13);
+  --line-strong: rgba(255, 255, 255, 0.24);
 
   --ink: #ececf2;
-  --ink-soft: #c2c2ce;
-  --ink-mute: #8e8e9e;
-  --ink-faint: #62626f;
+  --ink-soft: #c9c9d5;
+  --ink-mute: #9b9bab;
+  --ink-faint: #75757f;
 
   --accent: #8b8bfa;
   --accent-soft: rgba(139, 139, 250, 0.14);

@@ -327,7 +327,6 @@ export default {
   import: {
     button: 'Read a screenshot',
     reading: 'Reading…',
-    applied: 'Filled in — check it, then save.',
     failed: 'Could not read the screenshot.',
     unreadable: 'That image could not be read.',
     uncertain: 'Read with low confidence: {{fields}}',
