@@ -6,6 +6,7 @@ import { NutritionSection } from './sections/NutritionSection'
 import { ActivitySection } from './sections/ActivitySection'
 import { SleepSection } from './sections/SleepSection'
 import { WeightSection } from './sections/WeightSection'
+import { NotesSection } from './sections/NotesSection'
 import { SummarySheet } from '../../components/ui/SummarySheet'
 import { useDaySummary } from '../../features/summary/hooks'
 import { todayIso, shiftIso } from '../../lib/date'
@@ -97,6 +98,7 @@ export function TodayPage() {
         <ActivitySection date={date} />
         <SleepSection date={date} onSelectDate={setDate} />
         <WeightSection date={date} />
+        <NotesSection date={date} />
       </div>
     </div>
   )

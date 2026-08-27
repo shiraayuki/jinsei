@@ -143,6 +143,22 @@ public class DayApiTests
     }
 
     [Fact]
+    public async Task Note_IsDeletedWhenItIsEmptied()
+    {
+        using var app = await TestApp.SignedInAsync();
+
+        await app.Client.PostAsJsonAsync("/api/notes", new { date = "2026-08-27", text = "  Zone 2  " });
+        var written = await app.Client.GetFromJsonAsync<JsonElement>("/api/notes/2026-08-27");
+        Assert.Equal("Zone 2", written.GetProperty("text").GetString());
+
+        // An emptied note leaves no row behind, or every day report would grow
+        // an empty "Notizen" heading.
+        await app.Client.PostAsJsonAsync("/api/notes", new { date = "2026-08-27", text = "   " });
+        var cleared = await app.Client.GetFromJsonAsync<JsonElement>("/api/notes/2026-08-27");
+        Assert.Equal(JsonValueKind.Null, cleared.GetProperty("text").ValueKind);
+    }
+
+    [Fact]
     public async Task Day_IsScopedToItsOwner()
     {
         using var mine = await TestApp.SignedInAsync();

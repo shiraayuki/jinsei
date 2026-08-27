@@ -113,7 +113,6 @@ export default {
     totalChange: '{{value}} kg gesamt',
     weeklyRate: '{{value}} kg/Woche',
     movingAvg: '7T MA',
-    notePlaceholder: 'Notiz (optional)',
   },
   sleep: {
     title: 'Schlaf',
@@ -134,7 +133,6 @@ export default {
     asleepExceedsBed: 'Wirklicher Schlaf kann nicht länger sein als die Zeit im Bett.',
     asleepShort: 'geschlafen',
     inBedShort: 'im Bett',
-    notePlaceholder: 'Notiz (optional)',
     lastNight: 'Letzte Nacht',
     avgDuration: 'Ø Schlaf',
     avgEfficiency: 'Ø Effizienz',
@@ -244,6 +242,7 @@ export default {
       clockChart: 'Zubettgehen und Aufstehen',
       needsTimes: 'Trage Zeiten unter Heute ein.',
       duration: 'Schlafdauer',
+      unsplit: 'ohne Phasen',
       consistency: 'Konstanz',
       consistencyHint: '± Streuung deiner Nächte',
       byWeekday: 'Schlaf nach Wochentag',
@@ -287,6 +286,10 @@ export default {
       byWeekday: 'Nach Wochentag',
       openStreaks: 'Serien je Habit',
     },
+  },
+  notes: {
+    title: 'Notizen',
+    placeholder: 'Wie war der Tag? (optional)',
   },
   outbox: {
     pending_one: '{{count}} Eintrag wartet auf Verbindung',

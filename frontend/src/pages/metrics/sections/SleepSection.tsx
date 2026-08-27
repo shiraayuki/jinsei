@@ -34,6 +34,22 @@ export function SleepSection({ days }: { days: number }) {
 
   const phaseMax = Math.max(...phaseMeans.map(p => p.value), 1)
   const onsetMean = mean(defined(series(sleep, e => e.sleepOnsetMinutes, days)))
+  const inBedMean = mean(defined(series(sleep, e => e.timeInBedMinutes, days)))
+
+  // The night as its parts, stacked, so the bar's height is still the night's
+  // length. A night logged before the phases existed — or one the screenshot
+  // did not carry them for — keeps its bar in a muted colour rather than
+  // leaving a gap where a night was slept.
+  const deepPoints = series(sleep, e => e.deepMinutes, days)
+  const remPoints = series(sleep, e => e.remMinutes, days)
+  const lightPoints = series(sleep, e => e.lightMinutes, days)
+  const hasPhases = (e: { deepMinutes: number | null; remMinutes: number | null; lightMinutes: number | null }) =>
+    e.deepMinutes != null || e.remMinutes != null || e.lightMinutes != null
+  const unsplitPoints = series(
+    sleep,
+    e => (hasPhases(e) ? null : e.actualSleepMinutes ?? e.timeInBedMinutes),
+    days,
+  )
 
   const nights = defined(minutes)
   if (nights.length === 0) {
@@ -81,6 +97,11 @@ export function SleepSection({ days }: { days: number }) {
             smooth={7}
           />
           <StatTile
+            label={t('sleep.timeInBed')}
+            value={duration(inBedMean)}
+            hint={t('metrics.perNight')}
+          />
+          <StatTile
             label={t('sleep.onset')}
             value={onsetMean != null ? `${num(onsetMean)} min` : '–'}
             hint={t('metrics.perNight')}
@@ -93,7 +114,12 @@ export function SleepSection({ days }: { days: number }) {
         </div>
 
         <Chart
-          series={[{ label: t('sleep.avgDuration'), color: moduleColor.sleep, points: minutes, unit: ' h', averageOver: 7 }]}
+          series={[
+            { label: t('sleep.deep'), color: moduleColor.sleep, points: deepPoints, kind: 'bar', stack: 'night', unit: ' h', scaleWith: 'night' },
+            { label: t('sleep.rem'), color: moduleColor.mind, points: remPoints, kind: 'bar', stack: 'night', unit: ' h', scaleWith: 'night' },
+            { label: t('sleep.light'), color: moduleColor.move, points: lightPoints, kind: 'bar', stack: 'night', unit: ' h', scaleWith: 'night' },
+            { label: t('metrics.sleep.unsplit'), color: 'var(--line-strong)', points: unsplitPoints, kind: 'bar', stack: 'unsplit', unit: ' h', scaleWith: 'night' },
+          ]}
           goal={goal != null ? { value: goal, label: t('metrics.goal') } : undefined}
           format={v => num(v / 60, 1)}
           empty={t('metrics.empty')}

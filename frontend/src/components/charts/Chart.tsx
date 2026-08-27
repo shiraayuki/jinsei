@@ -32,6 +32,13 @@ export interface ChartSeries {
    * a shape when they share a domain; weight and waist do not.
    */
   scaleWith?: string
+  /**
+   * Stack this bar series on top of the others carrying the same key, in the
+   * order they are given. Parts of one whole — the phases of a night — are a
+   * stack: side by side they say how each part moved, stacked they also say
+   * what the whole was.
+   */
+  stack?: string
 }
 
 export interface ChartGoal {
@@ -86,7 +93,9 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
     const map = new Map<string, { min: number; max: number }>()
     for (const s of withData) {
       const key = s.scaleWith ?? s.label
-      const values = s.points.map(p => p.value).filter((v): v is number => v != null)
+      const values = s.stack
+        ? stackTotals(withData, s.stack)
+        : s.points.map(p => p.value).filter((v): v is number => v != null)
       if (values.length === 0) continue
       // The goal has to sit inside the plot, or a chart drawn well under its
       // target shows no line at all and reads as "on track".
@@ -197,21 +206,29 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
           const baseline = y(Math.max(0, scales.get(s.scaleWith ?? s.label)!.min))
 
           if (s.kind === 'bar') {
+            // What the series below this one in the same stack already used up,
+            // per day. Zero for a bar that stands on its own.
+            const under = s.stack ? stackedBelow(withData, s) : null
+
             return (
               <g key={s.label}>
-                {s.points.map((p, i) => (
+                {s.points.map((p, i) => {
+                  const floor = under ? y(under[i]) : baseline
+                  const top = p.value == null ? floor : y((under?.[i] ?? 0) + p.value)
+                  return (
                   <rect
                     key={p.date}
                     x={x(i) - barWidth / 2}
-                    y={p.value == null ? baseline - 1.5 : Math.min(y(p.value), baseline)}
+                    y={p.value == null ? floor - 1.5 : Math.min(top, floor)}
                     width={barWidth}
-                    height={p.value == null ? 1.5 : Math.max(1.5, Math.abs(baseline - y(p.value)))}
+                    height={p.value == null ? 1.5 : Math.max(1.5, Math.abs(floor - top))}
                     rx={Math.min(2, barWidth / 2)}
                     // A missing day is a hairline stub in the line colour, so a
                     // gap reads as a gap rather than as a zero.
                     style={{ fill: p.value == null ? 'var(--line-strong)' : s.color, fillOpacity: p.value == null ? 1 : 0.85 }}
                   />
-                ))}
+                  )
+                })}
               </g>
             )
           }
@@ -322,6 +339,25 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
       </div>
     </div>
   )
+}
+
+/** Every day's stacked total, for the series sharing one stack key. */
+function stackTotals(series: ChartSeries[], stack: string): number[] {
+  const parts = series.filter(s => s.stack === stack)
+  const length = Math.max(...parts.map(s => s.points.length))
+  const totals: number[] = []
+  for (let i = 0; i < length; i++) {
+    const day = parts.map(s => s.points[i]?.value).filter((v): v is number => v != null)
+    if (day.length > 0) totals.push(day.reduce((a, b) => a + b, 0))
+  }
+  return totals
+}
+
+/** Per day, what the series stacked under this one add up to. */
+function stackedBelow(series: ChartSeries[], of: ChartSeries): number[] {
+  const parts = series.filter(s => s.stack === of.stack)
+  const below = parts.slice(0, parts.indexOf(of))
+  return of.points.map((_, i) => below.reduce((sum, s) => sum + (s.points[i]?.value ?? 0), 0))
 }
 
 /** Splits a coordinate list at the gaps, so a missing day breaks the line. */

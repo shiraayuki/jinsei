@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -147,6 +148,150 @@ public class IngestController : ControllerBase
     private static decimal? InRange(decimal? value, decimal min, decimal max) =>
         value is null || value < min || value > max ? null : value;
 
+    /// <summary>
+    /// Upserts a night from its two clock times. Health holds "in bed" as one
+    /// interval per night, so the shortcut can hand over that interval's start
+    /// and end untouched — as full timestamps, which is what Shortcuts produces
+    /// without a formatting step, or as plain "HH:mm" when it has already been
+    /// formatted.
+    ///
+    /// Quality is never written here: Sleep Cycle does not put its percentage
+    /// into Health, so that number stays with the hand or the screenshot.
+    /// </summary>
+    [HttpPost("sleep")]
+    public async Task<IActionResult> Sleep([FromBody] IngestSleepRequest req, CancellationToken ct)
+    {
+        var user = await ResolveUserAsync(ct);
+        if (user is null) return Unauthorized(new { message = "Unknown or missing ingest token." });
+
+        if (req.Entries is null or { Count: 0 }) return BadRequest(new { message = "No entries." });
+        if (req.Entries.Count > 400) return BadRequest(new { message = "Too many entries in one request." });
+
+        var parsed = new List<(DateOnly Date, TimeOnly? Bed, TimeOnly? Wake, int? InBed, bool Measured, int? Asleep)>();
+        var skipped = new List<object>();
+
+        foreach (var entry in req.Entries)
+        {
+            var bed = ReadClock(entry.BedTime);
+            var wake = ReadClock(entry.WakeTime);
+
+            // The night belongs to the morning it ended on, which the wake
+            // timestamp already carries. Only a request that sends neither a
+            // date nor a full wake timestamp has nothing to file the night under.
+            var date = entry.Date ?? ReadDate(entry.WakeTime);
+            if (date is null)
+            {
+                skipped.Add(new { bedTime = entry.BedTime, wakeTime = entry.WakeTime, reason = "no date" });
+                continue;
+            }
+
+            var span = entry.TimeInBedMinutes ?? SpanBetween(bed, wake);
+
+            // The failure this guards against is real: a shortcut that formats
+            // a timestamp without a time part sends midnight for both ends, and
+            // midnight to midnight looks like a flawless 24-hour night. A night
+            // outside 1–16 hours is a broken reading, not a long lie-in.
+            if (span is < 60 or > 16 * 60)
+            {
+                skipped.Add(new { date = date.Value.ToString("yyyy-MM-dd"), bedTime = entry.BedTime, wakeTime = entry.WakeTime, reason = "implausible night" });
+                continue;
+            }
+
+            var asleep = entry.ActualSleepMinutes;
+            if (asleep is < 0 or > 16 * 60) asleep = null;
+            if (asleep is int a && span is int s && a > s) asleep = span;
+
+            parsed.Add((date.Value, bed, wake, span, entry.TimeInBedMinutes is not null, asleep));
+        }
+
+        var days = parsed.Select(p => p.Date).Distinct().ToList();
+        var existing = await _db.SleepEntries
+            .Where(x => x.UserId == user.Id && days.Contains(x.Date))
+            .ToDictionaryAsync(x => x.Date, ct);
+
+        var written = 0;
+        foreach (var night in parsed)
+        {
+            if (!existing.TryGetValue(night.Date, out var row))
+            {
+                row = new SleepEntry { Id = Guid.NewGuid(), UserId = user.Id, Date = night.Date };
+                _db.SleepEntries.Add(row);
+                existing[night.Date] = row;
+            }
+
+            row.BedTime = night.Bed ?? row.BedTime;
+            row.WakeTime = night.Wake ?? row.WakeTime;
+            // A duration already on the row was measured by Sleep Cycle and is
+            // the better number, so a span worked out from two clock times only
+            // fills a gap. A duration sent outright is a measurement too, and
+            // wins.
+            row.TimeInBedMinutes = night.Measured ? night.InBed : row.TimeInBedMinutes ?? night.InBed;
+            row.ActualSleepMinutes = night.Asleep ?? row.ActualSleepMinutes;
+            row.LoggedAt = DateTimeOffset.UtcNow;
+            written++;
+        }
+
+        await _db.SaveChangesAsync(ct);
+
+        // The nights are echoed back because this is the endpoint that is
+        // hardest to get right from a phone: reading 20:15 in the answer is how
+        // you find out the shortcut sent the interval and not midnight.
+        return Ok(new
+        {
+            written,
+            days = days.Count,
+            skipped,
+            nights = parsed.Select(p => new
+            {
+                date = p.Date.ToString("yyyy-MM-dd"),
+                bedTime = p.Bed?.ToString("HH:mm"),
+                wakeTime = p.Wake?.ToString("HH:mm"),
+                timeInBedMinutes = p.InBed,
+                actualSleepMinutes = p.Asleep,
+            }),
+        });
+    }
+
+    /// <summary>
+    /// The time of day out of what the phone sent: "22:15", "22:15:30" or a
+    /// whole timestamp such as "2026-08-24T22:15:00+02:00". A timestamp keeps
+    /// its own offset, because the clock time that matters is the one on the
+    /// bedroom wall, not the same instant in UTC.
+    /// </summary>
+    private static TimeOnly? ReadClock(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        var text = value.Trim();
+
+        if (TimeOnly.TryParseExact(text, ["HH:mm", "H:mm", "HH:mm:ss"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
+            return time;
+
+        return ReadTimestamp(text) is DateTimeOffset stamp ? TimeOnly.FromDateTime(stamp.DateTime) : null;
+    }
+
+    /// <summary>The calendar day out of a whole timestamp, or null for a bare clock time.</summary>
+    private static DateOnly? ReadDate(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null
+        : ReadTimestamp(value.Trim()) is DateTimeOffset stamp ? DateOnly.FromDateTime(stamp.DateTime)
+        : null;
+
+    private static DateTimeOffset? ReadTimestamp(string text) =>
+        DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.None, out var stamp)
+            ? stamp
+            : null;
+
+    /// <summary>
+    /// Minutes from one clock time to the other, wrapping over midnight, the
+    /// same way the hand-entry path does it.
+    /// </summary>
+    private static int? SpanBetween(TimeOnly? from, TimeOnly? to)
+    {
+        if (from is not TimeOnly start || to is not TimeOnly end) return null;
+        var minutes = (int)(end - start).TotalMinutes;
+        if (minutes <= 0) minutes += 24 * 60;
+        return minutes;
+    }
+
     /// <summary>The user whose token was presented, or null.</summary>
     private async Task<AppUser?> ResolveUserAsync(CancellationToken ct)
     {
@@ -179,3 +324,17 @@ public record IngestNutritionEntry(
     decimal? WaterL);
 
 public record IngestNutritionRequest(List<IngestNutritionEntry> Entries);
+
+/// <summary>
+/// A night. The times are strings rather than <see cref="TimeOnly"/> because a
+/// phone sends whatever its formatting step produced, and the endpoint would
+/// rather read a full timestamp than reject one.
+/// </summary>
+public record IngestSleepEntry(
+    DateOnly? Date,
+    string? BedTime,
+    string? WakeTime,
+    int? TimeInBedMinutes,
+    int? ActualSleepMinutes);
+
+public record IngestSleepRequest(List<IngestSleepEntry> Entries);

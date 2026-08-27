@@ -18,7 +18,6 @@ function BodyForm({ date, entry }: { date: string; entry?: WeightEntry }) {
 
   const [weight, setWeight] = useState(entry?.weightKg == null ? '' : String(entry.weightKg))
   const [waist, setWaist] = useState(entry?.waistCm == null ? '' : String(entry.waistCm))
-  const [notes, setNotes] = useState(entry?.notes ?? '')
 
   const weightKg = numOrNull(weight)
   const waistCm = numOrNull(waist)
@@ -26,7 +25,7 @@ function BodyForm({ date, entry }: { date: string; entry?: WeightEntry }) {
   // An untouched empty day has nothing to write; the entry is only created
   // once a number is actually in it.
   useAutosave(
-    { date, weightKg, waistCm, notes: notes || undefined },
+    { date, weightKg, waistCm },
     values => upsert.mutate(values),
     { enabled: weightKg != null || waistCm != null },
   )
@@ -70,14 +69,6 @@ function BodyForm({ date, entry }: { date: string; entry?: WeightEntry }) {
           </div>
         </label>
       </div>
-
-      <input
-        type="text"
-        placeholder={t('weight.notePlaceholder')}
-        value={notes}
-        onChange={e => setNotes(e.target.value)}
-        className="w-full rounded-control border border-line bg-raised px-3 py-2 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
-      />
 
       <SaveStatus
         pending={upsert.isPending}

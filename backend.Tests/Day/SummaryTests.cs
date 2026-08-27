@@ -9,10 +9,8 @@ public class SummaryTests
             waterL = 3.5, coffeeMl = 500, lastCoffee = "09:30",
         });
         await client.PostAsJsonAsync("/api/activity", new { date, steps = 10000, cardio = true, cardioMinutes = 30 });
-        await client.PostAsJsonAsync("/api/sleep", new
-        {
-            date, timeInBedMinutes = 450, actualSleepMinutes = 420, notes = "Zone 2",
-        });
+        await client.PostAsJsonAsync("/api/sleep", new { date, timeInBedMinutes = 450, actualSleepMinutes = 420 });
+        await client.PostAsJsonAsync("/api/notes", new { date, text = "Zone 2" });
     }
 
     [Fact]

@@ -38,12 +38,13 @@ public class SummaryController : ControllerBase
         var food = await _db.NutritionEntries.FirstOrDefaultAsync(e => e.UserId == UserId && e.Date == day);
         var move = await _db.ActivityEntries.FirstOrDefaultAsync(e => e.UserId == UserId && e.Date == day);
         var sleep = await _db.SleepEntries.FirstOrDefaultAsync(e => e.UserId == UserId && e.Date == day);
+        var note = await _db.DayNotes.FirstOrDefaultAsync(n => n.UserId == UserId && n.Date == day);
         var workouts = await _db.WorkoutLogs
             .Where(w => w.UserId == UserId && w.Date == day)
             .OrderBy(w => w.StartedAt)
             .ToListAsync();
 
-        var text = Render(day, weight, food, move, sleep, workouts);
+        var text = Render(day, weight, food, move, sleep, note, workouts);
         return Content(text, "text/plain; charset=utf-8");
     }
 
@@ -140,6 +141,7 @@ public class SummaryController : ControllerBase
         NutritionEntry? food,
         ActivityEntry? move,
         SleepEntry? sleep,
+        DayNote? note,
         List<WorkoutLog> workouts)
     {
         var sb = new StringBuilder();
@@ -224,10 +226,9 @@ public class SummaryController : ControllerBase
             }
         }
 
-        // The note used to hang off the wellbeing entry, which is gone. The
-        // forms that still take one are the body and the night, so the report
-        // collects those instead of dropping the section.
-        var notes = new[] { weight?.Notes, sleep?.Notes }
+        // The note has a row of its own; the older per-entry notes are still
+        // read so days written before that are not silently dropped.
+        var notes = new[] { note?.Text, weight?.Notes, sleep?.Notes }
             .Where(n => !string.IsNullOrWhiteSpace(n))
             .SelectMany(n => n!.Trim().Split('\n'))
             .Select(line => line.Trim())

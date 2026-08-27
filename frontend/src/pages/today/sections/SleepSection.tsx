@@ -51,7 +51,6 @@ function SleepForm({ date, entry, onSelectDate }: {
   const [rem, setRem] = useState<number | null>(entry?.remMinutes ?? null)
   const [deep, setDeep] = useState<number | null>(entry?.deepMinutes ?? null)
   const [onset, setOnset] = useState(entry?.sleepOnsetMinutes == null ? '' : String(entry.sleepOnsetMinutes))
-  const [notes, setNotes] = useState(entry?.notes ?? '')
 
   // Light, REM and deep are the sleep itself; awake is time in bed. Filling
   // them in therefore answers the duration above, which stays editable.
@@ -81,7 +80,6 @@ function SleepForm({ date, entry, onSelectDate }: {
       sleepOnsetMinutes: onset.trim() === '' ? null : Number(onset),
       bedTime: bedTime || null,
       wakeTime: wakeTime || null,
-      notes: notes || undefined,
     },
     values => upsert.mutate(values),
     { enabled: !tooMuchSleep },
@@ -159,7 +157,7 @@ function SleepForm({ date, entry, onSelectDate }: {
 
       {/* The phases are their own group: four durations that are read off one
           screenshot together and mean little apart. */}
-      <div className="space-y-2 rounded-control border border-line-strong p-3">
+      <div className="space-y-2">
         <p className="text-meta text-ink-mute">
           {t('sleep.phases')}
           {phaseSleep != null && (
@@ -201,14 +199,6 @@ function SleepForm({ date, entry, onSelectDate }: {
           {t('sleep.efficiency')}: <span className="font-semibold text-ink">{efficiency}%</span>
         </p>
       )}
-
-      <input
-        type="text"
-        placeholder={t('sleep.notePlaceholder')}
-        value={notes}
-        onChange={e => setNotes(e.target.value)}
-        className="w-full rounded-control border border-line bg-raised px-3 py-2 text-body text-ink outline-none focus:ring-2 focus:ring-accent"
-      />
 
       <SaveStatus
         pending={upsert.isPending}

@@ -270,4 +270,164 @@ public class IngestTests
         Assert.Equal(HttpStatusCode.Unauthorized, (await app.Client.SendAsync(PostNutrition("not-the-token", payload))).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await app.Client.SendAsync(PostNutrition(null, payload))).StatusCode);
     }
+
+    // --- sleep -------------------------------------------------------------
+
+    private static HttpRequestMessage PostSleep(string? token, object payload)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, "/api/ingest/sleep")
+        {
+            Content = JsonContent.Create(payload),
+        };
+        if (token is not null) req.Headers.Add("X-Ingest-Token", token);
+        return req;
+    }
+
+    private static async Task<JsonElement> SleepNightAsync(TestApp app, string date)
+    {
+        var entries = await app.Client.GetFromJsonAsync<JsonElement>("/api/sleep?days=60");
+        return entries.EnumerateArray().Single(e => e.GetProperty("date").GetString() == date);
+    }
+
+    [Fact]
+    public async Task IngestSleep_TakesTheTwoClockTimesAndWorksOutTheNight()
+    {
+        using var app = await TestApp.SignedInAsync();
+        var token = await IssueTokenAsync(app);
+
+        var res = await app.Client.SendAsync(PostSleep(token, new
+        {
+            entries = new[] { new { date = "2026-08-25", bedTime = "20:15", wakeTime = "05:00" } },
+        }));
+        res.EnsureSuccessStatusCode();
+
+        var night = await SleepNightAsync(app, "2026-08-25");
+        Assert.Equal("20:15", night.GetProperty("bedTime").GetString());
+        Assert.Equal("05:00", night.GetProperty("wakeTime").GetString());
+        Assert.Equal(525, night.GetProperty("timeInBedMinutes").GetInt32());
+    }
+
+    [Fact]
+    public async Task IngestSleep_ReadsWholeTimestampsAndFilesTheNightUnderTheMorning()
+    {
+        using var app = await TestApp.SignedInAsync();
+        var token = await IssueTokenAsync(app);
+
+        // What Shortcuts hands over when the interval is passed on unformatted:
+        // the night starts on the 24th and is filed under the 25th.
+        var res = await app.Client.SendAsync(PostSleep(token, new
+        {
+            entries = new[]
+            {
+                new
+                {
+                    bedTime = "2026-08-24T20:15:00+02:00",
+                    wakeTime = "2026-08-25T05:00:00+02:00",
+                },
+            },
+        }));
+        res.EnsureSuccessStatusCode();
+
+        var night = await SleepNightAsync(app, "2026-08-25");
+        Assert.Equal("20:15", night.GetProperty("bedTime").GetString());
+        Assert.Equal("05:00", night.GetProperty("wakeTime").GetString());
+        Assert.Equal(525, night.GetProperty("timeInBedMinutes").GetInt32());
+    }
+
+    [Fact]
+    public async Task IngestSleep_RefusesMidnightToMidnight()
+    {
+        using var app = await TestApp.SignedInAsync();
+        var token = await IssueTokenAsync(app);
+
+        // The shape a shortcut sends when its date format dropped the time.
+        var res = await app.Client.SendAsync(PostSleep(token, new
+        {
+            entries = new[] { new { date = "2026-08-25", bedTime = "00:00", wakeTime = "00:00" } },
+        }));
+
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(0, body.GetProperty("written").GetInt32());
+        Assert.Equal("implausible night", body.GetProperty("skipped")[0].GetProperty("reason").GetString());
+
+        var entries = await app.Client.GetFromJsonAsync<JsonElement>("/api/sleep?days=60");
+        Assert.Empty(entries.EnumerateArray());
+    }
+
+    [Fact]
+    public async Task IngestSleep_EchoesTheNightBackForChecking()
+    {
+        using var app = await TestApp.SignedInAsync();
+        var token = await IssueTokenAsync(app);
+
+        var res = await app.Client.SendAsync(PostSleep(token, new
+        {
+            entries = new[] { new { date = "2026-08-25", bedTime = "22:30", wakeTime = "06:00" } },
+        }));
+
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        var night = body.GetProperty("nights")[0];
+        Assert.Equal("2026-08-25", night.GetProperty("date").GetString());
+        Assert.Equal("22:30", night.GetProperty("bedTime").GetString());
+        Assert.Equal(450, night.GetProperty("timeInBedMinutes").GetInt32());
+    }
+
+    [Fact]
+    public async Task IngestSleep_KeepsTheMeasuredDurationGivenByHand()
+    {
+        using var app = await TestApp.SignedInAsync();
+        var token = await IssueTokenAsync(app);
+
+        // The night as Sleep Cycle reported it: a measured duration with the
+        // awake time already taken off.
+        await app.Client.PostAsJsonAsync("/api/sleep", new
+        {
+            date = "2026-08-25",
+            timeInBedMinutes = 511,
+            actualSleepMinutes = 445,
+            notes = "von Hand",
+        });
+
+        await app.Client.SendAsync(PostSleep(token, new
+        {
+            entries = new[] { new { date = "2026-08-25", bedTime = "20:15", wakeTime = "05:00" } },
+        }));
+
+        var night = await SleepNightAsync(app, "2026-08-25");
+        Assert.Equal(511, night.GetProperty("timeInBedMinutes").GetInt32());
+        Assert.Equal(445, night.GetProperty("actualSleepMinutes").GetInt32());
+        Assert.Equal("von Hand", night.GetProperty("notes").GetString());
+        Assert.Equal("20:15", night.GetProperty("bedTime").GetString());
+    }
+
+    [Fact]
+    public async Task IngestSleep_TakesTheAsleepMinutesWhenTheyAreSent()
+    {
+        using var app = await TestApp.SignedInAsync();
+        var token = await IssueTokenAsync(app);
+
+        await app.Client.SendAsync(PostSleep(token, new
+        {
+            entries = new[]
+            {
+                new { date = "2026-08-25", bedTime = "20:15", wakeTime = "05:00", actualSleepMinutes = 445 },
+            },
+        }));
+
+        var night = await SleepNightAsync(app, "2026-08-25");
+        Assert.Equal(445, night.GetProperty("actualSleepMinutes").GetInt32());
+        Assert.Equal(85, night.GetProperty("efficiency").GetInt32());
+    }
+
+    [Fact]
+    public async Task IngestSleep_RefusesAWrongOrMissingToken()
+    {
+        using var app = await TestApp.SignedInAsync();
+        await IssueTokenAsync(app);
+
+        var payload = new { entries = new[] { new { date = "2026-08-25", bedTime = "20:15", wakeTime = "05:00" } } };
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await app.Client.SendAsync(PostSleep("not-the-token", payload))).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await app.Client.SendAsync(PostSleep(null, payload))).StatusCode);
+    }
 }
