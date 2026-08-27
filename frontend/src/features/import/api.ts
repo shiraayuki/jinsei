@@ -17,6 +17,7 @@ export interface SleepDraftFields {
   lightMinutes: number | null
   remMinutes: number | null
   deepMinutes: number | null
+  sleepOnsetMinutes: number | null
 }
 
 export interface ImportDraft<F> {

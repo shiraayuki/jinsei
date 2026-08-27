@@ -33,6 +33,7 @@ export function SleepSection({ days }: { days: number }) {
   ].filter((p): p is typeof p & { value: number } => p.value != null)
 
   const phaseMax = Math.max(...phaseMeans.map(p => p.value), 1)
+  const onsetMean = mean(defined(series(sleep, e => e.sleepOnsetMinutes, days)))
 
   const nights = defined(minutes)
   if (nights.length === 0) {
@@ -78,6 +79,11 @@ export function SleepSection({ days }: { days: number }) {
             spark={minutes}
             color={moduleColor.sleep}
             smooth={7}
+          />
+          <StatTile
+            label={t('sleep.onset')}
+            value={onsetMean != null ? `${num(onsetMean)} min` : '–'}
+            hint={t('metrics.perNight')}
           />
           <StatTile
             label={t('metrics.sleep.consistency')}

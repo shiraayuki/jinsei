@@ -38,6 +38,8 @@ public class SleepController : ControllerBase
         if (new[] { req.AwakeMinutes, req.LightMinutes, req.RemMinutes, req.DeepMinutes }
             .Any(m => m is < 0 or > 1440))
             return BadRequest("Phase durations must be between 0 and 1440 minutes.");
+        if (req.SleepOnsetMinutes is < 0 or > 1440)
+            return BadRequest("Sleep onset must be between 0 and 1440 minutes.");
         // Checked against what will actually be stored, which is the duration
         // worked out from the phases when none was sent.
         if ((req.ActualSleepMinutes ?? Asleep(req)) is int asleep
@@ -65,6 +67,7 @@ public class SleepController : ControllerBase
         existing.LightMinutes = req.LightMinutes;
         existing.RemMinutes = req.RemMinutes;
         existing.DeepMinutes = req.DeepMinutes;
+        existing.SleepOnsetMinutes = req.SleepOnsetMinutes;
         // The phases already say how long was slept, so the duration is filled
         // in from them the same way the clock times fill in the time in bed. A
         // duration that was sent outright still wins.
@@ -118,6 +121,7 @@ public class SleepController : ControllerBase
         e.LightMinutes,
         e.RemMinutes,
         e.DeepMinutes,
+        e.SleepOnsetMinutes,
         BedTime = e.BedTime?.ToString("HH:mm"),
         WakeTime = e.WakeTime?.ToString("HH:mm"),
         // Share of the time in bed actually spent asleep — the number Sleep
@@ -138,6 +142,7 @@ public record UpsertSleepRequest(
     int? LightMinutes,
     int? RemMinutes,
     int? DeepMinutes,
+    int? SleepOnsetMinutes,
     TimeOnly? BedTime,
     TimeOnly? WakeTime,
     string? Notes);

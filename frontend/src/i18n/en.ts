@@ -123,6 +123,7 @@ export default {
     wakeTime: 'Got up',
     timeInBed: 'Time in bed',
     actualSleep: 'Actual sleep',
+    onset: 'Time to fall asleep',
     phases: 'Sleep phases',
     phasesSum: 'asleep in total',
     light: 'Light',

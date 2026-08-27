@@ -85,6 +85,8 @@ public class ScreenshotImportService
           aus der Legende unter der Kurve, jeweils in Minuten (1 h 44 min = 104).
           Die Legende heißt "Wach", "Leicht", "Traum" und "Tief" — "Traum" ist
           remMinutes. Fehlt eine Zeile, gib für sie null zurück.
+        - sleepOnsetMinutes: die Kachel "Eingeschlafen nach" in Minuten. Fehlt
+          sie, gib null zurück.
         - timeInBedMinutes: "Zeit im Bett" als Minuten (7 h 35 min = 455). Steht
           das nicht im Bild, gib null zurück — die beiden Uhrzeiten sagen es
           schon, und die App rechnet es selbst aus.
@@ -152,6 +154,7 @@ public class ScreenshotImportService
             lightMinutes = NullableInt("Leichtschlaf in Minuten."),
             remMinutes = NullableInt("REM-/Traumschlaf in Minuten."),
             deepMinutes = NullableInt("Tiefschlaf in Minuten."),
+            sleepOnsetMinutes = NullableInt("Einschlafdauer in Minuten."),
             lowConfidence = new
             {
                 type = "array",
@@ -162,7 +165,8 @@ public class ScreenshotImportService
         },
         [
             "date", "bedTime", "wakeTime", "timeInBedMinutes", "actualSleepMinutes",
-            "awakeMinutes", "lightMinutes", "remMinutes", "deepMinutes", "lowConfidence", "notes",
+            "awakeMinutes", "lightMinutes", "remMinutes", "deepMinutes", "sleepOnsetMinutes",
+            "lowConfidence", "notes",
         ]);
 
     private static readonly object NutritionSchema = Schema(
@@ -240,6 +244,7 @@ public class ScreenshotImportService
         var light = InRange(Int(root, "lightMinutes"), 0, 1440, "Leicht", warnings);
         var rem = InRange(Int(root, "remMinutes"), 0, 1440, "Traum", warnings);
         var deep = InRange(Int(root, "deepMinutes"), 0, 1440, "Tief", warnings);
+        var onset = InRange(Int(root, "sleepOnsetMinutes"), 0, 1440, "Eingeschlafen nach", warnings);
 
         // The two clock times say how long the night was, so a screenshot that
         // only shows the curve still fills the duration in.
@@ -272,6 +277,7 @@ public class ScreenshotImportService
                 ["lightMinutes"] = light,
                 ["remMinutes"] = rem,
                 ["deepMinutes"] = deep,
+                ["sleepOnsetMinutes"] = onset,
             },
             LowConfidence: Strings(root, "lowConfidence"),
             Warnings: warnings,

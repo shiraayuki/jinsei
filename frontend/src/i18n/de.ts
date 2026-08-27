@@ -123,6 +123,7 @@ export default {
     wakeTime: 'Aufgestanden',
     timeInBed: 'Zeit im Bett',
     actualSleep: 'Wirklicher Schlaf',
+    onset: 'Eingeschlafen nach',
     phases: 'Schlafphasen',
     phasesSum: 'Schlaf gesamt',
     light: 'Leicht',

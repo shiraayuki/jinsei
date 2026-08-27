@@ -26,6 +26,12 @@ public class SleepEntry
     public int? DeepMinutes { get; set; }
 
     /// <summary>
+    /// Minutes from lying down to falling asleep, as Sleep Cycle's
+    /// "Eingeschlafen nach". Part of the time in bed, not of the sleep.
+    /// </summary>
+    public int? SleepOnsetMinutes { get; set; }
+
+    /// <summary>
     /// Clock time the night started, on the day before <see cref="Date"/> —
     /// unless it was already past midnight, in which case it is on Date itself.
     /// Kept as a time of day rather than a timestamp: what a bedtime decision

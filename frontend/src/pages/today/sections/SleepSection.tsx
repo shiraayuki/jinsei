@@ -50,6 +50,7 @@ function SleepForm({ date, entry, onSelectDate }: {
   const [light, setLight] = useState<number | null>(entry?.lightMinutes ?? null)
   const [rem, setRem] = useState<number | null>(entry?.remMinutes ?? null)
   const [deep, setDeep] = useState<number | null>(entry?.deepMinutes ?? null)
+  const [onset, setOnset] = useState(entry?.sleepOnsetMinutes == null ? '' : String(entry.sleepOnsetMinutes))
   const [notes, setNotes] = useState(entry?.notes ?? '')
 
   // Light, REM and deep are the sleep itself; awake is time in bed. Filling
@@ -77,6 +78,7 @@ function SleepForm({ date, entry, onSelectDate }: {
       lightMinutes: light,
       remMinutes: rem,
       deepMinutes: deep,
+      sleepOnsetMinutes: onset.trim() === '' ? null : Number(onset),
       bedTime: bedTime || null,
       wakeTime: wakeTime || null,
       notes: notes || undefined,
@@ -103,6 +105,7 @@ function SleepForm({ date, entry, onSelectDate }: {
           if (f.lightMinutes != null) setLight(f.lightMinutes)
           if (f.remMinutes != null) setRem(f.remMinutes)
           if (f.deepMinutes != null) setDeep(f.deepMinutes)
+          if (f.sleepOnsetMinutes != null) setOnset(String(f.sleepOnsetMinutes))
         }}
       />
 
@@ -167,6 +170,25 @@ function SleepForm({ date, entry, onSelectDate }: {
         <DurationField label={t('sleep.rem')} minutes={rem} onChange={setRem} />
         <DurationField label={t('sleep.deep')} minutes={deep} onChange={setDeep} />
         <DurationField label={t('sleep.awake')} minutes={awake} onChange={setAwake} />
+
+        {/* Minutes only: falling asleep is a handful of them, and an hours
+            field next to a 9 would only be a zero to tab past. */}
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-meta text-ink-mute">{t('sleep.onset')}</span>
+          <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2">
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={600}
+              placeholder="–"
+              value={onset}
+              onChange={e => setOnset(e.target.value)}
+              className="w-16 min-w-0 bg-transparent text-right text-body font-semibold text-ink outline-none"
+            />
+            <span className="text-meta text-ink-mute">min</span>
+          </div>
+        </div>
       </div>
 
       {tooMuchSleep && (

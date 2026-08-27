@@ -65,6 +65,7 @@ public class DayApiTests
             lightMinutes = 212,
             remMinutes = 136,
             deepMinutes = 104,
+            sleepOnsetMinutes = 9,
         });
         res.EnsureSuccessStatusCode();
 
@@ -75,6 +76,7 @@ public class DayApiTests
         Assert.Equal(452, entry.GetProperty("actualSleepMinutes").GetInt32());
         Assert.Equal(104, entry.GetProperty("deepMinutes").GetInt32());
         Assert.Equal(32, entry.GetProperty("awakeMinutes").GetInt32());
+        Assert.Equal(9, entry.GetProperty("sleepOnsetMinutes").GetInt32());
         Assert.Equal(94, entry.GetProperty("efficiency").GetInt32());
     }
 
