@@ -8,8 +8,15 @@ import { api } from '../../lib/api'
 export type ImportKind = 'sleep'
 
 export interface SleepDraftFields {
+  /** "HH:mm", read off the axis under the phase curve. */
+  bedTime: string | null
+  wakeTime: string | null
   timeInBedMinutes: number | null
   actualSleepMinutes: number | null
+  awakeMinutes: number | null
+  lightMinutes: number | null
+  remMinutes: number | null
+  deepMinutes: number | null
 }
 
 export interface ImportDraft<F> {

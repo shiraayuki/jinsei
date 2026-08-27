@@ -23,6 +23,17 @@ export function SleepSection({ days }: { days: number }) {
   // the night was logged without it.
   const minutes = series(sleep, e => e.actualSleepMinutes ?? e.timeInBedMinutes, days)
 
+  // The phases as nightly means over the range: what a night was made of, not
+  // just how long it was.
+  const phaseMeans = [
+    { key: 'deep', label: t('sleep.deep'), color: moduleColor.sleep, value: mean(defined(series(sleep, e => e.deepMinutes, days))) },
+    { key: 'rem', label: t('sleep.rem'), color: moduleColor.mind, value: mean(defined(series(sleep, e => e.remMinutes, days))) },
+    { key: 'light', label: t('sleep.light'), color: moduleColor.move, value: mean(defined(series(sleep, e => e.lightMinutes, days))) },
+    { key: 'awake', label: t('sleep.awake'), color: 'var(--ink-mute)', value: mean(defined(series(sleep, e => e.awakeMinutes, days))) },
+  ].filter((p): p is typeof p & { value: number } => p.value != null)
+
+  const phaseMax = Math.max(...phaseMeans.map(p => p.value), 1)
+
   const nights = defined(minutes)
   if (nights.length === 0) {
     return (
@@ -82,6 +93,23 @@ export function SleepSection({ days }: { days: number }) {
           empty={t('metrics.empty')}
         />
       </Block>
+
+      {phaseMeans.length > 0 && (
+        <Block module="sleep" icon={<Moon size={15} />} title={t('sleep.phases')} summary={t('metrics.perNight')}>
+          <div className="space-y-2">
+            {phaseMeans.map(p => (
+              <BarRow
+                key={p.key}
+                label={p.label}
+                value={p.value}
+                max={phaseMax}
+                color={p.color}
+                hint={duration(p.value)}
+              />
+            ))}
+          </div>
+        </Block>
+      )}
 
       <Block module="sleep" icon={<Clock size={15} />} title={t('metrics.sleep.clockChart')}>
         {hasTimes ? (

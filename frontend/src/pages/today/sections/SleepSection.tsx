@@ -46,13 +46,25 @@ function SleepForm({ date, entry, onSelectDate }: {
   const [wakeTime, setWakeTime] = useState(entry?.wakeTime ?? '')
   const [inBed, setInBed] = useState<number | null>(entry?.timeInBedMinutes ?? null)
   const [asleep, setAsleep] = useState<number | null>(entry?.actualSleepMinutes ?? null)
+  const [awake, setAwake] = useState<number | null>(entry?.awakeMinutes ?? null)
+  const [light, setLight] = useState<number | null>(entry?.lightMinutes ?? null)
+  const [rem, setRem] = useState<number | null>(entry?.remMinutes ?? null)
+  const [deep, setDeep] = useState<number | null>(entry?.deepMinutes ?? null)
   const [notes, setNotes] = useState(entry?.notes ?? '')
 
-  const efficiency = inBed && inBed > 0 && asleep != null
-    ? Math.round((asleep / inBed) * 100)
+  // Light, REM and deep are the sleep itself; awake is time in bed. Filling
+  // them in therefore answers the duration above, which stays editable.
+  const phaseSleep = [light, rem, deep].some(v => v != null)
+    ? (light ?? 0) + (rem ?? 0) + (deep ?? 0)
     : null
 
-  const tooMuchSleep = inBed != null && asleep != null && asleep > inBed
+  const sleepMinutes = asleep ?? phaseSleep
+
+  const efficiency = inBed && inBed > 0 && sleepMinutes != null
+    ? Math.round((sleepMinutes / inBed) * 100)
+    : null
+
+  const tooMuchSleep = inBed != null && sleepMinutes != null && sleepMinutes > inBed
 
   // The upsert rejects that pair, so it is held back until it makes sense
   // again rather than autosaved into a 400.
@@ -60,7 +72,11 @@ function SleepForm({ date, entry, onSelectDate }: {
     {
       date,
       timeInBedMinutes: inBed,
-      actualSleepMinutes: asleep,
+      actualSleepMinutes: asleep ?? phaseSleep,
+      awakeMinutes: awake,
+      lightMinutes: light,
+      remMinutes: rem,
+      deepMinutes: deep,
       bedTime: bedTime || null,
       wakeTime: wakeTime || null,
       notes: notes || undefined,
@@ -78,8 +94,15 @@ function SleepForm({ date, entry, onSelectDate }: {
         // A field the screenshot did not show keeps whatever is already in the
         // form instead of being wiped.
         onApply={f => {
+          if (f.bedTime) setBedTime(f.bedTime)
+          if (f.wakeTime) setWakeTime(f.wakeTime)
           if (f.timeInBedMinutes != null) setInBed(f.timeInBedMinutes)
+          else if (f.bedTime && f.wakeTime) setInBed(spanMinutes(f.bedTime, f.wakeTime) ?? inBed)
           if (f.actualSleepMinutes != null) setAsleep(f.actualSleepMinutes)
+          if (f.awakeMinutes != null) setAwake(f.awakeMinutes)
+          if (f.lightMinutes != null) setLight(f.lightMinutes)
+          if (f.remMinutes != null) setRem(f.remMinutes)
+          if (f.deepMinutes != null) setDeep(f.deepMinutes)
         }}
       />
 
@@ -130,6 +153,21 @@ function SleepForm({ date, entry, onSelectDate }: {
         minutes={asleep}
         onChange={setAsleep}
       />
+
+      {/* The phases are their own group: four durations that are read off one
+          screenshot together and mean little apart. */}
+      <div className="space-y-2 rounded-control bg-raised/60 p-3">
+        <p className="text-meta text-ink-mute">
+          {t('sleep.phases')}
+          {phaseSleep != null && (
+            <span className="text-ink-faint"> · {formatDuration(phaseSleep)} {t('sleep.phasesSum')}</span>
+          )}
+        </p>
+        <DurationField label={t('sleep.light')} minutes={light} onChange={setLight} />
+        <DurationField label={t('sleep.rem')} minutes={rem} onChange={setRem} />
+        <DurationField label={t('sleep.deep')} minutes={deep} onChange={setDeep} />
+        <DurationField label={t('sleep.awake')} minutes={awake} onChange={setAwake} />
+      </div>
 
       {tooMuchSleep && (
         <p className="text-meta text-bad">{t('sleep.asleepExceedsBed')}</p>

@@ -14,6 +14,18 @@ public class SleepEntry
     public int? ActualSleepMinutes { get; set; }
 
     /// <summary>
+    /// The night broken into its phases, in minutes, as Sleep Cycle's legend
+    /// reports them: awake, light, REM ("Traum") and deep. They are stored as
+    /// four independent readings rather than as shares of the night, because
+    /// that is what the app shows and what a screenshot carries — anything
+    /// derived from them (their sum, their share) is worked out on the way out.
+    /// </summary>
+    public int? AwakeMinutes { get; set; }
+    public int? LightMinutes { get; set; }
+    public int? RemMinutes { get; set; }
+    public int? DeepMinutes { get; set; }
+
+    /// <summary>
     /// Clock time the night started, on the day before <see cref="Date"/> —
     /// unless it was already past midnight, in which case it is on Date itself.
     /// Kept as a time of day rather than a timestamp: what a bedtime decision

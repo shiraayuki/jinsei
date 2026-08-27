@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 
 /// <summary>
@@ -74,14 +75,28 @@ public class ScreenshotImportService
 
     private static string SleepPrompt(DateOnly contextDate) =>
         $"""
-        Das ist ein Screenshot aus Sleep Cycle. Lies ab:
+        Das ist ein Screenshot aus Sleep Cycle. Lies ab, was im Bild steht:
 
-        - timeInBedMinutes: "Zeit im Bett" als Minuten (7 h 35 min = 455).
-        - actualSleepMinutes: "Schlaf" als Minuten. Immer <= timeInBedMinutes.
+        - bedTime / wakeTime: die beiden Uhrzeiten unter der Schlafphasen-Kurve,
+          als "HH:mm". Die linke ist das Zubettgehen, die rechte das Aufstehen
+          (z. B. "20:49" und "04:52"). Stehen sie stattdessen als "Schlafen
+          gegangen" und "Aufgewacht" in zwei Kacheln, nimm die.
+        - awakeMinutes / lightMinutes / remMinutes / deepMinutes: die vier Zeiten
+          aus der Legende unter der Kurve, jeweils in Minuten (1 h 44 min = 104).
+          Die Legende heißt "Wach", "Leicht", "Traum" und "Tief" — "Traum" ist
+          remMinutes. Fehlt eine Zeile, gib für sie null zurück.
+        - timeInBedMinutes: "Zeit im Bett" als Minuten (7 h 35 min = 455). Steht
+          das nicht im Bild, gib null zurück — die beiden Uhrzeiten sagen es
+          schon, und die App rechnet es selbst aus.
+        - actualSleepMinutes: "Schlaf" als Minuten, falls das Bild diese Zahl
+          direkt nennt, sonst null. Nicht selbst addieren.
         - date: der Tag des Aufwachens im Format YYYY-MM-DD. Bei einer Nacht über
           zwei Tage ("So. 23-24. Aug.") ist das der spätere Tag. Steht kein Jahr
           im Bild, nimm das Jahr aus {contextDate:yyyy-MM-dd}. Ist kein Datum
           lesbar, gib null zurück.
+
+        Prozentzahlen, Punktzahlen ("Sleep Score", "Routine", "Qualität") und
+        die Effizienz interessieren nicht.
 
         notes: kurz auf Deutsch, was du gelesen hast oder was unklar war.
         """;
@@ -129,8 +144,14 @@ public class ScreenshotImportService
         new
         {
             date = NullableString("Aufwachtag als YYYY-MM-DD."),
+            bedTime = NullableString("Zubettgehzeit als HH:mm."),
+            wakeTime = NullableString("Aufstehzeit als HH:mm."),
             timeInBedMinutes = NullableInt("Zeit im Bett in Minuten."),
             actualSleepMinutes = NullableInt("Tatsächlicher Schlaf in Minuten."),
+            awakeMinutes = NullableInt("Wachzeit in Minuten."),
+            lightMinutes = NullableInt("Leichtschlaf in Minuten."),
+            remMinutes = NullableInt("REM-/Traumschlaf in Minuten."),
+            deepMinutes = NullableInt("Tiefschlaf in Minuten."),
             lowConfidence = new
             {
                 type = "array",
@@ -139,7 +160,10 @@ public class ScreenshotImportService
             },
             notes = NullableString("Kurze Notiz auf Deutsch."),
         },
-        ["date", "timeInBedMinutes", "actualSleepMinutes", "lowConfidence", "notes"]);
+        [
+            "date", "bedTime", "wakeTime", "timeInBedMinutes", "actualSleepMinutes",
+            "awakeMinutes", "lightMinutes", "remMinutes", "deepMinutes", "lowConfidence", "notes",
+        ]);
 
     private static readonly object NutritionSchema = Schema(
         new
@@ -209,12 +233,27 @@ public class ScreenshotImportService
     private static ImportDraft BuildSleepDraft(JsonElement root, DateOnly contextDate)
     {
         var warnings = new List<string>();
-        var inBed = InRange(Int(root, "timeInBedMinutes"), 0, 1440, "Zeit im Bett", warnings);
-        var asleep = InRange(Int(root, "actualSleepMinutes"), 0, 1440, "Schlaf", warnings);
+        var bed = ReadClock(Str(root, "bedTime"), "Zubettgehzeit", warnings);
+        var wake = ReadClock(Str(root, "wakeTime"), "Aufstehzeit", warnings);
+
+        var awake = InRange(Int(root, "awakeMinutes"), 0, 1440, "Wach", warnings);
+        var light = InRange(Int(root, "lightMinutes"), 0, 1440, "Leicht", warnings);
+        var rem = InRange(Int(root, "remMinutes"), 0, 1440, "Traum", warnings);
+        var deep = InRange(Int(root, "deepMinutes"), 0, 1440, "Tief", warnings);
+
+        // The two clock times say how long the night was, so a screenshot that
+        // only shows the curve still fills the duration in.
+        var inBed = InRange(Int(root, "timeInBedMinutes"), 0, 1440, "Zeit im Bett", warnings)
+            ?? SpanBetween(bed, wake);
+
+        // Light, REM and deep are the sleep itself; awake is time in bed.
+        var phases = new[] { light, rem, deep };
+        var asleep = InRange(Int(root, "actualSleepMinutes"), 0, 1440, "Schlaf", warnings)
+            ?? (phases.Any(p => p is not null) ? phases.Sum(p => p ?? 0) : null);
 
         // The upsert rejects this pair outright, so it is better caught here
         // where the field can still be emptied and pointed at.
-        if (inBed is int bed && asleep is int slept && slept > bed)
+        if (inBed is int minutes && asleep is int slept && slept > minutes)
         {
             warnings.Add("Gelesener Schlaf war länger als die Zeit im Bett — bitte prüfen.");
             asleep = null;
@@ -225,12 +264,38 @@ public class ScreenshotImportService
             Date: ReadDate(root, contextDate, warnings),
             Fields: new Dictionary<string, object?>
             {
+                ["bedTime"] = bed?.ToString("HH:mm"),
+                ["wakeTime"] = wake?.ToString("HH:mm"),
                 ["timeInBedMinutes"] = inBed,
                 ["actualSleepMinutes"] = asleep,
+                ["awakeMinutes"] = awake,
+                ["lightMinutes"] = light,
+                ["remMinutes"] = rem,
+                ["deepMinutes"] = deep,
             },
             LowConfidence: Strings(root, "lowConfidence"),
             Warnings: warnings,
             Notes: Str(root, "notes"));
+    }
+
+    /// <summary>A clock time the model read, or null with a warning if it is not one.</summary>
+    private static TimeOnly? ReadClock(string? value, string label, List<string> warnings)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        if (TimeOnly.TryParseExact(value.Trim(), ["HH:mm", "H:mm", "HH:mm:ss"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
+            return time;
+
+        warnings.Add($"{label} \"{value}\" war nicht lesbar.");
+        return null;
+    }
+
+    /// <summary>Minutes from one clock time to the other, wrapping over midnight.</summary>
+    private static int? SpanBetween(TimeOnly? from, TimeOnly? to)
+    {
+        if (from is not TimeOnly start || to is not TimeOnly end) return null;
+        var minutes = (int)(end - start).TotalMinutes;
+        if (minutes <= 0) minutes += 24 * 60;
+        return minutes;
     }
 
     private static ImportDraft BuildNutritionDraft(JsonElement root, DateOnly contextDate)

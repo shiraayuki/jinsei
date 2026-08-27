@@ -50,6 +50,51 @@ public class DayApiTests
     }
 
     [Fact]
+    public async Task Sleep_AddsUpThePhasesIntoTheSleptDuration()
+    {
+        using var app = await TestApp.SignedInAsync();
+
+        // The night as Sleep Cycle draws it: awake is time in bed, the other
+        // three are the sleep itself.
+        var res = await app.Client.PostAsJsonAsync("/api/sleep", new
+        {
+            date = "2026-08-27",
+            bedTime = "20:49",
+            wakeTime = "04:52",
+            awakeMinutes = 32,
+            lightMinutes = 212,
+            remMinutes = 136,
+            deepMinutes = 104,
+        });
+        res.EnsureSuccessStatusCode();
+
+        var entries = await app.Client.GetFromJsonAsync<JsonElement>("/api/sleep?days=30");
+        var entry = entries.EnumerateArray().Single();
+
+        Assert.Equal(483, entry.GetProperty("timeInBedMinutes").GetInt32());
+        Assert.Equal(452, entry.GetProperty("actualSleepMinutes").GetInt32());
+        Assert.Equal(104, entry.GetProperty("deepMinutes").GetInt32());
+        Assert.Equal(32, entry.GetProperty("awakeMinutes").GetInt32());
+        Assert.Equal(94, entry.GetProperty("efficiency").GetInt32());
+    }
+
+    [Fact]
+    public async Task Sleep_RejectsPhasesLongerThanTheNight()
+    {
+        using var app = await TestApp.SignedInAsync();
+
+        var res = await app.Client.PostAsJsonAsync("/api/sleep", new
+        {
+            date = "2026-08-27",
+            timeInBedMinutes = 400,
+            lightMinutes = 300,
+            remMinutes = 200,
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
+    }
+
+    [Fact]
     public async Task Weight_RequiresAtLeastOneMeasurement()
     {
         using var app = await TestApp.SignedInAsync();

@@ -35,7 +35,14 @@ public class SleepController : ControllerBase
     {
         if (req.TimeInBedMinutes is < 0 or > 1440 || req.ActualSleepMinutes is < 0 or > 1440)
             return BadRequest("Durations must be between 0 and 1440 minutes.");
-        if (req.ActualSleepMinutes is int asleep && req.TimeInBedMinutes is int inBed && asleep > inBed)
+        if (new[] { req.AwakeMinutes, req.LightMinutes, req.RemMinutes, req.DeepMinutes }
+            .Any(m => m is < 0 or > 1440))
+            return BadRequest("Phase durations must be between 0 and 1440 minutes.");
+        // Checked against what will actually be stored, which is the duration
+        // worked out from the phases when none was sent.
+        if ((req.ActualSleepMinutes ?? Asleep(req)) is int asleep
+            && (req.TimeInBedMinutes ?? SpanBetween(req.BedTime, req.WakeTime)) is int inBed
+            && asleep > inBed)
             return BadRequest("Actual sleep cannot exceed time in bed.");
 
         var existing = await _db.SleepEntries
@@ -54,12 +61,29 @@ public class SleepController : ControllerBase
             ?? SpanBetween(req.BedTime, req.WakeTime);
         existing.BedTime = req.BedTime;
         existing.WakeTime = req.WakeTime;
-        existing.ActualSleepMinutes = req.ActualSleepMinutes;
+        existing.AwakeMinutes = req.AwakeMinutes;
+        existing.LightMinutes = req.LightMinutes;
+        existing.RemMinutes = req.RemMinutes;
+        existing.DeepMinutes = req.DeepMinutes;
+        // The phases already say how long was slept, so the duration is filled
+        // in from them the same way the clock times fill in the time in bed. A
+        // duration that was sent outright still wins.
+        existing.ActualSleepMinutes = req.ActualSleepMinutes ?? Asleep(req);
         existing.Notes = req.Notes;
         existing.LoggedAt = DateTimeOffset.UtcNow;
 
         await _db.SaveChangesAsync();
         return NoContent();
+    }
+
+    /// <summary>
+    /// Light, REM and deep add up to the sleep itself. Awake is deliberately
+    /// left out: it is time in bed, not time asleep.
+    /// </summary>
+    private static int? Asleep(UpsertSleepRequest req)
+    {
+        var phases = new[] { req.LightMinutes, req.RemMinutes, req.DeepMinutes };
+        return phases.Any(m => m is not null) ? phases.Sum(m => m ?? 0) : null;
     }
 
     [HttpDelete("{id:guid}")]
@@ -90,6 +114,10 @@ public class SleepController : ControllerBase
         Date = e.Date.ToString("yyyy-MM-dd"),
         e.TimeInBedMinutes,
         e.ActualSleepMinutes,
+        e.AwakeMinutes,
+        e.LightMinutes,
+        e.RemMinutes,
+        e.DeepMinutes,
         BedTime = e.BedTime?.ToString("HH:mm"),
         WakeTime = e.WakeTime?.ToString("HH:mm"),
         // Share of the time in bed actually spent asleep — the number Sleep
@@ -106,6 +134,10 @@ public record UpsertSleepRequest(
     DateOnly Date,
     int? TimeInBedMinutes,
     int? ActualSleepMinutes,
+    int? AwakeMinutes,
+    int? LightMinutes,
+    int? RemMinutes,
+    int? DeepMinutes,
     TimeOnly? BedTime,
     TimeOnly? WakeTime,
     string? Notes);
