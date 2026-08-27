@@ -30,11 +30,10 @@ function MacroField({ label, color, value, onChange }: {
 }) {
   return (
     <label className="flex min-w-0 flex-col gap-1 rounded-control border border-line bg-raised p-3">
-      {/* "Kohlenhydrate" is wider than a third of a phone: it hyphenates
-          rather than running out of its own tile. */}
-      <span className="hyphens-auto break-words text-meta font-medium leading-tight" style={{ color }}>
-        {label}
-      </span>
+      {/* A caption rather than a subhead: "Kohlenhydrate" is wider than a
+          third of a phone at 14 pt, and a hyphenated macro label looks worse
+          than a small one. */}
+      <span className="truncate text-label font-medium" style={{ color }}>{label}</span>
       <div className="flex min-w-0 items-baseline gap-1">
         <input
           type="number"
