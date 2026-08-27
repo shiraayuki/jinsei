@@ -348,7 +348,7 @@ export function Chart({ series, height = 140, goal, zeroBased, format, empty }: 
 
       {readout && (
         <div
-          className="pointer-events-none absolute top-0 z-10 rounded-control px-3 py-2 text-meta text-ink shadow-xl tabular"
+          className="pointer-events-none absolute top-0 z-10 rounded-control px-2.5 py-1.5 text-label text-ink shadow-xl tabular"
           style={{
             // Material rather than a panel, like every floating surface on iOS.
             background: 'color-mix(in srgb, var(--surface) 88%, transparent)',

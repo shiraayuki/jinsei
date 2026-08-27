@@ -8,11 +8,10 @@ import { useSleep } from '../../../features/sleep/hooks'
 import { useWeight } from '../../../features/weight/hooks'
 import { useWorkouts } from '../../../features/workouts/hooks'
 import { dateLocale } from '../../../i18n'
-import { moduleColor } from '../../../lib/modules'
 import { periodRange, type Period } from '../../../lib/period'
 import { mean, movingAverage, type Point } from '../../../lib/stats'
 import { Block } from '../Block'
-import { duration, num, series, seriesBetween } from '../shared'
+import { duration, num, series } from '../shared'
 
 function formatDay(iso: string): string {
   return new Date(`${iso}T00:00:00`).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' })
@@ -82,21 +81,6 @@ export function OverviewSection({ period }: { period: Period }) {
   const weightNow = valueAt(weightTrend, range.to)
   const weightBefore = valueAt(weightTrend, range.from)
 
-  // The sparklines show the shape of the period itself, not of the window
-  // behind it, so they start where the period starts.
-  const sessionsByDay = new Map<string, number>()
-  for (const w of workouts) sessionsByDay.set(w.date, (sessionsByDay.get(w.date) ?? 0) + 1)
-  const sessionSpark = seriesBetween(
-    [...sessionsByDay].map(([date, value]) => ({ date, value })),
-    r => r.value,
-    range.from,
-    range.to,
-  )
-  const sleepSpark = seriesBetween(sleep, e => e.actualSleepMinutes ?? e.timeInBedMinutes, range.from, range.to)
-  const kcalSpark = seriesBetween(nutrition, e => e.kcal, range.from, range.to)
-  const stepSpark = seriesBetween(activity, e => e.steps, range.from, range.to)
-  const weightSpark = seriesBetween(weight, e => e.weightKg, range.from, range.to)
-
   const nothing =
     workouts.length === 0 && sleep.length === 0 && nutrition.length === 0 &&
     activity.length === 0 && weight.length === 0
@@ -123,8 +107,6 @@ export function OverviewSection({ period }: { period: Period }) {
           hint={t('metrics.periodTotal')}
           delta={sessions - sessionsBefore}
           digits={0}
-          spark={sessionSpark}
-          color={moduleColor.train}
         />
         <StatTile
           label={t('sleep.avgDuration')}
@@ -132,9 +114,6 @@ export function OverviewSection({ period }: { period: Period }) {
           hint={t('metrics.perDay')}
           delta={sleepNow != null && sleepBefore != null ? (sleepNow - sleepBefore) / 60 : null}
           deltaUnit=" h"
-          spark={sleepSpark}
-          color={moduleColor.sleep}
-          smooth={7}
         />
         <StatTile
           label={`Ø ${t('nutrition.calories')}`}
@@ -144,9 +123,6 @@ export function OverviewSection({ period }: { period: Period }) {
           deltaUnit=" kcal"
           digits={0}
           neutral
-          spark={kcalSpark}
-          color={moduleColor.food}
-          smooth={7}
         />
         <StatTile
           label={`Ø ${t('activity.steps')}`}
@@ -154,9 +130,6 @@ export function OverviewSection({ period }: { period: Period }) {
           hint={t('metrics.perDay')}
           delta={stepsNow != null && stepsBefore != null ? stepsNow - stepsBefore : null}
           digits={0}
-          spark={stepSpark}
-          color={moduleColor.move}
-          smooth={7}
         />
         <div className="col-span-2">
           <StatTile
@@ -167,9 +140,6 @@ export function OverviewSection({ period }: { period: Period }) {
             deltaUnit=" kg"
             digits={2}
             lowerIsBetter
-            spark={weightSpark}
-            color={moduleColor.body}
-            smooth={7}
           />
         </div>
         {hasMacros && (

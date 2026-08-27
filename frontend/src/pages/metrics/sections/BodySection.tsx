@@ -115,9 +115,6 @@ export function BodySection({ days }: { days: number }) {
             label={t('weight.weightKg')}
             value={trendNow != null ? `${num(trendNow, 1)} kg` : num(latest(weightPoints), 1)}
             hint={t('metrics.trend')}
-            spark={weightPoints}
-            color={moduleColor.body}
-            smooth={7}
           />
           <StatTile
             label={t('metrics.body.trendRate')}

@@ -147,9 +147,6 @@ export function SleepSection({ days }: { days: number }) {
             hint={t('metrics.trend')}
             delta={weekMean != null && prevMean != null ? (weekMean - prevMean) / 60 : null}
             deltaUnit=" h"
-            spark={minutes}
-            color={moduleColor.sleep}
-            smooth={7}
           />
           <StatTile
             label={`Ø ${t('sleep.timeInBed')}`}
@@ -163,7 +160,7 @@ export function SleepSection({ days }: { days: number }) {
           />
           <StatTile
             label={t('metrics.sleep.consistency')}
-            value={durationScore != null ? `${durationScore} / 100` : '–'}
+            value={durationScore != null ? String(durationScore) : '–'}
             hint={spread != null ? `± ${duration(spread)}` : t('metrics.sleep.consistencyHint')}
           />
         </div>
@@ -239,7 +236,7 @@ export function SleepSection({ days }: { days: number }) {
               />
               <StatTile
                 label={t('metrics.sleep.regularity')}
-                value={regularityScore != null ? `${regularityScore} / 100` : '–'}
+                value={regularityScore != null ? String(regularityScore) : '–'}
                 hint={regularity != null ? `± ${duration(regularity)}` : t('metrics.sleep.regularityHint')}
               />
             </div>

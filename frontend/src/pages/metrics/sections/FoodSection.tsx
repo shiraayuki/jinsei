@@ -64,9 +64,6 @@ export function FoodSection({ days }: { days: number }) {
             deltaUnit=" kcal"
             digits={0}
             neutral
-            spark={kcal}
-            color={moduleColor.food}
-            smooth={7}
           />
           <StatTile
             label={t('metrics.food.adherence')}
@@ -98,9 +95,6 @@ export function FoodSection({ days }: { days: number }) {
                 ? t('goals.of', { goal: `${num(proteinGoal)} g` })
                 : t('metrics.perDay')
             }
-            spark={protein}
-            color={moduleColor.food}
-            smooth={7}
           />
           <StatTile
             label={t('metrics.food.proteinPerKg')}

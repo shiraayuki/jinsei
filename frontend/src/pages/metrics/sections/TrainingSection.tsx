@@ -80,8 +80,6 @@ export function TrainingSection({ days }: { days: number }) {
                 : t('metrics.perWeek')
             }
             delta={setsPerWeek != null && priorSetsPerWeek != null ? setsPerWeek - priorSetsPerWeek : null}
-            spark={setsPoints}
-            color={moduleColor.train}
           />
         </div>
 

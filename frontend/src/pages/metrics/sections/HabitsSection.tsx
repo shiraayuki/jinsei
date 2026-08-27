@@ -50,9 +50,6 @@ export function HabitsSection({ days }: { days: number }) {
             hint={t('metrics.habits.completionHint')}
             delta={nowRate != null && beforeRate != null ? nowRate - beforeRate : null}
             deltaUnit=" %"
-            spark={rate}
-            color={moduleColor.mind}
-            smooth={7}
           />
           <StatTile
             label={t('metrics.todayDone')}
