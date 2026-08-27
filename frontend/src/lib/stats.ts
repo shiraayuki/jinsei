@@ -252,10 +252,15 @@ export function socialJetlag(midpoints: Point[]): number | null {
   return Math.abs(freeMean - workMean)
 }
 
-/** Share of the readings that reach a threshold, with the counts behind it. */
-export function shareAtLeast(points: Point[], threshold: number): { rate: number; hit: number; total: number } | null {
-  const values = defined(points)
-  if (values.length === 0) return null
-  const hit = values.filter(v => v >= threshold).length
-  return { rate: hit / values.length, hit, total: values.length }
+/**
+ * A spread in minutes read as a score out of 100, the way sleep trackers report
+ * regularity.
+ *
+ * Zero spread is 100, two hours of it is 0. The scale is a convention and not a
+ * measurement — which is why the minutes it came from stay on screen beside it,
+ * and why nothing else is built on top of the score.
+ */
+export function consistencyScore(spreadMinutes: number | null, zeroAt = 120): number | null {
+  if (spreadMinutes == null) return null
+  return Math.max(0, Math.min(100, Math.round((1 - spreadMinutes / zeroAt) * 100)))
 }

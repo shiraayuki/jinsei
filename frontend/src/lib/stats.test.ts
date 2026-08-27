@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   adherence, byWeek, byWeekday, clockToNightAxis, correlation, densify, lag,
-  latest, movingAverage, nightAxisToClock, shareAtLeast, sleepMidpoint,
+  consistencyScore, latest, movingAverage, nightAxisToClock, sleepMidpoint,
   slopePerDay, socialJetlag, stdDev,
 } from './stats'
 
@@ -68,11 +68,12 @@ describe('socialJetlag', () => {
   })
 })
 
-describe('shareAtLeast', () => {
-  it('counts the readings that reach the threshold', () => {
-    const result = shareAtLeast([p('a', 400), p('b', 460), p('c', null), p('d', 480)], 450)!
-    expect(result.hit).toBe(2)
-    expect(result.total).toBe(3)
+describe('consistencyScore', () => {
+  it('reads a spread as a score, and bottoms out rather than going negative', () => {
+    expect(consistencyScore(0)).toBe(100)
+    expect(consistencyScore(60)).toBe(50)
+    expect(consistencyScore(300)).toBe(0)
+    expect(consistencyScore(null)).toBeNull()
   })
 })
 

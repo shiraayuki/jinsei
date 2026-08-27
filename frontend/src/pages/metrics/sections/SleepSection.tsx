@@ -7,13 +7,28 @@ import { useAuth } from '../../../app/auth/AuthProvider'
 import { useSleep } from '../../../features/sleep/hooks'
 import { moduleColor } from '../../../lib/modules'
 import {
-  byWeekday, clockToNightAxis, defined, mean, nightAxisToClock, shareAtLeast,
+  byWeekday, clockToNightAxis, consistencyScore, defined, mean, nightAxisToClock,
   sleepMidpoint, socialJetlag, stdDev,
 } from '../../../lib/stats'
 import { Block, EmptyHint } from '../Block'
 import { duration, num, series, splitWindow } from '../shared'
 
 const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
+
+/** What a night is usually made of, as the sleep literature reports it. */
+function band(min: number, max: number) {
+  const mid = (min + max) / 2
+  return { mid, tolerance: (max - min) / 2 / mid, label: `${min}–${max} %` }
+}
+
+const DEEP_BAND = band(13, 23)
+const REM_BAND = band(20, 25)
+
+type SleepNight = {
+  deepMinutes: number | null
+  remMinutes: number | null
+  lightMinutes: number | null
+}
 
 export function SleepSection({ days }: { days: number }) {
   const { t } = useTranslation()
@@ -67,6 +82,7 @@ export function SleepSection({ days }: { days: number }) {
   const prevMean = mean(defined(previous))
 
   const spread = stdDev(nights)
+  const durationScore = consistencyScore(spread)
   const weekday = byWeekday(minutes)
   const weekdayMax = Math.max(...weekday.map(v => v ?? 0), 1)
 
@@ -99,8 +115,26 @@ export function SleepSection({ days }: { days: number }) {
   // Being woken by an alarm five days a week and by nothing on the other two
   // is living in two time zones; the shift between them is the number the
   // sleep literature calls social jetlag.
+  // Both spreads are also given as a score, which is the form these numbers
+  // take in every other sleep app; the minutes stay underneath, because that is
+  // the part that is actually measured.
+  const regularityScore = consistencyScore(regularity)
   const jetlag = socialJetlag(midpoints)
-  const atGoal = goal != null ? shareAtLeast(minutes, goal) : null
+
+  /**
+   * A phase as its share of the night, per night. Nights without phases stay
+   * empty rather than counting as nought percent.
+   */
+  const shareOf = (pick: (e: SleepNight) => number | null) =>
+    series(sleep, e => {
+      const total = (e.deepMinutes ?? 0) + (e.remMinutes ?? 0) + (e.lightMinutes ?? 0)
+      const value = pick(e)
+      return total > 0 && value != null ? (value / total) * 100 : null
+    }, days)
+
+  const deepShare = shareOf(e => e.deepMinutes)
+  const remShare = shareOf(e => e.remMinutes)
+  const hasShares = defined(deepShare).length > 0
   const hasTimes = defined(bedPoints).length > 0
 
   return (
@@ -129,13 +163,8 @@ export function SleepSection({ days }: { days: number }) {
           />
           <StatTile
             label={t('metrics.sleep.consistency')}
-            value={spread != null ? `± ${duration(spread)}` : '–'}
-            hint={t('metrics.sleep.consistencyHint')}
-          />
-          <StatTile
-            label={t('metrics.sleep.atGoal')}
-            value={atGoal != null ? `${atGoal.hit} / ${atGoal.total}` : '–'}
-            hint={goal != null ? t('metrics.sleep.atGoalHint', { hours: num(goal / 60, 1) }) : t('metrics.noGoal')}
+            value={durationScore != null ? `${durationScore} / 100` : '–'}
+            hint={spread != null ? `± ${duration(spread)}` : t('metrics.sleep.consistencyHint')}
           />
         </div>
 
@@ -173,6 +202,29 @@ export function SleepSection({ days }: { days: number }) {
         </Block>
       )}
 
+      {hasShares && (
+        <Block module="sleep" icon={<Moon size={15} />} title={t('metrics.sleep.shares')}>
+          {/* The bands are the range a healthy adult night usually falls in —
+              13–23 % deep, 20–25 % REM. They are a reference, not a goal: a
+              night outside them is worth a look, not a verdict. */}
+          <p className="text-meta text-ink-mute">{t('sleep.deep')}</p>
+          <Chart
+            series={[{ label: t('sleep.deep'), color: moduleColor.sleep, points: deepShare, unit: ' %', averageOver: 7 }]}
+            goal={{ value: DEEP_BAND.mid, label: DEEP_BAND.label, tolerance: DEEP_BAND.tolerance }}
+            format={v => num(v)}
+          />
+
+          <p className="text-meta text-ink-mute">{t('sleep.rem')}</p>
+          <Chart
+            series={[{ label: t('sleep.rem'), color: moduleColor.mind, points: remShare, unit: ' %', averageOver: 7 }]}
+            goal={{ value: REM_BAND.mid, label: REM_BAND.label, tolerance: REM_BAND.tolerance }}
+            format={v => num(v)}
+          />
+
+          <p className="text-label text-ink-faint">{t('metrics.sleep.sharesHint')}</p>
+        </Block>
+      )}
+
       <Block module="sleep" icon={<Clock size={15} />} title={t('metrics.sleep.clockChart')}>
         {hasTimes ? (
           <>
@@ -187,8 +239,8 @@ export function SleepSection({ days }: { days: number }) {
               />
               <StatTile
                 label={t('metrics.sleep.regularity')}
-                value={regularity != null ? `± ${duration(regularity)}` : '–'}
-                hint={t('metrics.sleep.regularityHint')}
+                value={regularityScore != null ? `${regularityScore} / 100` : '–'}
+                hint={regularity != null ? `± ${duration(regularity)}` : t('metrics.sleep.regularityHint')}
               />
             </div>
 
