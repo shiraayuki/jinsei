@@ -60,10 +60,6 @@ function SleepForm({ date, entry, onSelectDate }: {
 
   const sleepMinutes = asleep ?? phaseSleep
 
-  const efficiency = inBed && inBed > 0 && sleepMinutes != null
-    ? Math.round((sleepMinutes / inBed) * 100)
-    : null
-
   const tooMuchSleep = inBed != null && sleepMinutes != null && sleepMinutes > inBed
 
   // The upsert rejects that pair, so it is held back until it makes sense
@@ -170,9 +166,8 @@ function SleepForm({ date, entry, onSelectDate }: {
         <DurationField label={t('sleep.awake')} minutes={awake} onChange={setAwake} />
 
         {/* Minutes only: falling asleep is a handful of them, and an hours
-            field next to a 9 would only be a zero to tab past. It is not one of
-            the four phases, so a rule separates it from them. */}
-        <div className="mt-3 flex items-center justify-between gap-3 border-t border-line pt-3">
+            field next to a 9 would only be a zero to tab past. */}
+        <div className="mt-3 flex items-center justify-between gap-3">
           <span className="text-meta text-ink-mute">{t('sleep.onset')}</span>
           <div className="flex items-baseline gap-1 rounded-control border border-line bg-raised px-3 py-2">
             <input
@@ -192,12 +187,6 @@ function SleepForm({ date, entry, onSelectDate }: {
 
       {tooMuchSleep && (
         <p className="text-meta text-bad">{t('sleep.asleepExceedsBed')}</p>
-      )}
-
-      {efficiency != null && (
-        <p className="text-center text-body text-ink-mute">
-          {t('sleep.efficiency')}: <span className="font-semibold text-ink">{efficiency}%</span>
-        </p>
       )}
 
       <SaveStatus

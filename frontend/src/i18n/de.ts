@@ -129,13 +129,11 @@ export default {
     rem: 'Traum (REM)',
     deep: 'Tief',
     awake: 'Wach',
-    efficiency: 'Effizienz',
     asleepExceedsBed: 'Wirklicher Schlaf kann nicht länger sein als die Zeit im Bett.',
     asleepShort: 'geschlafen',
     inBedShort: 'im Bett',
     lastNight: 'Letzte Nacht',
     avgDuration: 'Ø Schlaf',
-    avgEfficiency: 'Ø Effizienz',
   },
   muscles: {
     chest: 'Brust',

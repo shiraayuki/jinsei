@@ -63,7 +63,8 @@ interface Props {
 const W = 320
 const PAD_X = 6
 const PAD_TOP = 12
-const PAD_BOTTOM = 4
+/** Room under the plot for the date labels on the x axis. */
+const PAD_BOTTOM = 16
 /** Room on the right for the grid labels, which sit inside the plot. */
 const GUTTER = 34
 
@@ -126,7 +127,16 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
   const plotH = height - PAD_TOP - PAD_BOTTOM
   const count = dates.length
 
-  const x = (i: number) => PAD_X + (count > 1 ? (i / (count - 1)) * plotW : plotW / 2)
+  // A line is a reading at a moment and sits on the edge; a bar is a whole day
+  // and owns a slice of the axis. A chart of bars therefore hands each day a
+  // slot and centres it, which is also what lets the bars fill the width
+  // instead of standing as hairlines in the middle of it.
+  const allBars = withData.every(s => s.kind === 'bar')
+  const slot = plotW / Math.max(count, 1)
+  const x = (i: number) =>
+    allBars
+      ? PAD_X + slot * (i + 0.5)
+      : PAD_X + (count > 1 ? (i / (count - 1)) * plotW : plotW / 2)
   const yFor = (key: string) => (value: number) => {
     const scale = scales.get(key)!
     return PAD_TOP + ((scale.max - value) / (scale.max - scale.min)) * plotH
@@ -145,7 +155,20 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
   }
 
   const fmt = format ?? ((v: number) => v.toLocaleString(dateLocale(), { maximumFractionDigits: 1 }))
-  const barWidth = Math.max(1.5, Math.min(12, (plotW / Math.max(count, 1)) * 0.72))
+  // The unit belongs to whatever the grid is scaled to, which is the first
+  // series; it is written once, on the top label, rather than on all of them.
+  const unit = withData[0].unit ?? ''
+  // Only a gap between the days, not a gap the bars sit in: a hairline is the
+  // right width for ninety days and the wrong one for seven.
+  const barWidth = Math.max(1, allBars ? slot - Math.min(3, slot * 0.18) : slot * 0.72)
+
+  // Three dates under the plot — first, middle, last. More than that overlaps
+  // on a phone, fewer leaves the middle of the chart unplaceable.
+  const ticks = count < 2
+    ? [0]
+    : count < 4
+      ? [0, count - 1]
+      : [0, Math.floor((count - 1) / 2), count - 1]
 
   // The readout floats over the plot rather than sitting under it: the eye is
   // already at the point it is asking about, and a fixed footer readout made
@@ -163,8 +186,8 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
       <svg
         viewBox={`0 0 ${W} ${height}`}
         className="w-full touch-pan-y overflow-visible"
-        onPointerDown={e => setHover(indexFromEvent(e, count))}
-        onPointerMove={e => (e.pointerType === 'mouse' || e.buttons > 0) && setHover(indexFromEvent(e, count))}
+        onPointerDown={e => setHover(indexFromEvent(e, count, allBars))}
+        onPointerMove={e => (e.pointerType === 'mouse' || e.buttons > 0) && setHover(indexFromEvent(e, count, allBars))}
         onPointerLeave={() => setHover(null)}
       >
         {gridValues.map(v => (
@@ -177,7 +200,7 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
               x={PAD_X + plotW + 4} y={yPrimary(v) + 3}
               className="fill-[var(--ink-faint)]" style={{ fontSize: 9 }}
             >
-              {fmt(v)}
+              {fmt(v)}{v === gridValues[gridValues.length - 1] ? unit : ''}
             </text>
           </g>
         ))}
@@ -222,7 +245,7 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
                     y={p.value == null ? floor - 1.5 : Math.min(top, floor)}
                     width={barWidth}
                     height={p.value == null ? 1.5 : Math.max(1.5, Math.abs(floor - top))}
-                    rx={Math.min(2, barWidth / 2)}
+                    rx={s.stack ? 0 : Math.min(2, barWidth / 2)}
                     // A missing day is a hairline stub in the line colour, so a
                     // gap reads as a gap rather than as a zero.
                     style={{ fill: p.value == null ? 'var(--line-strong)' : s.color, fillOpacity: p.value == null ? 1 : 0.85 }}
@@ -272,6 +295,21 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
             </g>
           )
         })}
+
+        {/* The x axis. Anchored at the ends so the first and last labels stay
+            inside the drawing rather than hanging off it. */}
+        {ticks.map(i => (
+          <text
+            key={dates[i]}
+            x={x(i)}
+            y={height - 3}
+            textAnchor={i === 0 ? 'start' : i === count - 1 ? 'end' : 'middle'}
+            className="fill-[var(--ink-faint)]"
+            style={{ fontSize: 9 }}
+          >
+            {formatDate(dates[i])}
+          </text>
+        ))}
 
         {hover != null && dates[hover] && (
           <g>
@@ -335,7 +373,6 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
             {goal.label ?? fmt(goal.value)}
           </span>
         )}
-        <span className="ml-auto">{formatDate(dates[0])} – {formatDate(dates[dates.length - 1])}</span>
       </div>
     </div>
   )
@@ -375,7 +412,11 @@ function segments(coords: ({ x: number; y: number } | null)[]): { x: number; y: 
   return out
 }
 
-function indexFromEvent(e: React.PointerEvent<SVGSVGElement>, count: number): number | null {
+function indexFromEvent(
+  e: React.PointerEvent<SVGSVGElement>,
+  count: number,
+  allBars: boolean,
+): number | null {
   if (count === 0) return null
   const rect = e.currentTarget.getBoundingClientRect()
   // The SVG scales to the container, so the pointer has to be mapped back into
@@ -383,5 +424,8 @@ function indexFromEvent(e: React.PointerEvent<SVGSVGElement>, count: number): nu
   const vx = ((e.clientX - rect.left) / rect.width) * W
   const plotW = W - PAD_X * 2 - GUTTER
   const ratio = (vx - PAD_X) / plotW
-  return Math.max(0, Math.min(count - 1, Math.round(ratio * (count - 1))))
+  // Bars own a slot, so the day under the finger is the slot it landed in;
+  // points sit on the edges, so the nearest one wins.
+  const index = allBars ? Math.floor(ratio * count) : Math.round(ratio * (count - 1))
+  return Math.max(0, Math.min(count - 1, index))
 }

@@ -129,13 +129,11 @@ export default {
     rem: 'REM',
     deep: 'Deep',
     awake: 'Awake',
-    efficiency: 'Efficiency',
     asleepExceedsBed: 'Actual sleep cannot exceed time in bed.',
     asleepShort: 'asleep',
     inBedShort: 'in bed',
     lastNight: 'Last night',
     avgDuration: 'Avg sleep',
-    avgEfficiency: 'Avg efficiency',
   },
   muscles: {
     chest: 'Chest',
