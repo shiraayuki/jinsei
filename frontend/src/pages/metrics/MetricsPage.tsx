@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { RangeTabs } from '../../components/ui/RangeTabs'
+import { PeriodTabs } from '../../components/ui/PeriodTabs'
 import { useRange } from '../../lib/useRange'
+import { usePeriod } from '../../lib/period'
 import { OverviewSection } from './sections/OverviewSection'
 import { BodySection } from './sections/BodySection'
 import { SleepSection } from './sections/SleepSection'
@@ -33,6 +35,9 @@ function storedTab(): Tab {
 export function MetricsPage() {
   const { t } = useTranslation()
   const [days, setDays] = useRange('metrics', 30)
+  // The overview counts whole periods, the other tabs trend a series, so the
+  // header carries whichever switch the tab below it actually reads.
+  const [period, setPeriod] = usePeriod('metrics.overview')
   const [tab, setTab] = useState<Tab>(storedTab)
   const [picking, setPicking] = useState(false)
 
@@ -94,7 +99,9 @@ export function MetricsPage() {
           </div>
 
           <div className="ml-auto">
-            <RangeTabs compact value={days} onChange={setDays} />
+            {tab === 'overview'
+              ? <PeriodTabs compact value={period} onChange={setPeriod} />
+              : <RangeTabs compact value={days} onChange={setDays} />}
           </div>
         </div>
       </header>
@@ -111,7 +118,7 @@ export function MetricsPage() {
       )}
 
       <div className="space-y-3 p-4">
-        {tab === 'overview' && <OverviewSection days={days} />}
+        {tab === 'overview' && <OverviewSection period={period} />}
         {tab === 'body' && <BodySection days={days} />}
         {tab === 'sleep' && <SleepSection days={days} />}
         {tab === 'food' && <FoodSection days={days} />}

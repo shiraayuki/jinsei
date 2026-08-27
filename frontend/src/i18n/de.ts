@@ -181,12 +181,19 @@ export default {
     average: 'Schnitt',
     weekdayPattern: 'Nach Wochentag',
     weekly: 'Pro Woche',
+    periodsShort: {
+      week: 'W',
+      month: 'M',
+      halfYear: '6M',
+      year: 'J',
+    },
     periods: {
       week: 'Diese Woche',
       month: 'Dieser Monat',
       halfYear: '6 Monate',
       year: '1 Jahr',
     },
+    overPeriod: 'im Zeitraum, geglättet',
     periodTotal: 'im Zeitraum',
     comparedWithBefore: 'Verglichen mit dem gleich langen Zeitraum davor.',
     tabs: {
@@ -198,6 +205,7 @@ export default {
       habits: 'Habits',
     },
     body: {
+      trendWeight: 'Gewichtstrend',
       trendRate: 'Trend',
       ratePerWeek: '{{value}} kg/Woche',
       toGoal: '{{value}} kg bis zum Ziel',
