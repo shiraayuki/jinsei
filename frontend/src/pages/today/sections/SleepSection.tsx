@@ -46,7 +46,6 @@ function SleepForm({ date, entry, onSelectDate }: {
   const [wakeTime, setWakeTime] = useState(entry?.wakeTime ?? '')
   const [inBed, setInBed] = useState<number | null>(entry?.timeInBedMinutes ?? null)
   const [asleep, setAsleep] = useState<number | null>(entry?.actualSleepMinutes ?? null)
-  const [quality, setQuality] = useState<number | null>(entry?.quality ?? null)
   const [notes, setNotes] = useState(entry?.notes ?? '')
 
   const efficiency = inBed && inBed > 0 && asleep != null
@@ -62,7 +61,6 @@ function SleepForm({ date, entry, onSelectDate }: {
       date,
       timeInBedMinutes: inBed,
       actualSleepMinutes: asleep,
-      quality,
       bedTime: bedTime || null,
       wakeTime: wakeTime || null,
       notes: notes || undefined,
@@ -82,7 +80,6 @@ function SleepForm({ date, entry, onSelectDate }: {
         onApply={f => {
           if (f.timeInBedMinutes != null) setInBed(f.timeInBedMinutes)
           if (f.actualSleepMinutes != null) setAsleep(f.actualSleepMinutes)
-          if (f.quality != null) setQuality(f.quality)
         }}
       />
 
@@ -138,27 +135,6 @@ function SleepForm({ date, entry, onSelectDate }: {
         <p className="text-meta text-bad">{t('sleep.asleepExceedsBed')}</p>
       )}
 
-      <div>
-        <div className="mb-2 flex items-baseline justify-between">
-          <label className="text-meta text-ink-mute">
-            {t('sleep.quality')} <span className="text-ink-faint">Sleep Cycle</span>
-          </label>
-          <span className="text-body font-semibold text-ink">
-            {quality != null ? `${quality}%` : '–'}
-          </span>
-        </div>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          step={1}
-          value={quality ?? 0}
-          onChange={e => setQuality(Number(e.target.value))}
-          className="w-full accent-[var(--accent)]"
-          aria-label={t('sleep.quality')}
-        />
-      </div>
-
       {efficiency != null && (
         <p className="text-center text-body text-ink-mute">
           {t('sleep.efficiency')}: <span className="font-semibold text-ink">{efficiency}%</span>
@@ -190,11 +166,7 @@ export function SleepSection({ date, onSelectDate }: {
   const { data: entries = [], isLoading } = useSleep(180)
   const entry = entries.find(e => e.date === date)
 
-  const summary = entry
-    ? [formatDuration(entry.actualSleepMinutes ?? entry.timeInBedMinutes), entry.quality != null ? `${entry.quality}%` : null]
-        .filter(Boolean)
-        .join(' · ')
-    : undefined
+  const summary = entry ? formatDuration(entry.actualSleepMinutes ?? entry.timeInBedMinutes) : undefined
 
   return (
     <Section module="sleep" title={t('sleep.title')} icon={<Moon size={15} />} summary={summary || undefined}>

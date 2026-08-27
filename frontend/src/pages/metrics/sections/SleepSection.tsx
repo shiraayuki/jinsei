@@ -7,11 +7,10 @@ import { useAuth } from '../../../app/auth/AuthProvider'
 import { useSleep } from '../../../features/sleep/hooks'
 import { moduleColor } from '../../../lib/modules'
 import {
-  byWeekday, clockToNightAxis, defined, latest, mean, nightAxisToClock,
-  runningDebt, sleepMidpoint, stdDev,
+  byWeekday, clockToNightAxis, defined, mean, nightAxisToClock, sleepMidpoint, stdDev,
 } from '../../../lib/stats'
 import { Block, EmptyHint } from '../Block'
-import { duration, num, perWeekIfDense, series, splitWindow } from '../shared'
+import { duration, num, series, splitWindow } from '../shared'
 
 const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 
@@ -23,7 +22,6 @@ export function SleepSection({ days }: { days: number }) {
   // Time asleep is the number worth trending; time in bed stands in only where
   // the night was logged without it.
   const minutes = series(sleep, e => e.actualSleepMinutes ?? e.timeInBedMinutes, days)
-  const quality = series(sleep, e => e.quality, days)
 
   const nights = defined(minutes)
   if (nights.length === 0) {
@@ -39,14 +37,9 @@ export function SleepSection({ days }: { days: number }) {
   const weekMean = mean(defined(current))
   const prevMean = mean(defined(previous))
 
-  // Debt is only meaningful against a target, and only over a window short
-  // enough to still be recoverable — a year of missing half-hours is history,
-  // not a decision.
-  const debt = goal != null ? latest(runningDebt(minutes.slice(-14), goal)) : null
   const spread = stdDev(nights)
   const weekday = byWeekday(minutes)
   const weekdayMax = Math.max(...weekday.map(v => v ?? 0), 1)
-  const qualityBars = perWeekIfDense(quality, 'mean')
 
   // Clock times live on an axis anchored at noon, so an evening and the small
   // hours after it are neighbours rather than twenty hours apart.
@@ -76,21 +69,9 @@ export function SleepSection({ days }: { days: number }) {
             smooth={7}
           />
           <StatTile
-            label={t('metrics.sleep.debt')}
-            value={debt != null ? duration(debt) : '–'}
-            hint={goal != null ? t('metrics.sleep.debtHint') : t('metrics.noGoal')}
-          />
-          <StatTile
             label={t('metrics.sleep.consistency')}
             value={spread != null ? `± ${duration(spread)}` : '–'}
             hint={t('metrics.sleep.consistencyHint')}
-          />
-          <StatTile
-            label={t('metrics.sleep.quality')}
-            value={defined(quality).length ? `${num(mean(defined(quality)))} %` : '–'}
-            spark={quality}
-            color={moduleColor.sleep}
-            smooth={7}
           />
         </div>
 
@@ -152,20 +133,6 @@ export function SleepSection({ days }: { days: number }) {
         </div>
       </Block>
 
-      {defined(quality).length > 0 && (
-        <Block
-          module="sleep"
-          icon={<Moon size={15} />}
-          title={t('metrics.sleep.quality')}
-          summary={qualityBars.weekly ? t('metrics.weekly') : undefined}
-        >
-          <Chart
-            series={[{ label: t('sleep.quality'), color: moduleColor.sleep, points: qualityBars.points, kind: 'bar', unit: ' %' }]}
-            zeroBased
-            format={v => num(v)}
-          />
-        </Block>
-      )}
     </>
   )
 }

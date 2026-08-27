@@ -38,13 +38,12 @@ public class SummaryController : ControllerBase
         var food = await _db.NutritionEntries.FirstOrDefaultAsync(e => e.UserId == UserId && e.Date == day);
         var move = await _db.ActivityEntries.FirstOrDefaultAsync(e => e.UserId == UserId && e.Date == day);
         var sleep = await _db.SleepEntries.FirstOrDefaultAsync(e => e.UserId == UserId && e.Date == day);
-        var feel = await _db.WellbeingEntries.FirstOrDefaultAsync(e => e.UserId == UserId && e.Date == day);
         var workouts = await _db.WorkoutLogs
             .Where(w => w.UserId == UserId && w.Date == day)
             .OrderBy(w => w.StartedAt)
             .ToListAsync();
 
-        var text = Render(day, weight, food, move, sleep, feel, workouts);
+        var text = Render(day, weight, food, move, sleep, workouts);
         return Content(text, "text/plain; charset=utf-8");
     }
 
@@ -66,7 +65,6 @@ public class SummaryController : ControllerBase
         var food = await _db.NutritionEntries.Where(e => e.UserId == UserId && e.Date >= monday && e.Date <= sunday).ToListAsync();
         var move = await _db.ActivityEntries.Where(e => e.UserId == UserId && e.Date >= monday && e.Date <= sunday).ToListAsync();
         var sleep = await _db.SleepEntries.Where(e => e.UserId == UserId && e.Date >= monday && e.Date <= sunday).ToListAsync();
-        var feel = await _db.WellbeingEntries.Where(e => e.UserId == UserId && e.Date >= monday && e.Date <= sunday).ToListAsync();
         var workouts = await _db.WorkoutLogs.Where(w => w.UserId == UserId && w.Date >= monday && w.Date <= sunday).ToListAsync();
 
         var sb = new StringBuilder();
@@ -78,7 +76,6 @@ public class SummaryController : ControllerBase
             var n = food.FirstOrDefault(e => e.Date == day);
             var a = move.FirstOrDefault(e => e.Date == day);
             var sl = sleep.FirstOrDefault(e => e.Date == day);
-            var f = feel.FirstOrDefault(e => e.Date == day);
             var training = workouts.Where(x => x.Date == day).Select(x => x.Title).ToList();
 
             var parts = new[]
@@ -88,8 +85,6 @@ public class SummaryController : ControllerBase
                 n?.ProteinG is int p ? $"{p} g P" : null,
                 a?.Steps is int steps ? $"{Thousands(steps)} Schritte" : null,
                 sl?.ActualSleepMinutes is int asleep ? $"{Hm(asleep)} Schlaf" : null,
-                sl?.Quality is int q ? $"{q} %" : null,
-                f?.Energy is int energy ? $"Energie {energy}/5" : null,
                 training.Count > 0 ? string.Join(" + ", training) : null,
             }.OfType<string>().ToList();
 
@@ -116,7 +111,6 @@ public class SummaryController : ControllerBase
             sleep.Select(e => e.ActualSleepMinutes ?? e.TimeInBedMinutes).OfType<int>().ToList() is { Count: > 0 } mins
                 ? $"Schlaf: {Hm((int)Math.Round(mins.Average()))}"
                 : null,
-            Avg(sleep, e => e.Quality, " %") is string q2 ? $"Schlafqualität: {q2}" : null,
             Avg(weight, e => e.WeightKg, " kg", 1) is string w2 ? $"Gewicht: {w2}" : null,
         }.OfType<string>().ToList();
 
@@ -146,7 +140,6 @@ public class SummaryController : ControllerBase
         NutritionEntry? food,
         ActivityEntry? move,
         SleepEntry? sleep,
-        WellbeingEntry? feel,
         List<WorkoutLog> workouts)
     {
         var sb = new StringBuilder();
@@ -208,16 +201,8 @@ public class SummaryController : ControllerBase
         {
             sleep?.TimeInBedMinutes is int bed ? $"Im Bett: {Hm(bed)}" : null,
             sleep?.ActualSleepMinutes is int asleep ? $"Tatsächlich: {Hm(asleep)}" : null,
-            sleep?.Quality is int q ? $"Qualität: {q} %" : null,
         }.OfType<string>().ToList();
         Section("Schlaf", sleepParts.Count > 0 ? new[] { string.Join(" · ", sleepParts) } : []);
-
-        var feelParts = new[]
-        {
-            feel?.Hunger is int hunger ? $"Hunger: {hunger}/5" : null,
-            feel?.Energy is int energy ? $"Energie: {energy}/5" : null,
-        }.OfType<string>().ToList();
-        Section("Befinden", feelParts.Count > 0 ? new[] { string.Join(" · ", feelParts) } : []);
 
 
         if (workouts.Count == 0)
@@ -239,12 +224,21 @@ public class SummaryController : ControllerBase
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(feel?.Notes))
+        // The note used to hang off the wellbeing entry, which is gone. The
+        // forms that still take one are the body and the night, so the report
+        // collects those instead of dropping the section.
+        var notes = new[] { weight?.Notes, sleep?.Notes }
+            .Where(n => !string.IsNullOrWhiteSpace(n))
+            .SelectMany(n => n!.Trim().Split('\n'))
+            .Select(line => line.Trim())
+            .Where(line => line.Length > 0)
+            .ToList();
+
+        if (notes.Count > 0)
         {
             sb.AppendLine();
             sb.AppendLine("Notizen");
-            foreach (var line in feel!.Notes!.Trim().Split('\n'))
-                sb.AppendLine("  " + line.Trim());
+            foreach (var line in notes) sb.AppendLine("  " + line);
         }
 
         return sb.ToString().TrimEnd() + "\n";

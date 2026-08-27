@@ -78,9 +78,6 @@ public class ScreenshotImportService
 
         - timeInBedMinutes: "Zeit im Bett" als Minuten (7 h 35 min = 455).
         - actualSleepMinutes: "Schlaf" als Minuten. Immer <= timeInBedMinutes.
-        - quality: der Wert des Rings "Qualität" (0-100). Nicht der SLEEP SCORE
-          und nicht "Dauer" oder "Routine". Steht keine "Qualität" im Bild, nimm
-          den SLEEP SCORE und schreibe "quality" in lowConfidence.
         - date: der Tag des Aufwachens im Format YYYY-MM-DD. Bei einer Nacht über
           zwei Tage ("So. 23-24. Aug.") ist das der spätere Tag. Steht kein Jahr
           im Bild, nimm das Jahr aus {contextDate:yyyy-MM-dd}. Ist kein Datum
@@ -134,7 +131,6 @@ public class ScreenshotImportService
             date = NullableString("Aufwachtag als YYYY-MM-DD."),
             timeInBedMinutes = NullableInt("Zeit im Bett in Minuten."),
             actualSleepMinutes = NullableInt("Tatsächlicher Schlaf in Minuten."),
-            quality = NullableInt("Schlafqualität 0-100."),
             lowConfidence = new
             {
                 type = "array",
@@ -143,7 +139,7 @@ public class ScreenshotImportService
             },
             notes = NullableString("Kurze Notiz auf Deutsch."),
         },
-        ["date", "timeInBedMinutes", "actualSleepMinutes", "quality", "lowConfidence", "notes"]);
+        ["date", "timeInBedMinutes", "actualSleepMinutes", "lowConfidence", "notes"]);
 
     private static readonly object NutritionSchema = Schema(
         new
@@ -215,7 +211,6 @@ public class ScreenshotImportService
         var warnings = new List<string>();
         var inBed = InRange(Int(root, "timeInBedMinutes"), 0, 1440, "Zeit im Bett", warnings);
         var asleep = InRange(Int(root, "actualSleepMinutes"), 0, 1440, "Schlaf", warnings);
-        var quality = InRange(Int(root, "quality"), 0, 100, "Qualität", warnings);
 
         // The upsert rejects this pair outright, so it is better caught here
         // where the field can still be emptied and pointed at.
@@ -232,7 +227,6 @@ public class ScreenshotImportService
             {
                 ["timeInBedMinutes"] = inBed,
                 ["actualSleepMinutes"] = asleep,
-                ["quality"] = quality,
             },
             LowConfidence: Strings(root, "lowConfidence"),
             Warnings: warnings,

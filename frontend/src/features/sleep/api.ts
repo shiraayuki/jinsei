@@ -5,7 +5,6 @@ export interface SleepEntry {
   date: string
   timeInBedMinutes: number | null
   actualSleepMinutes: number | null
-  quality: number | null
   /** "HH:mm" the night started; the evening before the date, or after midnight on it. */
   bedTime: string | null
   /** "HH:mm" of getting up, on the entry's date. */
@@ -20,7 +19,6 @@ export interface SleepInput {
   date: string
   timeInBedMinutes: number | null
   actualSleepMinutes: number | null
-  quality: number | null
   bedTime?: string | null
   wakeTime?: string | null
   notes?: string

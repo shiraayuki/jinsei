@@ -13,9 +13,6 @@ public class SleepEntry
     /// <summary>Time actually asleep, in minutes. Sleep Cycle reports this separately.</summary>
     public int? ActualSleepMinutes { get; set; }
 
-    /// <summary>Sleep quality as the percentage Sleep Cycle reports, 0–100.</summary>
-    public int? Quality { get; set; }
-
     /// <summary>
     /// Clock time the night started, on the day before <see cref="Date"/> —
     /// unless it was already past midnight, in which case it is on Date itself.

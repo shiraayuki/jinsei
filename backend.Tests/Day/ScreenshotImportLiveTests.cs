@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 /// The expectations are passed in alongside, so this checks the prompt rather
 /// than any one screenshot:
 ///
-///   JINSEI_SLEEP_EXPECT=inBed,asleep,quality,date
+///   JINSEI_SLEEP_EXPECT=inBed,asleep,date
 ///   JINSEI_NUTRITION_EXPECT=kcal,protein,carbs,fat,date
 /// </summary>
 public class ScreenshotImportLiveTests
@@ -61,8 +61,7 @@ public class ScreenshotImportLiveTests
 
         Assert.Equal(expect[0], (int?)draft.Fields["timeInBedMinutes"]);
         Assert.Equal(expect[1], (int?)draft.Fields["actualSleepMinutes"]);
-        Assert.Equal(expect[2], (int?)draft.Fields["quality"]);
-        Assert.Equal(Environment.GetEnvironmentVariable("JINSEI_SLEEP_EXPECT")!.Split(',')[3].Trim(), draft.Date?.ToString("yyyy-MM-dd"));
+        Assert.Equal(Environment.GetEnvironmentVariable("JINSEI_SLEEP_EXPECT")!.Split(',')[2].Trim(), draft.Date?.ToString("yyyy-MM-dd"));
     }
 
     [Fact]

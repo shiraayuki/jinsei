@@ -12,7 +12,6 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<SleepEntry> SleepEntries => Set<SleepEntry>();
     public DbSet<NutritionEntry> NutritionEntries => Set<NutritionEntry>();
     public DbSet<ActivityEntry> ActivityEntries => Set<ActivityEntry>();
-    public DbSet<WellbeingEntry> WellbeingEntries => Set<WellbeingEntry>();
     public DbSet<WorkoutLog> WorkoutLogs => Set<WorkoutLog>();
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -40,10 +39,6 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .IsUnique();
 
         builder.Entity<WeightEntry>()
-            .HasIndex(x => new { x.UserId, x.Date })
-            .IsUnique();
-
-        builder.Entity<WellbeingEntry>()
             .HasIndex(x => new { x.UserId, x.Date })
             .IsUnique();
 

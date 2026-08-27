@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   adherence, byWeek, byWeekday, clockToNightAxis, correlation, densify, lag,
-  latest, movingAverage, nightAxisToClock, runningDebt, sleepMidpoint,
+  latest, movingAverage, nightAxisToClock, sleepMidpoint,
   slopePerDay, stdDev,
 } from './stats'
 
@@ -50,13 +50,6 @@ describe('correlation', () => {
 describe('lag', () => {
   it('credits a night to the day it has to carry', () => {
     expect(lag([p('2026-08-01', 420)], 1)).toEqual([p('2026-08-02', 420)])
-  })
-})
-
-describe('runningDebt', () => {
-  it('accumulates only the nights that were logged', () => {
-    const result = runningDebt([p('2026-08-01', 400), p('2026-08-02', null), p('2026-08-03', 500)], 450)
-    expect(result.map(r => r.value)).toEqual([-50, null, 0])
   })
 })
 

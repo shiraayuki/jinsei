@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useNutrition } from '../../../features/nutrition/hooks'
 import { useSleep } from '../../../features/sleep/hooks'
 import { useWeight } from '../../../features/weight/hooks'
-import { useWellbeing } from '../../../features/wellbeing/hooks'
 import { useWorkouts } from '../../../features/workouts/hooks'
 import { correlation, lag, movingAverage, type Point } from '../../../lib/stats'
 import { Block, EmptyHint } from '../Block'
@@ -18,26 +17,16 @@ export function CorrelationsSection({ days }: { days: number }) {
   const { data: sleep = [] } = useSleep(days)
   const { data: nutrition = [] } = useNutrition(days)
   const { data: weight = [] } = useWeight(days)
-  const { data: wellbeing = [] } = useWellbeing(days)
   const { data: workouts = [] } = useWorkouts(days)
 
   const sleepMinutes = series(sleep, e => e.actualSleepMinutes ?? e.timeInBedMinutes, days)
-  const quality = series(sleep, e => e.quality, days)
   const kcal = series(nutrition, e => e.kcal, days)
-  const carbs = series(nutrition, e => e.carbsG, days)
-  const energy = series(wellbeing, e => e.energy, days)
   const weightPoints = series(weight, e => e.weightKg, days)
 
   // Several sessions on one day are one day's training load.
   const volumeByDay = new Map<string, number>()
   for (const w of workouts) volumeByDay.set(w.date, (volumeByDay.get(w.date) ?? 0) + w.volumeKg)
   const volume: Point[] = sleepMinutes.map(p => ({ date: p.date, value: volumeByDay.get(p.date) ?? null }))
-
-  const lastCoffee = series(
-    nutrition,
-    e => (e.lastCoffee ? Number(e.lastCoffee.slice(0, 2)) + Number(e.lastCoffee.slice(3, 5)) / 60 : null),
-    days,
-  )
 
   const rows = [
     // Sleep is credited to the day after it, which is the day it has to carry.
@@ -48,8 +37,6 @@ export function CorrelationsSection({ days }: { days: number }) {
       label: t('metrics.correlations.caloriesVsWeight'),
       result: correlation(movingAverage(kcal, 7, 3), movingAverage(weightPoints, 7, 3)),
     },
-    { label: t('metrics.correlations.carbsVsEnergy'), result: correlation(lag(carbs, 1), energy) },
-    { label: t('metrics.correlations.coffeeVsSleep'), result: correlation(lastCoffee, quality) },
   ].filter(r => r.result != null && r.result.n >= MIN_PAIRS)
 
   return (

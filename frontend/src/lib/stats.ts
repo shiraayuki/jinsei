@@ -100,21 +100,6 @@ export function adherence(points: Point[], goal: number, tolerance = 0.1): { rat
   return { rate: hit / values.length, hit, total: values.length }
 }
 
-/**
- * Running debt against a nightly target, in the unit of the series.
- *
- * Only days with a reading move the total: a night that was never logged is
- * unknown, not a night without sleep.
- */
-export function runningDebt(points: Point[], target: number): Point[] {
-  let total = 0
-  return points.map(p => {
-    if (p.value == null) return { date: p.date, value: null }
-    total += p.value - target
-    return { date: p.date, value: total }
-  })
-}
-
 export interface Bucket {
   /** Monday of the week, as the label and the sort key. */
   date: string

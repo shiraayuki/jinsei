@@ -10,7 +10,6 @@ export type ImportKind = 'sleep'
 export interface SleepDraftFields {
   timeInBedMinutes: number | null
   actualSleepMinutes: number | null
-  quality: number | null
 }
 
 export interface ImportDraft<F> {

@@ -10,7 +10,6 @@ public class DayApiTests
             date = "2026-08-20",
             timeInBedMinutes = 400,
             actualSleepMinutes = 500,
-            quality = 80,
         });
 
         Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
@@ -26,7 +25,6 @@ public class DayApiTests
             date = "2026-08-20",
             timeInBedMinutes = 480,
             actualSleepMinutes = 432,
-            quality = 90,
         });
 
         var entries = await app.Client.GetFromJsonAsync<List<JsonElement>>("/api/sleep?days=30");
@@ -41,15 +39,14 @@ public class DayApiTests
     {
         using var app = await TestApp.SignedInAsync();
 
-        await app.Client.PostAsJsonAsync("/api/sleep", new { date = "2026-08-20", timeInBedMinutes = 400, quality = 50 });
-        await app.Client.PostAsJsonAsync("/api/sleep", new { date = "2026-08-20", timeInBedMinutes = 420, quality = 60 });
+        await app.Client.PostAsJsonAsync("/api/sleep", new { date = "2026-08-20", timeInBedMinutes = 400 });
+        await app.Client.PostAsJsonAsync("/api/sleep", new { date = "2026-08-20", timeInBedMinutes = 420 });
 
         var entries = await app.Client.GetFromJsonAsync<List<JsonElement>>("/api/sleep?days=30");
 
         Assert.NotNull(entries);
         Assert.Single(entries);
         Assert.Equal(420, entries[0].GetProperty("timeInBedMinutes").GetInt32());
-        Assert.Equal(60, entries[0].GetProperty("quality").GetInt32());
     }
 
     [Fact]
@@ -99,16 +96,6 @@ public class DayApiTests
     }
 
     [Fact]
-    public async Task Wellbeing_RejectsAScaleOutsideOneToFive()
-    {
-        using var app = await TestApp.SignedInAsync();
-
-        var res = await app.Client.PostAsJsonAsync("/api/wellbeing", new { date = "2026-08-20", hunger = 6 });
-
-        Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
-    }
-
-    [Fact]
     public async Task Day_IsScopedToItsOwner()
     {
         using var mine = await TestApp.SignedInAsync();
@@ -131,7 +118,6 @@ public class DayApiTests
             date = "2026-08-22",
             timeInBedMinutes = (int?)null,
             actualSleepMinutes = (int?)null,
-            quality = (int?)null,
             bedTime = "22:30",
             wakeTime = "07:30",
         });
@@ -155,7 +141,6 @@ public class DayApiTests
             date = "2026-08-22",
             timeInBedMinutes = 500,
             actualSleepMinutes = 470,
-            quality = 80,
             bedTime = "22:30",
             wakeTime = "07:30",
         });

@@ -33,8 +33,6 @@ public class SleepController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Upsert([FromBody] UpsertSleepRequest req)
     {
-        if (req.Quality is < 0 or > 100)
-            return BadRequest("Quality must be between 0 and 100.");
         if (req.TimeInBedMinutes is < 0 or > 1440 || req.ActualSleepMinutes is < 0 or > 1440)
             return BadRequest("Durations must be between 0 and 1440 minutes.");
         if (req.ActualSleepMinutes is int asleep && req.TimeInBedMinutes is int inBed && asleep > inBed)
@@ -57,7 +55,6 @@ public class SleepController : ControllerBase
         existing.BedTime = req.BedTime;
         existing.WakeTime = req.WakeTime;
         existing.ActualSleepMinutes = req.ActualSleepMinutes;
-        existing.Quality = req.Quality;
         existing.Notes = req.Notes;
         existing.LoggedAt = DateTimeOffset.UtcNow;
 
@@ -93,7 +90,6 @@ public class SleepController : ControllerBase
         Date = e.Date.ToString("yyyy-MM-dd"),
         e.TimeInBedMinutes,
         e.ActualSleepMinutes,
-        e.Quality,
         BedTime = e.BedTime?.ToString("HH:mm"),
         WakeTime = e.WakeTime?.ToString("HH:mm"),
         // Share of the time in bed actually spent asleep — the number Sleep
@@ -110,7 +106,6 @@ public record UpsertSleepRequest(
     DateOnly Date,
     int? TimeInBedMinutes,
     int? ActualSleepMinutes,
-    int? Quality,
     TimeOnly? BedTime,
     TimeOnly? WakeTime,
     string? Notes);

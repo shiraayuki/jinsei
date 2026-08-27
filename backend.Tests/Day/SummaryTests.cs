@@ -9,8 +9,10 @@ public class SummaryTests
             waterL = 3.5, coffeeMl = 500, lastCoffee = "09:30",
         });
         await client.PostAsJsonAsync("/api/activity", new { date, steps = 10000, cardio = true, cardioMinutes = 30 });
-        await client.PostAsJsonAsync("/api/sleep", new { date, timeInBedMinutes = 450, actualSleepMinutes = 420, quality = 70 });
-        await client.PostAsJsonAsync("/api/wellbeing", new { date, hunger = 2, energy = 3, notes = "Zone 2" });
+        await client.PostAsJsonAsync("/api/sleep", new
+        {
+            date, timeInBedMinutes = 450, actualSleepMinutes = 420, notes = "Zone 2",
+        });
     }
 
     [Fact]
@@ -29,8 +31,7 @@ public class SummaryTests
         Assert.Contains("Kaffee: 500 ml (letzter um 09:30)", text);
         Assert.Contains("Schritte: 10.000", text);
         Assert.Contains("Cardio: ja, 30 min", text);
-        Assert.Contains("Im Bett: 7h 30min · Tatsächlich: 7h 00min · Qualität: 70 %", text);
-        Assert.Contains("Hunger: 2/5 · Energie: 3/5", text);
+        Assert.Contains("Im Bett: 7h 30min · Tatsächlich: 7h 00min", text);
         Assert.Contains("Notizen", text);
         Assert.Contains("Zone 2", text);
     }
@@ -46,7 +47,6 @@ public class SummaryTests
         Assert.Contains("Körper", text);
         Assert.DoesNotContain("Ernährung", text);
         Assert.DoesNotContain("Schlaf", text);
-        Assert.DoesNotContain("Befinden", text);
     }
 
     [Fact]
