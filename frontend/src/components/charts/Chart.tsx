@@ -138,13 +138,24 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
   const fmt = format ?? ((v: number) => v.toLocaleString(dateLocale(), { maximumFractionDigits: 1 }))
   const barWidth = Math.max(1.5, Math.min(12, (plotW / Math.max(count, 1)) * 0.72))
 
+  // The readout floats over the plot rather than sitting under it: the eye is
+  // already at the point it is asking about, and a fixed footer readout made
+  // the legend jump between two texts on every touch.
+  const readout = hover != null && dates[hover] ? { index: hover, ratio: x(hover) / W } : null
+
   return (
-    <div>
+    <div className="relative">
+      {/*
+        `touch-pan-y` and not `touch-none`: a finger dragged sideways scrubs the
+        chart, one dragged down still scrolls the page. A chart that eats the
+        scroll is a trap on a phone. A mouse reads on hover, a finger only while
+        it is on the glass.
+      */}
       <svg
         viewBox={`0 0 ${W} ${height}`}
-        className="w-full touch-none overflow-visible"
+        className="w-full touch-pan-y overflow-visible"
         onPointerDown={e => setHover(indexFromEvent(e, count))}
-        onPointerMove={e => e.buttons > 0 && setHover(indexFromEvent(e, count))}
+        onPointerMove={e => (e.pointerType === 'mouse' || e.buttons > 0) && setHover(indexFromEvent(e, count))}
         onPointerLeave={() => setHover(null)}
       >
         {gridValues.map(v => (
@@ -246,41 +257,68 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
         })}
 
         {hover != null && dates[hover] && (
-          <line
-            x1={x(hover)} x2={x(hover)} y1={PAD_TOP} y2={PAD_TOP + plotH}
-            strokeWidth="1" style={{ stroke: 'var(--ink-faint)' }}
-          />
+          <g>
+            <line
+              x1={x(hover)} x2={x(hover)} y1={PAD_TOP} y2={PAD_TOP + plotH}
+              strokeWidth="1" style={{ stroke: 'var(--ink-faint)' }}
+            />
+            {withData.map(s => {
+              const value = s.points[hover]?.value
+              if (value == null) return null
+              return (
+                <circle
+                  key={s.label}
+                  cx={x(hover)}
+                  cy={yFor(s.scaleWith ?? s.label)(value)}
+                  r="3.5"
+                  strokeWidth="2"
+                  style={{ fill: s.color, stroke: 'var(--surface)' }}
+                />
+              )
+            })}
+          </g>
         )}
       </svg>
 
+      {readout && (
+        <div
+          className="pointer-events-none absolute top-0 z-10 rounded-control border border-[var(--line)] bg-surface/95 px-2 py-1 text-label text-ink shadow-lg backdrop-blur-sm tabular"
+          style={{
+            left: `${readout.ratio * 100}%`,
+            // Held inside the plot at the edges, where a centred card would be
+            // cut off by the container.
+            transform: readout.ratio < 0.2 ? 'none' : readout.ratio > 0.8 ? 'translateX(-100%)' : 'translateX(-50%)',
+          }}
+        >
+          <p className="whitespace-nowrap text-ink-soft">{formatDate(dates[readout.index])}</p>
+          {withData.map(s => (
+            <p key={s.label} className="flex items-center gap-1.5 whitespace-nowrap">
+              <span className="inline-block h-0.5 w-3 shrink-0 rounded-full" style={{ background: s.color }} />
+              <span className="text-ink-mute">{s.label}</span>
+              <span className="ml-auto font-semibold">
+                {s.points[readout.index]?.value != null
+                  ? `${fmt(s.points[readout.index].value!)}${s.unit ?? ''}`
+                  : '–'}
+              </span>
+            </p>
+          ))}
+        </div>
+      )}
+
       <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-label text-ink-faint tabular">
-        {hover != null && dates[hover] ? (
-          <>
-            <span className="text-ink-soft">{formatDate(dates[hover])}</span>
-            {withData.map(s => (
-              <span key={s.label} className="flex items-center gap-1">
-                <span className="inline-block h-0.5 w-3 rounded-full" style={{ background: s.color }} />
-                {s.points[hover]?.value != null ? `${fmt(s.points[hover].value!)}${s.unit ?? ''}` : '–'}
-              </span>
-            ))}
-          </>
-        ) : (
-          <>
-            {withData.map(s => (
-              <span key={s.label} className="flex items-center gap-1">
-                <span className="inline-block h-0.5 w-3 rounded-full" style={{ background: s.color }} />
-                {s.label}
-              </span>
-            ))}
-            {goal && (
-              <span className="flex items-center gap-1">
-                <span className="inline-block h-px w-3 border-t border-dashed border-[var(--ink-mute)]" />
-                {goal.label ?? fmt(goal.value)}
-              </span>
-            )}
-            <span className="ml-auto">{formatDate(dates[0])} – {formatDate(dates[dates.length - 1])}</span>
-          </>
+        {withData.map(s => (
+          <span key={s.label} className="flex items-center gap-1">
+            <span className="inline-block h-0.5 w-3 rounded-full" style={{ background: s.color }} />
+            {s.label}
+          </span>
+        ))}
+        {goal && (
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-px w-3 border-t border-dashed border-[var(--ink-mute)]" />
+            {goal.label ?? fmt(goal.value)}
+          </span>
         )}
+        <span className="ml-auto">{formatDate(dates[0])} – {formatDate(dates[dates.length - 1])}</span>
       </div>
     </div>
   )
