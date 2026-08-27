@@ -7,7 +7,8 @@ import { useAuth } from '../../../app/auth/AuthProvider'
 import { useSleep } from '../../../features/sleep/hooks'
 import { moduleColor } from '../../../lib/modules'
 import {
-  byWeekday, clockToNightAxis, defined, mean, nightAxisToClock, sleepMidpoint, stdDev,
+  byWeekday, clockToNightAxis, defined, mean, nightAxisToClock, shareAtLeast,
+  sleepMidpoint, socialJetlag, stdDev,
 } from '../../../lib/stats'
 import { Block, EmptyHint } from '../Block'
 import { duration, num, series, splitWindow } from '../shared'
@@ -69,6 +70,21 @@ export function SleepSection({ days }: { days: number }) {
   const weekday = byWeekday(minutes)
   const weekdayMax = Math.max(...weekday.map(v => v ?? 0), 1)
 
+  // The same weekday buckets, one per phase, so a bar can be broken into what
+  // the night was made of. A weekday whose nights carry no phases keeps a
+  // single-coloured bar — the length is known even when the shape is not.
+  const weekdayPhases = [
+    { key: 'deep', color: moduleColor.sleep, byDay: byWeekday(deepPoints) },
+    { key: 'rem', color: moduleColor.mind, byDay: byWeekday(remPoints) },
+    { key: 'light', color: moduleColor.move, byDay: byWeekday(lightPoints) },
+  ]
+
+  // Shares of the night, which is how the phases are read: 20 % deep says
+  // something on its own, 104 minutes only says it next to the total.
+  const phaseTotal = phaseMeans
+    .filter(p => p.key !== 'awake')
+    .reduce((sum, p) => sum + p.value, 0)
+
   // Clock times live on an axis anchored at noon, so an evening and the small
   // hours after it are neighbours rather than twenty hours apart.
   const bedPoints = series(sleep, e => (e.bedTime ? clockToNightAxis(e.bedTime) : null), days)
@@ -80,6 +96,11 @@ export function SleepSection({ days }: { days: number }) {
   // Regularity is the spread of the midpoint, not of the duration: a night
   // shifted later as a whole is a shifted night, not a broken one.
   const regularity = stdDev(defined(midpoints))
+  // Being woken by an alarm five days a week and by nothing on the other two
+  // is living in two time zones; the shift between them is the number the
+  // sleep literature calls social jetlag.
+  const jetlag = socialJetlag(midpoints)
+  const atGoal = goal != null ? shareAtLeast(minutes, goal) : null
   const hasTimes = defined(bedPoints).length > 0
 
   return (
@@ -97,12 +118,12 @@ export function SleepSection({ days }: { days: number }) {
             smooth={7}
           />
           <StatTile
-            label={t('sleep.timeInBed')}
+            label={`Ø ${t('sleep.timeInBed')}`}
             value={duration(inBedMean)}
             hint={t('metrics.perNight')}
           />
           <StatTile
-            label={t('sleep.onset')}
+            label={`Ø ${t('sleep.onset')}`}
             value={onsetMean != null ? `${num(onsetMean)} min` : '–'}
             hint={t('metrics.perNight')}
           />
@@ -110,6 +131,11 @@ export function SleepSection({ days }: { days: number }) {
             label={t('metrics.sleep.consistency')}
             value={spread != null ? `± ${duration(spread)}` : '–'}
             hint={t('metrics.sleep.consistencyHint')}
+          />
+          <StatTile
+            label={t('metrics.sleep.atGoal')}
+            value={atGoal != null ? `${atGoal.hit} / ${atGoal.total}` : '–'}
+            hint={goal != null ? t('metrics.sleep.atGoalHint', { hours: num(goal / 60, 1) }) : t('metrics.noGoal')}
           />
         </div>
 
@@ -136,7 +162,11 @@ export function SleepSection({ days }: { days: number }) {
                 value={p.value}
                 max={phaseMax}
                 color={p.color}
-                hint={duration(p.value)}
+                hint={
+                  p.key === 'awake' || phaseTotal <= 0
+                    ? duration(p.value)
+                    : `${duration(p.value)} · ${Math.round((p.value / phaseTotal) * 100)} %`
+                }
               />
             ))}
           </div>
@@ -159,6 +189,14 @@ export function SleepSection({ days }: { days: number }) {
                 label={t('metrics.sleep.regularity')}
                 value={regularity != null ? `± ${duration(regularity)}` : '–'}
                 hint={t('metrics.sleep.regularityHint')}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-2">
+              <StatTile
+                label={t('metrics.sleep.jetlag')}
+                value={jetlag != null ? duration(jetlag) : '–'}
+                hint={t('metrics.sleep.jetlagHint')}
               />
             </div>
 
@@ -187,6 +225,9 @@ export function SleepSection({ days }: { days: number }) {
               value={value ?? 0}
               max={weekdayMax}
               color={moduleColor.sleep}
+              segments={weekdayPhases
+                .map(p => ({ key: p.key, value: p.byDay[i] ?? 0, color: p.color }))
+                .filter(p => p.value > 0)}
               hint={value != null ? duration(value) : '–'}
             />
           ))}

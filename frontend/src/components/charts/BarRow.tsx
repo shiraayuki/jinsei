@@ -10,6 +10,7 @@ export function BarRow({
   color,
   hint,
   tone,
+  segments,
 }: {
   label: string
   value: number
@@ -19,6 +20,13 @@ export function BarRow({
   hint?: string
   /** Colours the hint when it carries a verdict. */
   tone?: 'good' | 'bad' | 'mute'
+  /**
+   * Draws the bar as its parts instead of as one block — the phases of a
+   * night, in the order given. Parts that do not add up to `value` leave the
+   * rest of the bar in `color`, so a night logged without its phases still
+   * shows its length.
+   */
+  segments?: { key: string; value: number; color: string }[]
 }) {
   const pct = max > 0 ? Math.max(2, Math.round((value / max) * 100)) : 0
   const hintClass =
@@ -28,7 +36,14 @@ export function BarRow({
     <div className="flex items-center gap-2">
       <span className="w-24 shrink-0 truncate text-meta text-ink-soft">{label}</span>
       <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-raised">
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+        <div className="flex h-full rounded-full" style={{ width: `${pct}%`, background: color }}>
+          {segments?.map(seg => (
+            <div
+              key={seg.key}
+              style={{ width: value > 0 ? `${(seg.value / value) * 100}%` : 0, background: seg.color }}
+            />
+          ))}
+        </div>
       </div>
       {hint && <span className={`w-20 shrink-0 text-right text-label tabular ${hintClass}`}>{hint}</span>}
     </div>

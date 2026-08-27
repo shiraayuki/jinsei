@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   adherence, byWeek, byWeekday, clockToNightAxis, correlation, densify, lag,
-  latest, movingAverage, nightAxisToClock, sleepMidpoint,
-  slopePerDay, stdDev,
+  latest, movingAverage, nightAxisToClock, shareAtLeast, sleepMidpoint,
+  slopePerDay, socialJetlag, stdDev,
 } from './stats'
 
 const p = (date: string, value: number | null) => ({ date, value })
@@ -50,6 +50,29 @@ describe('correlation', () => {
 describe('lag', () => {
   it('credits a night to the day it has to carry', () => {
     expect(lag([p('2026-08-01', 420)], 1)).toEqual([p('2026-08-02', 420)])
+  })
+})
+
+describe('socialJetlag', () => {
+  it('measures the shift between working days and free ones', () => {
+    // Mondays and Tuesdays centred at 3:00, Saturday and Sunday at 5:00.
+    const midpoints = [
+      p('2026-08-24', 180), p('2026-08-25', 180),
+      p('2026-08-29', 300), p('2026-08-30', 300),
+    ]
+    expect(socialJetlag(midpoints)).toBe(120)
+  })
+
+  it('needs both sides before it says anything', () => {
+    expect(socialJetlag([p('2026-08-24', 180)])).toBeNull()
+  })
+})
+
+describe('shareAtLeast', () => {
+  it('counts the readings that reach the threshold', () => {
+    const result = shareAtLeast([p('a', 400), p('b', 460), p('c', null), p('d', 480)], 450)!
+    expect(result.hit).toBe(2)
+    expect(result.total).toBe(3)
   })
 })
 

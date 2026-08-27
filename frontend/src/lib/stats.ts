@@ -228,3 +228,34 @@ export function mondayOf(iso: string): string {
 export function weekdayIndex(iso: string): number {
   return (parse(iso).getDay() + 6) % 7
 }
+
+/**
+ * Social jetlag: how far the sleep midpoint moves between working days and
+ * free ones, in minutes.
+ *
+ * The name is the sleep literature's, and so is the idea — a body woken by an
+ * alarm five days a week and by nothing on the other two is living in two time
+ * zones. It wants midpoints on the noon-anchored axis, the same ones the
+ * regularity number is built from, and answers null until both sides have a
+ * night in them.
+ */
+export function socialJetlag(midpoints: Point[]): number | null {
+  const work: number[] = []
+  const free: number[] = []
+  for (const p of midpoints) {
+    if (p.value == null) continue
+    ;(weekdayIndex(p.date) >= 5 ? free : work).push(p.value)
+  }
+  const workMean = mean(work)
+  const freeMean = mean(free)
+  if (workMean == null || freeMean == null) return null
+  return Math.abs(freeMean - workMean)
+}
+
+/** Share of the readings that reach a threshold, with the counts behind it. */
+export function shareAtLeast(points: Point[], threshold: number): { rate: number; hit: number; total: number } | null {
+  const values = defined(points)
+  if (values.length === 0) return null
+  const hit = values.filter(v => v >= threshold).length
+  return { rate: hit / values.length, hit, total: values.length }
+}
