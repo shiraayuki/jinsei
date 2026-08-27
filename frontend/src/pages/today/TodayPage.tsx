@@ -26,15 +26,25 @@ export function TodayPage() {
   return (
     <div>
       <header
-        className="sticky top-0 z-10 flex items-center gap-2 bg-surface/95 px-3 py-2 backdrop-blur-xl"
+        className="sticky top-0 z-10 flex items-center gap-2 bg-surface/95 px-2 py-2 backdrop-blur-xl"
       >
-        <button
-          onClick={() => setDate(d => shiftIso(d, -1))}
-          aria-label={t('today.previousDay')}
-          className="flex h-10 w-10 items-center justify-center rounded-control text-ink-mute hover:bg-raised transition-colors"
-        >
-          <ChevronLeft size={18} />
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            onClick={() => setDate(d => shiftIso(d, -1))}
+            aria-label={t('today.previousDay')}
+            className="flex h-10 w-10 items-center justify-center rounded-control text-ink-mute hover:bg-raised transition-colors"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            onClick={() => summary.mutate({ scope: 'day', date })}
+            disabled={summary.isPending}
+            aria-label={t('today.exportTitle')}
+            className="flex h-10 w-10 items-center justify-center rounded-control text-ink-mute hover:bg-raised disabled:opacity-40 transition-colors"
+          >
+            <FileText size={17} />
+          </button>
+        </div>
 
         <div className="min-w-0 flex-1 text-center">
           <p className="truncate text-body font-bold tracking-tight text-ink">
@@ -50,32 +60,25 @@ export function TodayPage() {
           )}
         </div>
 
-        <button
-          onClick={() => summary.mutate({ scope: 'day', date })}
-          disabled={summary.isPending}
-          aria-label={t('today.exportTitle')}
-          className="flex h-10 w-10 items-center justify-center rounded-control text-ink-mute hover:bg-raised disabled:opacity-40 transition-colors"
-        >
-          <FileText size={17} />
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            onClick={() => summary.mutate({ scope: 'week', date })}
+            disabled={summary.isPending}
+            aria-label={t('today.exportWeekTitle')}
+            className="flex h-10 w-10 items-center justify-center rounded-control text-ink-mute hover:bg-raised disabled:opacity-40 transition-colors"
+          >
+            <CalendarRange size={17} />
+          </button>
+          <button
+            onClick={() => setDate(d => shiftIso(d, 1))}
+            disabled={isToday}
+            aria-label={t('today.nextDay')}
+            className="flex h-10 w-10 items-center justify-center rounded-control text-ink-mute hover:bg-raised disabled:opacity-30 transition-colors"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
 
-        <button
-          onClick={() => summary.mutate({ scope: 'week', date })}
-          disabled={summary.isPending}
-          aria-label={t('today.exportWeekTitle')}
-          className="flex h-10 w-10 items-center justify-center rounded-control text-ink-mute hover:bg-raised disabled:opacity-40 transition-colors"
-        >
-          <CalendarRange size={17} />
-        </button>
-
-        <button
-          onClick={() => setDate(d => shiftIso(d, 1))}
-          disabled={isToday}
-          aria-label={t('today.nextDay')}
-          className="flex h-10 w-10 items-center justify-center rounded-control text-ink-mute hover:bg-raised disabled:opacity-30 transition-colors"
-        >
-          <ChevronRight size={18} />
-        </button>
       </header>
 
       {summary.isError && (
