@@ -10,17 +10,27 @@ interface Props {
 export function PageHeader({ title, back, action }: Props) {
   const navigate = useNavigate()
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center gap-3 bg-surface/95 px-4 backdrop-blur-xl">
+    <header
+      className="sticky top-0 z-10 flex h-11 items-center gap-2 px-4 hairline-b"
+      style={{
+        // The navigation bar is material, not a panel: it takes the colour of
+        // whatever scrolls under it and blurs it.
+        background: 'color-mix(in srgb, var(--ground) 80%, transparent)',
+        backdropFilter: 'saturate(180%) blur(20px)',
+        WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+      }}
+    >
       {back && (
         <button
           onClick={() => navigate(-1)}
           aria-label="Zurück"
-          className="-m-2 flex h-10 w-10 items-center justify-center text-ink-mute hover:text-ink transition-colors"
+          className="-ml-2 flex h-10 w-10 items-center justify-center text-accent"
         >
-          <ArrowLeft size={20} strokeWidth={1.75} />
+          <ArrowLeft size={22} strokeWidth={2.2} />
         </button>
       )}
-      <h1 className="flex-1 text-title font-bold tracking-tight text-ink">{title}</h1>
+      {/* Centred and semibold: the inline title of a UINavigationBar. */}
+      <h1 className="flex-1 text-center text-body font-semibold text-ink">{title}</h1>
       {action}
     </header>
   )

@@ -56,8 +56,15 @@ export function MetricsPage() {
 
   return (
     <div>
-      <header className="sticky top-0 z-20 bg-surface/95 backdrop-blur-xl">
-        <div className="flex h-14 items-center gap-3 px-4">
+      <header
+        className="sticky top-0 z-20 hairline-b"
+        style={{
+          background: 'color-mix(in srgb, var(--ground) 80%, transparent)',
+          backdropFilter: 'saturate(180%) blur(20px)',
+          WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+        }}
+      >
+        <div className="flex h-12 items-center gap-3 px-4">
           {/* The menu is positioned against this wrapper and taken out of the
               flow, so opening it lays the list over the first card instead of
               pushing the whole page down. */}
@@ -66,9 +73,9 @@ export function MetricsPage() {
               onClick={() => setPicking(v => !v)}
               aria-expanded={picking}
               aria-haspopup="menu"
-              className="-ml-2 flex items-center gap-1 rounded-chip px-2 py-1.5 transition-colors hover:bg-raised"
+              className="-ml-2 flex items-center gap-1 rounded-chip px-2 py-1.5 active:opacity-50"
             >
-              <h1 className="text-title font-bold tracking-tight text-ink">{t(`metrics.tabs.${tab}`)}</h1>
+              <h1 className="text-value font-bold text-ink">{t(`metrics.tabs.${tab}`)}</h1>
               <ChevronDown
                 size={16}
                 strokeWidth={2}
@@ -79,7 +86,14 @@ export function MetricsPage() {
             {picking && (
               <div
                 role="menu"
-                className="absolute left-0 top-full z-30 mt-1 min-w-44 rounded-card border border-line bg-surface p-1 shadow-[var(--card-shadow)]"
+                // A context menu, the way iOS draws one: heavy blur, a tight
+                // radius, and rows that highlight rather than a list that boxes.
+                className="absolute left-0 top-full z-30 mt-1 min-w-52 overflow-hidden rounded-card p-1 shadow-xl"
+                style={{
+                  background: 'color-mix(in srgb, var(--surface) 92%, transparent)',
+                  backdropFilter: 'saturate(180%) blur(24px)',
+                  WebkitBackdropFilter: 'saturate(180%) blur(24px)',
+                }}
               >
                 {TABS.map(key => (
                   <button

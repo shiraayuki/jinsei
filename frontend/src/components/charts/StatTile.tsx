@@ -41,7 +41,7 @@ export function StatTile({
   digits?: number
 }) {
   return (
-    <div className="min-w-0 rounded-control bg-raised p-3">
+    <div className="min-w-0 rounded-control bg-raised p-3.5">
       {/* The number is never clipped: it is the whole point of the tile. The
           sparkline gives up its width first and disappears entirely when the
           value needs the room — a shape without its number says nothing, a

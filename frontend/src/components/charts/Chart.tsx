@@ -200,7 +200,7 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
           <g key={v}>
             <line
               x1={PAD_X} x2={PAD_X + plotW} y1={yPrimary(v)} y2={yPrimary(v)}
-              style={{ stroke: 'var(--line)' }} strokeWidth="1"
+              style={{ stroke: 'var(--line)' }} strokeWidth="0.5" strokeDasharray="2 3"
             />
             <text
               x={PAD_X + plotW + 4} y={yPrimary(v) + 3}
@@ -343,13 +343,17 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
 
       {readout && (
         <div
-          className="pointer-events-none absolute top-0 z-10 rounded-control border border-[var(--line)] bg-surface/95 px-2 py-1 text-label text-ink shadow-lg backdrop-blur-sm tabular"
-          style={
+          className="pointer-events-none absolute top-0 z-10 rounded-control px-2.5 py-1.5 text-label text-ink shadow-xl tabular"
+          style={{
+            // Material rather than a panel, like every floating surface on iOS.
+            background: 'color-mix(in srgb, var(--surface) 88%, transparent)',
+            backdropFilter: 'saturate(180%) blur(20px)',
+            WebkitBackdropFilter: 'saturate(180%) blur(20px)',
             // Left half read, card on the right; right half read, card on the
             // left. On a phone that is the difference between a readout and a
             // fingertip.
-            readout.ratio < 0.5 ? { right: 0 } : { left: 0 }
-          }
+            ...(readout.ratio < 0.5 ? { right: 0 } : { left: 0 }),
+          }}
         >
           <p className="whitespace-nowrap text-ink-soft">{formatDate(dates[readout.index])}</p>
           {withData.map(s => (

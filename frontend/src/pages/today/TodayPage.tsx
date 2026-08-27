@@ -26,28 +26,33 @@ export function TodayPage() {
   return (
     <div>
       <header
-        className="sticky top-0 z-10 flex items-center gap-2 bg-surface/95 px-2 py-2 backdrop-blur-xl"
+        className="sticky top-0 z-10 flex items-center gap-2 px-2 py-1.5 hairline-b"
+        style={{
+          background: 'color-mix(in srgb, var(--ground) 80%, transparent)',
+          backdropFilter: 'saturate(180%) blur(20px)',
+          WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+        }}
       >
         <div className="flex shrink-0 items-center gap-1">
           <button
             onClick={() => setDate(d => shiftIso(d, -1))}
             aria-label={t('today.previousDay')}
-            className="flex h-10 w-10 items-center justify-center rounded-control text-ink-mute hover:bg-raised transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-control text-accent active:opacity-40"
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={22} strokeWidth={2.2} />
           </button>
           <button
             onClick={() => summary.mutate({ scope: 'day', date })}
             disabled={summary.isPending}
             aria-label={t('today.exportTitle')}
-            className="flex h-10 w-10 items-center justify-center rounded-control text-ink-mute hover:bg-raised disabled:opacity-40 transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-control text-accent disabled:opacity-30 active:opacity-40"
           >
-            <FileText size={17} />
+            <FileText size={19} strokeWidth={1.9} />
           </button>
         </div>
 
         <div className="min-w-0 flex-1 text-center">
-          <p className="truncate text-body font-bold tracking-tight text-ink">
+          <p className="truncate text-body font-semibold text-ink">
             {isToday ? t('today.title') : label}
           </p>
           {!isToday && (
@@ -65,17 +70,17 @@ export function TodayPage() {
             onClick={() => summary.mutate({ scope: 'week', date })}
             disabled={summary.isPending}
             aria-label={t('today.exportWeekTitle')}
-            className="flex h-10 w-10 items-center justify-center rounded-control text-ink-mute hover:bg-raised disabled:opacity-40 transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-control text-accent disabled:opacity-30 active:opacity-40"
           >
-            <CalendarRange size={17} />
+            <CalendarRange size={19} strokeWidth={1.9} />
           </button>
           <button
             onClick={() => setDate(d => shiftIso(d, 1))}
             disabled={isToday}
             aria-label={t('today.nextDay')}
-            className="flex h-10 w-10 items-center justify-center rounded-control text-ink-mute hover:bg-raised disabled:opacity-30 transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-control text-accent disabled:opacity-25 active:opacity-40"
           >
-            <ChevronRight size={18} />
+            <ChevronRight size={22} strokeWidth={2.2} />
           </button>
         </div>
 

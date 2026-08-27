@@ -395,6 +395,13 @@ export default {
     email: 'E-Mail',
     displayName: 'Anzeigename',
     displayNamePlaceholder: 'Dein Name',
+    palette: 'Farbwelt',
+    palettes: {
+      apple: 'System',
+      jinsei: 'Jinsei',
+      rosepine: 'Rosé Pine',
+      catppuccin: 'Catppuccin',
+    },
     appearance: 'Design',
     dark: 'Dunkles Design',
     light: 'Helles Design',

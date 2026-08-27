@@ -1,5 +1,5 @@
 import { type HTMLAttributes, type ReactNode } from 'react'
-import { moduleColor, moduleTint, type ModuleKey } from '../../lib/modules'
+import { moduleColor, type ModuleKey } from '../../lib/modules'
 
 /**
  * The one card in the app.
@@ -28,14 +28,11 @@ interface SectionProps {
 export function CardSection({ module, title, icon, summary, action, children }: SectionProps) {
   return (
     <Card className="p-4">
-      <div className="mb-4 flex items-center gap-2">
-        <span
-          className="flex h-7 w-7 items-center justify-center rounded-chip"
-          style={{ background: moduleTint(module), color: moduleColor[module] }}
-        >
-          {icon}
-        </span>
-        <h2 className="text-title font-semibold text-ink">{title}</h2>
+      {/* Health draws a card's subject as a coloured word with its glyph, not
+          as a plate: the colour is the title's, and the icon rides with it. */}
+      <div className="mb-3 flex items-center gap-1.5">
+        <span style={{ color: moduleColor[module] }}>{icon}</span>
+        <h2 className="text-meta font-semibold" style={{ color: moduleColor[module] }}>{title}</h2>
         {summary && <span className="ml-auto truncate text-meta text-ink-mute">{summary}</span>}
         {action}
       </div>

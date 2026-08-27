@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#f8f9fa" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#090909" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Jinsei" />
     <link rel="icon" type="image/png" href="/icon-192.png" />
     <!--
@@ -22,6 +22,12 @@
     <script>
       if ((localStorage.getItem('jinsei:theme') ?? 'dark') === 'dark') {
         document.documentElement.classList.add('dark')
+      }
+      // Same reason as the line above: without this the first paint is the
+      // default palette and the chosen one arrives a frame later, as a flash.
+      var palette = localStorage.getItem('jinsei:palette')
+      if (palette === 'jinsei' || palette === 'rosepine' || palette === 'catppuccin') {
+        document.documentElement.setAttribute('data-theme', palette)
       }
     </script>
     <div id="root"></div>

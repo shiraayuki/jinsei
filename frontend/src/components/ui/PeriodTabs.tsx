@@ -23,16 +23,14 @@ export function PeriodTabs({
 
   if (compact) {
     return (
-      <div className="flex items-center gap-0.5 rounded-chip bg-raised p-0.5">
+      <div className="segmented flex items-center">
         {PERIODS.map(p => (
           <button
             key={p}
             onClick={() => onChange(p)}
             aria-pressed={value === p}
             aria-label={t(`metrics.periods.${p}`)}
-            className={`rounded-chip px-2 py-1 text-label font-medium tabular transition-colors ${
-              value === p ? 'bg-surface text-ink shadow-[var(--card-shadow)]' : 'text-ink-mute hover:text-ink-soft'
-            }`}
+            className="segmented-item px-2.5 py-1 text-meta tabular"
           >
             {t(`metrics.periodsShort.${p}`)}
           </button>
@@ -42,15 +40,13 @@ export function PeriodTabs({
   }
 
   return (
-    <div className="flex items-center gap-0.5 rounded-chip bg-raised p-0.5">
+    <div className="segmented flex items-center">
       {PERIODS.map(p => (
         <button
           key={p}
           onClick={() => onChange(p)}
           aria-pressed={value === p}
-          className={`min-w-0 flex-1 truncate rounded-chip px-2 py-1.5 text-label font-medium transition-colors ${
-            value === p ? 'bg-surface text-ink shadow-[var(--card-shadow)]' : 'text-ink-mute hover:text-ink-soft'
-          }`}
+          className="segmented-item min-w-0 flex-1 truncate px-2 py-1.5 text-meta"
         >
           {t(`metrics.periods.${p}`)}
         </button>

@@ -1,6 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { LayoutDashboard, CheckSquare, CalendarDays, Dumbbell, LineChart } from 'lucide-react'
-import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { OutboxBanner } from './OutboxBanner'
 import { useResumeToHome } from '../../app/useResumeToHome'
@@ -31,10 +30,17 @@ export function AppShell() {
         <Outlet />
       </main>
 
+      {/*
+        A tab bar, not a nav rail: a hairline over blurred material, five slots
+        of equal width, and the selected one saying so in tint alone. The pill
+        that used to slide between them is a web idiom — on iOS the icon and
+        its label carry the state, which is also why they no longer move.
+      */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-50 nav-bg"
+        className="fixed inset-x-0 bottom-0 z-50 nav-bg hairline-t"
         style={{
-          backdropFilter: 'blur(20px)',
+          backdropFilter: 'saturate(180%) blur(20px)',
+          WebkitBackdropFilter: 'saturate(180%) blur(20px)',
           // Keep the labels clear of the home indicator.
           paddingBottom: 'var(--safe-bottom)',
           paddingLeft: 'var(--safe-left)',
@@ -50,26 +56,20 @@ export function AppShell() {
               key={to}
               to={to}
               end={to === '/'}
-              className="relative flex flex-col items-center justify-center gap-1 py-2"
+              className="flex flex-col items-center justify-center gap-0.5 pt-1.5 pb-1"
             >
               {({ isActive }) => (
                 <>
-                  {isActive && (
-                    <motion.div
-                      layoutId="navPill"
-                      className="absolute inset-x-1 inset-y-1 rounded-control"
-                      style={{ background: 'var(--accent-soft)' }}
-                      transition={{ type: 'spring', bounce: 0.2, duration: 0.35 }}
-                    />
-                  )}
-                  {/* The pill and the colour already say which tab is active;
-                      scaling the icon on top of that only made the row wobble. */}
-                  <div className="relative flex flex-col items-center gap-1">
-                    <Icon size={20} strokeWidth={1.75} className={isActive ? 'text-accent' : 'text-ink-faint'} />
-                    <span className={`text-meta font-semibold tracking-wide ${isActive ? 'text-accent' : 'text-ink-faint'}`}>
-                      {label}
-                    </span>
-                  </div>
+                  <Icon
+                    size={25}
+                    strokeWidth={isActive ? 2.1 : 1.8}
+                    className={isActive ? 'text-accent' : 'text-ink-mute'}
+                  />
+                  <span
+                    className={`text-[10px] font-medium leading-none ${isActive ? 'text-accent' : 'text-ink-mute'}`}
+                  >
+                    {label}
+                  </span>
                 </>
               )}
             </NavLink>

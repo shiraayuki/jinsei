@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../app/auth/AuthProvider'
 import { useTheme } from '../app/theme/ThemeProvider'
+import { PALETTES } from '../lib/palettes'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
@@ -281,7 +282,7 @@ function IngestCard() {
 
 export function ProfilePage() {
   const { user, logout, updateProfile } = useAuth()
-  const { theme, toggle } = useTheme()
+  const { theme, palette, toggle, setPalette } = useTheme()
   const { t } = useTranslation()
   const [displayName, setDisplayName] = useState(user?.displayName ?? '')
   const [language, setLanguage] = useState(user?.language ?? 'en')
@@ -338,6 +339,38 @@ export function ProfilePage() {
           >
             {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
           </button>
+        </Card>
+
+        {/* The palette is its own choice, independent of light and dark: each
+            one brings both halves. The swatches are the actual tokens, so what
+            is on the button is what the app will look like. */}
+        <Card className="space-y-3 p-4">
+          <p className="text-body font-medium text-ink-soft">{t('profile.palette')}</p>
+          <div className="grid grid-cols-2 gap-2">
+            {PALETTES.map(key => (
+              <button
+                key={key}
+                onClick={() => setPalette(key)}
+                aria-pressed={palette === key}
+                className={`flex flex-col items-center gap-2 rounded-control p-3 transition-colors ${
+                  palette === key ? 'bg-accent-soft' : 'bg-raised'
+                }`}
+              >
+                <span className="flex gap-1">
+                  {['sleep', 'food', 'move', 'train'].map(module => (
+                    <span
+                      key={module}
+                      className="h-3.5 w-3.5 rounded-full"
+                      style={{ background: `var(--swatch-${key}-${module})` }}
+                    />
+                  ))}
+                </span>
+                <span className={`text-meta ${palette === key ? 'font-semibold text-accent' : 'text-ink-mute'}`}>
+                  {t(`profile.palettes.${key}`)}
+                </span>
+              </button>
+            ))}
+          </div>
         </Card>
 
         <Card className="flex items-center justify-between p-4">

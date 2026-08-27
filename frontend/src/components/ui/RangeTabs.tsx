@@ -21,15 +21,13 @@ export function RangeTabs({
 
   if (compact) {
     return (
-      <div className="flex items-center gap-0.5 rounded-chip bg-raised p-0.5">
+      <div className="segmented flex items-center">
         {RANGES.map(r => (
           <button
             key={r}
             onClick={() => onChange(r)}
             aria-pressed={value === r}
-            className={`rounded-chip px-2 py-1 text-label font-medium tabular transition-colors ${
-              value === r ? 'bg-surface text-ink shadow-[var(--card-shadow)]' : 'text-ink-mute hover:text-ink-soft'
-            }`}
+            className="segmented-item px-2.5 py-1 text-meta tabular"
           >
             {r === 365 ? t('metrics.rangeYearShort') : t('metrics.rangeDays', { count: r })}
           </button>
@@ -39,15 +37,13 @@ export function RangeTabs({
   }
 
   return (
-    <div className="flex gap-2">
+    <div className="segmented flex">
       {RANGES.map(r => (
         <button
           key={r}
           onClick={() => onChange(r)}
           aria-pressed={value === r}
-          className={`flex-1 rounded-chip py-2 text-meta font-medium transition-colors ${
-            value === r ? 'bg-accent text-white' : 'bg-raised text-ink-soft hover:bg-line'
-          }`}
+          className="segmented-item flex-1 py-1.5 text-meta"
         >
           {r === 365 ? t('metrics.rangeYear') : t('metrics.rangeDays', { count: r })}
         </button>

@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
 
 @custom-variant dark (&:is(.dark, .dark *));
 
@@ -12,44 +11,55 @@
  * follow the theme without a `dark:` twin on every element.
  * ────────────────────────────────────────────────────────────────────────── */
 :root {
-  /* Grounds. Slightly blue-biased neutrals rather than pure grey, so the
-     module colours below sit on something that shares their temperature. */
-  --ground: #f4f4f7;
+  /*
+   * The palette is Apple's system palette, taken at its published values
+   * rather than approximated: systemGroupedBackground under the cards,
+   * secondarySystemGroupedBackground for the cards themselves, the fill and
+   * label ramps for everything drawn on them. Matching an platform means
+   * matching its numbers — a colour picked by eye reads as "nearly iOS", which
+   * is worse than not trying.
+   */
+  --ground: #f2f2f7;
   --surface: #ffffff;
-  /* A field has to be visible as a field against the card it sits on. The two
-     used to be four percent apart, which reads as one surface on a phone held
-     at arm's length in daylight. */
-  --raised: #e7e7ee;
-  --line: rgba(20, 20, 32, 0.14);
-  --line-strong: rgba(20, 20, 32, 0.24);
+  /* systemFill, flattened: a field on a card, not a card on a card. */
+  --raised: #e9e9ec;
+  /* separator / opaqueSeparator. */
+  --line: rgba(60, 60, 67, 0.29);
+  --line-strong: #c6c6c8;
 
-  /* Text, from loudest to quietest. */
-  --ink: #16161d;
-  --ink-soft: #3d3d47;
-  --ink-mute: #61616f;
-  --ink-faint: #8a8a97;
+  /* The label ramp: label, secondaryLabel, tertiaryLabel, quaternaryLabel. */
+  --ink: #000000;
+  --ink-soft: rgba(60, 60, 67, 0.78);
+  --ink-mute: rgba(60, 60, 67, 0.6);
+  --ink-faint: rgba(60, 60, 67, 0.36);
 
-  /* Brand and navigation only — never a data series, never a state. */
-  --accent: #5b5be8;
-  --accent-soft: rgba(91, 91, 232, 0.10);
+  /* systemBlue: the tint every control borrows and no data series does. */
+  --accent: #007aff;
+  --accent-soft: rgba(0, 122, 255, 0.12);
 
-  /* State vocabulary. Three meanings, identical on every screen. */
-  --good: #1e9a6e;
-  --warn: #b8811a;
-  --bad: #c9453f;
+  /* systemGreen, systemOrange, systemRed. */
+  --good: #34c759;
+  --warn: #ff9500;
+  --bad: #ff3b30;
 
-  /* One colour per module, used for its icon, its chart series and its
-     summary line, so a graph is placeable before the label is read. */
-  --c-sleep: #6f5ce6;
-  --c-food: #1e9a6e;
-  --c-move: #1b8fa6;
-  --c-body: #3a76d8;
-  --c-train: #5b5be8;
-  --c-mind: #b8811a;
+  /*
+   * One system colour per module, in the spirit of Fitness and Health, where
+   * the ring or the card is placeable by colour before its label is read.
+   */
+  --c-sleep: #5856d6;
+  --c-food: #34c759;
+  --c-move: #ff9500;
+  --c-body: #007aff;
+  --c-train: #ff2d55;
+  --c-mind: #af52de;
 
-  --card-shadow: 0 1px 2px rgba(20, 20, 32, 0.05), 0 8px 24px rgba(20, 20, 32, 0.06);
+  /* The raised thumb of a segmented control and a slider. */
+  --thumb: #ffffff;
 
-  --bottom-nav-height: 64px;
+  /* Grouped lists on iOS have neither shadow nor border; the ground does it. */
+  --card-shadow: none;
+
+  --bottom-nav-height: 49px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -59,6 +69,85 @@
 }
 
 html.dark {
+  /* Dark mode is the same ramp: true black under elevated greys, which is what
+     lets an OLED phone switch off the ground entirely. */
+  --ground: #000000;
+  --surface: #1c1c1e;
+  --raised: #2c2c2e;
+  --line: rgba(84, 84, 88, 0.65);
+  --line-strong: #38383a;
+
+  --ink: #ffffff;
+  --ink-soft: rgba(235, 235, 245, 0.8);
+  --ink-mute: rgba(235, 235, 245, 0.6);
+  --ink-faint: rgba(235, 235, 245, 0.35);
+
+  --accent: #0a84ff;
+  --accent-soft: rgba(10, 132, 255, 0.18);
+
+  --good: #30d158;
+  --warn: #ff9f0a;
+  --bad: #ff453a;
+
+  --c-sleep: #5e5ce6;
+  --c-food: #30d158;
+  --c-move: #ff9f0a;
+  --c-body: #0a84ff;
+  --c-train: #ff375f;
+  --c-mind: #bf5af2;
+
+  --thumb: #636366;
+  --card-shadow: none;
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * The other palettes.
+ *
+ * A palette is a second axis, not a replacement for light and dark: each one
+ * brings both halves, and everything else — type, radii, spacing, the shape of
+ * every control — stays exactly as it is. That is the whole point of the
+ * tokens: swapping twenty variables changes the app's mood and nothing else.
+ *
+ * The values are the palettes' own published ones. Both are dark-first with an
+ * official light half (Rosé Pine Dawn, Catppuccin Latte), which is why neither
+ * needed a light theme invented for it.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/* The app's own palette before the rework: indigo brand, blue-biased
+   neutrals, one colour per module. Kept because it was designed for these
+   screens rather than borrowed for them. */
+html[data-theme='jinsei'] {
+  --ground: #f4f4f7;
+  --surface: #ffffff;
+  --raised: #e7e7ee;
+  --line: rgba(20, 20, 32, 0.14);
+  --line-strong: rgba(20, 20, 32, 0.24);
+
+  --ink: #16161d;
+  --ink-soft: #3d3d47;
+  --ink-mute: #61616f;
+  --ink-faint: #8a8a97;
+
+  --accent: #5b5be8;
+  --accent-soft: rgba(91, 91, 232, 0.1);
+
+  --good: #1e9a6e;
+  --warn: #b8811a;
+  --bad: #c9453f;
+
+  --c-sleep: #6f5ce6;
+  --c-food: #1e9a6e;
+  --c-move: #1b8fa6;
+  --c-body: #3a76d8;
+  --c-train: #5b5be8;
+  --c-mind: #b8811a;
+
+  --thumb: #ffffff;
+  --card-shadow: 0 1px 2px rgba(20, 20, 32, 0.05), 0 8px 24px rgba(20, 20, 32, 0.06);
+}
+
+html[data-theme='jinsei'].dark {
   --ground: #0b0b11;
   --surface: #15151c;
   --raised: #262633;
@@ -84,8 +173,160 @@ html.dark {
   --c-train: #8b8bfa;
   --c-mind: #e0ae4a;
 
-  /* Dark cards separate themselves by lightness, not by a drop shadow. */
+  --thumb: #3a3a4a;
   --card-shadow: none;
+}
+
+/* Rosé Pine Dawn. Warm paper, muted ink, nothing that raises its voice. */
+html[data-theme='rosepine'] {
+  --ground: #faf4ed;
+  --surface: #fffaf3;
+  --raised: #f2e9e1;
+  --line: #dfdad9;
+  --line-strong: #cecacd;
+
+  --ink: #575279;
+  --ink-soft: #6a6489;
+  --ink-mute: #797593;
+  --ink-faint: #9893a5;
+
+  --accent: #907aa9;
+  --accent-soft: rgba(144, 122, 169, 0.14);
+
+  --good: #56949f;
+  --warn: #ea9d34;
+  --bad: #b4637a;
+
+  --c-sleep: #907aa9;
+  --c-food: #56949f;
+  --c-move: #ea9d34;
+  --c-body: #286983;
+  --c-train: #b4637a;
+  --c-mind: #d7827e;
+
+  --thumb: #fffaf3;
+  --card-shadow: 0 1px 2px rgba(87, 82, 121, 0.06);
+}
+
+/* Rosé Pine. The one it is famous for: cool plum ground, warm accents. */
+html[data-theme='rosepine'].dark {
+  --ground: #191724;
+  --surface: #1f1d2e;
+  --raised: #26233a;
+  --line: #403d52;
+  --line-strong: #524f67;
+
+  --ink: #e0def4;
+  --ink-soft: #c9c5e0;
+  --ink-mute: #908caa;
+  --ink-faint: #6e6a86;
+
+  --accent: #c4a7e7;
+  --accent-soft: rgba(196, 167, 231, 0.18);
+
+  --good: #9ccfd8;
+  --warn: #f6c177;
+  --bad: #eb6f92;
+
+  --c-sleep: #c4a7e7;
+  --c-food: #9ccfd8;
+  --c-move: #f6c177;
+  --c-body: #3e8fb0;
+  --c-train: #eb6f92;
+  --c-mind: #ebbcba;
+
+  --thumb: #403d52;
+  --card-shadow: none;
+}
+
+/* Catppuccin Latte. */
+html[data-theme='catppuccin'] {
+  --ground: #eff1f5;
+  --surface: #ffffff;
+  --raised: #e6e9ef;
+  --line: #ccd0da;
+  --line-strong: #bcc0cc;
+
+  --ink: #4c4f69;
+  --ink-soft: #5c5f77;
+  --ink-mute: #6c6f85;
+  --ink-faint: #8c8fa1;
+
+  --accent: #1e66f5;
+  --accent-soft: rgba(30, 102, 245, 0.12);
+
+  --good: #40a02b;
+  --warn: #df8e1d;
+  --bad: #d20f39;
+
+  --c-sleep: #8839ef;
+  --c-food: #40a02b;
+  --c-move: #fe640b;
+  --c-body: #1e66f5;
+  --c-train: #e64553;
+  --c-mind: #179299;
+
+  --thumb: #ffffff;
+  --card-shadow: 0 1px 2px rgba(76, 79, 105, 0.06);
+}
+
+/* Catppuccin Mocha. Six accents that stay apart from each other, which is
+   exactly what six modules and a stacked chart need. */
+html[data-theme='catppuccin'].dark {
+  --ground: #181825;
+  --surface: #1e1e2e;
+  --raised: #313244;
+  --line: #45475a;
+  --line-strong: #585b70;
+
+  --ink: #cdd6f4;
+  --ink-soft: #bac2de;
+  --ink-mute: #a6adc8;
+  --ink-faint: #7f849c;
+
+  --accent: #89b4fa;
+  --accent-soft: rgba(137, 180, 250, 0.18);
+
+  --good: #a6e3a1;
+  --warn: #f9e2af;
+  --bad: #f38ba8;
+
+  --c-sleep: #cba6f7;
+  --c-food: #a6e3a1;
+  --c-move: #fab387;
+  --c-body: #89b4fa;
+  --c-train: #f38ba8;
+  --c-mind: #94e2d5;
+
+  --thumb: #45475a;
+  --card-shadow: none;
+}
+
+/*
+ * The palette picker shows four colours out of each palette, which means it
+ * needs all of them at once — including the ones the active theme is not
+ * using. They are written out here rather than duplicated in the component.
+ */
+:root {
+  --swatch-apple-sleep: #5e5ce6;
+  --swatch-apple-food: #30d158;
+  --swatch-apple-move: #ff9f0a;
+  --swatch-apple-train: #ff375f;
+
+  --swatch-jinsei-sleep: #9b8bfa;
+  --swatch-jinsei-food: #47c596;
+  --swatch-jinsei-move: #45bfd6;
+  --swatch-jinsei-train: #8b8bfa;
+
+  --swatch-rosepine-sleep: #c4a7e7;
+  --swatch-rosepine-food: #9ccfd8;
+  --swatch-rosepine-move: #f6c177;
+  --swatch-rosepine-train: #eb6f92;
+
+  --swatch-catppuccin-sleep: #cba6f7;
+  --swatch-catppuccin-food: #a6e3a1;
+  --swatch-catppuccin-move: #fab387;
+  --swatch-catppuccin-train: #f38ba8;
 }
 
 @theme inline {
@@ -114,18 +355,23 @@ html.dark {
   --color-train: var(--c-train);
   --color-mind: var(--c-mind);
 
-  /* Seven steps, each with a job. Replaces eleven ad-hoc sizes. */
+  /*
+   * The steps are iOS text styles: caption2, footnote, callout, headline,
+   * title2, title1, largeTitle. Body sits at 16 rather than 17 because this is
+   * a form-heavy app on a phone, and 17 pushed the two-column fields to wrap.
+   */
   --text-label: 0.6875rem;
   --text-meta: 0.8125rem;
-  --text-body: 0.9375rem;
+  --text-body: 1rem;
   --text-title: 1.0625rem;
-  --text-value: 1.25rem;
+  --text-value: 1.375rem;
   --text-head: 1.75rem;
-  --text-lead: 2.5rem;
+  --text-lead: 2.125rem;
 
-  --radius-chip: 7px;
-  --radius-control: 11px;
-  --radius-card: 18px;
+  /* Continuous-ish corners at the radii iOS uses: control, then card. */
+  --radius-chip: 8px;
+  --radius-control: 10px;
+  --radius-card: 14px;
 }
 
 html {
@@ -140,7 +386,11 @@ html {
 body {
   background-color: var(--ground);
   color: var(--ink);
-  font-family: 'DM Sans', system-ui, sans-serif;
+  /* San Francisco where it exists, the platform's own face everywhere else.
+     A webfont here would only be an imitation of the one already installed. */
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
+  /* iOS renders its labels a touch tighter than the browser default. */
+  letter-spacing: -0.01em;
   overscroll-behavior: none;
 }
 
@@ -151,8 +401,11 @@ input[type='number'],
   font-variant-numeric: tabular-nums;
 }
 
+/* Headings and numbers take the display face, which on Apple hardware is SF
+   Pro Display — the same family, cut for larger sizes. */
 h1, h2, h3, .font-display {
-  font-family: 'Outfit', system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
 .pb-safe {
@@ -261,19 +514,21 @@ input[type='range']::-moz-range-track {
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  margin-top: -7px;
-  height: 20px;
-  width: 20px;
+  margin-top: -11px;
+  height: 28px;
+  width: 28px;
   border-radius: 999px;
-  background: var(--accent);
+  background: var(--thumb);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.16);
 }
 
 input[type='range']::-moz-range-thumb {
-  height: 20px;
-  width: 20px;
+  height: 28px;
+  width: 28px;
   border: none;
   border-radius: 999px;
-  background: var(--accent);
+  background: var(--thumb);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.16);
 }
 
 /*
@@ -284,9 +539,51 @@ input[type='range']::-moz-range-thumb {
  */
 .card {
   background: var(--surface);
-  border: 1px solid var(--line);
   border-radius: var(--radius-card);
   box-shadow: var(--card-shadow);
+}
+
+/*
+ * The hairline. iOS draws separators at one device pixel, not at one CSS
+ * pixel, which is what keeps a list from looking ruled on a retina screen.
+ */
+.hairline-b {
+  border-bottom: 0.5px solid var(--line);
+}
+
+.hairline-t {
+  border-top: 0.5px solid var(--line);
+}
+
+/*
+ * The segmented control: a filled track, a raised thumb, and labels that gain
+ * weight rather than colour when selected.
+ */
+.segmented {
+  background: rgba(120, 120, 128, 0.12);
+  border-radius: 9px;
+  padding: 2px;
+}
+
+html.dark .segmented {
+  background: rgba(118, 118, 128, 0.24);
+}
+
+.segmented-item {
+  border-radius: 7px;
+  color: var(--ink);
+  font-weight: 500;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.segmented-item[aria-pressed='true'] {
+  background: var(--thumb);
+  font-weight: 600;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 3px 1px rgba(0, 0, 0, 0.04);
+}
+
+html.dark .segmented-item[aria-pressed='true'] {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
 }
 
 .app-bg {
@@ -294,6 +591,7 @@ input[type='range']::-moz-range-thumb {
 }
 
 .nav-bg {
-  background: color-mix(in srgb, var(--ground) 92%, transparent);
-  border-top: 1px solid var(--line);
+  /* The tab bar's own material; the hairline above it is a class, so it stays
+     one device pixel on a retina screen. */
+  background: color-mix(in srgb, var(--ground) 78%, transparent);
 }
