@@ -179,6 +179,26 @@ h1, h2, h3, .font-display {
  * padding. Dropping the native appearance makes them size like a normal field
  * again; max-width is the hard stop in case an engine still disagrees.
  */
+/*
+ * A long press on a phone selects the text under the finger and pops the copy
+ * menu, which turns a tap on a tile — or a drag across a chart — into an
+ * accidental selection. Nothing here is prose to be quoted, so reading text is
+ * not selectable; anything typed into, and the exported day text, still is.
+ */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+input,
+textarea,
+select,
+[contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 input[type='date'],
 input[type='time'],
 input[type='datetime-local'],

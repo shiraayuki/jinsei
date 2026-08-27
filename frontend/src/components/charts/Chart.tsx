@@ -172,7 +172,9 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
 
   // The readout floats over the plot rather than sitting under it: the eye is
   // already at the point it is asking about, and a fixed footer readout made
-  // the legend jump between two texts on every touch.
+  // the legend jump between two texts on every touch. It is pushed to whichever
+  // half of the chart the finger is not on, since a card under the hand says
+  // nothing.
   const readout = hover != null && dates[hover] ? { index: hover, ratio: x(hover) / W } : null
 
   return (
@@ -185,10 +187,14 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
       */}
       <svg
         viewBox={`0 0 ${W} ${height}`}
-        className="w-full touch-pan-y overflow-visible"
+        className="w-full touch-pan-y select-none overflow-visible"
+        style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none' }}
         onPointerDown={e => setHover(indexFromEvent(e, count, allBars))}
         onPointerMove={e => (e.pointerType === 'mouse' || e.buttons > 0) && setHover(indexFromEvent(e, count, allBars))}
-        onPointerLeave={() => setHover(null)}
+        // Only a mouse leaving clears the reading. A finger lifting does not:
+        // the point of tapping a chart is to then look at what it said.
+        onPointerLeave={e => e.pointerType === 'mouse' && setHover(null)}
+        onContextMenu={e => e.preventDefault()}
       >
         {gridValues.map(v => (
           <g key={v}>
@@ -338,12 +344,12 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
       {readout && (
         <div
           className="pointer-events-none absolute top-0 z-10 rounded-control border border-[var(--line)] bg-surface/95 px-2 py-1 text-label text-ink shadow-lg backdrop-blur-sm tabular"
-          style={{
-            left: `${readout.ratio * 100}%`,
-            // Held inside the plot at the edges, where a centred card would be
-            // cut off by the container.
-            transform: readout.ratio < 0.2 ? 'none' : readout.ratio > 0.8 ? 'translateX(-100%)' : 'translateX(-50%)',
-          }}
+          style={
+            // Left half read, card on the right; right half read, card on the
+            // left. On a phone that is the difference between a readout and a
+            // fingertip.
+            readout.ratio < 0.5 ? { right: 0 } : { left: 0 }
+          }
         >
           <p className="whitespace-nowrap text-ink-soft">{formatDate(dates[readout.index])}</p>
           {withData.map(s => (
