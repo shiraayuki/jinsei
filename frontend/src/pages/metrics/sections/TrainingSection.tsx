@@ -37,7 +37,7 @@ export function TrainingSection({ days }: { days: number }) {
   if (isLoading) return <EmptyHint text={t('common.loading')} />
   if (!data || data.totals.sessions === 0) {
     return (
-      <Block module="train" icon={<Dumbbell size={15} />} title={t('nav.workouts')}>
+      <Block module="train" icon={<Dumbbell size={17} />} title={t('nav.workouts')}>
         <EmptyHint text={t('workouts.empty')} />
       </Block>
     )
@@ -63,7 +63,7 @@ export function TrainingSection({ days }: { days: number }) {
 
   return (
     <>
-      <Block module="train" icon={<Dumbbell size={15} />} title={t('nav.workouts')}>
+      <Block module="train" icon={<Dumbbell size={17} />} title={t('nav.workouts')}>
         <div className="grid grid-cols-2 gap-2">
           <StatTile
             label={t('metrics.training.frequency')}
@@ -93,7 +93,7 @@ export function TrainingSection({ days }: { days: number }) {
         />
       </Block>
 
-      <Block module="train" icon={<TrendingUp size={15} />} title={t('metrics.training.weeklyVolume')}>
+      <Block module="train" icon={<TrendingUp size={17} />} title={t('metrics.training.weeklyVolume')}>
         <Chart
           series={[{ label: t('metrics.volume'), color: moduleColor.train, points: volumePoints, kind: 'bar', unit: ' kg' }]}
           zeroBased
@@ -102,7 +102,7 @@ export function TrainingSection({ days }: { days: number }) {
       </Block>
 
       {data.muscleGroups.length > 0 && (
-        <Block module="train" icon={<Dumbbell size={15} />} title={t('metrics.training.muscleGroups')}>
+        <Block module="train" icon={<Dumbbell size={17} />} title={t('metrics.training.muscleGroups')}>
           <div className="space-y-1.5">
             {data.muscleGroups.map(g => {
               const change = g.sets - g.previousSets
@@ -125,7 +125,7 @@ export function TrainingSection({ days }: { days: number }) {
 
       <Block
         module="train"
-        icon={<TrendingUp size={15} />}
+        icon={<TrendingUp size={17} />}
         title={t('metrics.training.progression')}
         summary={stalled.length > 0 ? `${stalled.length} × ${t('metrics.training.stagnant')}` : undefined}
       >
@@ -147,7 +147,7 @@ export function TrainingSection({ days }: { days: number }) {
       {defined(steps).length > 0 && (
         <Block
           module="move"
-          icon={<Footprints size={15} />}
+          icon={<Footprints size={17} />}
           title={t('activity.steps')}
           summary={stepBars.weekly ? t('metrics.weekly') : undefined}
         >

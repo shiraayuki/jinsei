@@ -171,7 +171,7 @@ export function DashboardPage() {
                   animate={habit.completedToday ? { scale: [1, 1.3, 1] } : { scale: 1 }}
                   transition={{ duration: 0.25 }}
                 >
-                  <Check size={13} strokeWidth={1.75} />
+                  <Check size={15} strokeWidth={1.75} />
                 </motion.div>
               </motion.button>
               <span className={`flex-1 text-body ${habit.completedToday ? 'text-ink-faint line-through' : 'text-ink'}`}>
@@ -210,7 +210,7 @@ export function DashboardPage() {
 
         <div className="grid grid-cols-2 gap-2">
           <Link to="/today" className="flex items-center gap-2.5 rounded-control bg-raised px-3 py-2.5 hover:bg-line transition-colors">
-            <Apple size={15} className="shrink-0 text-food" strokeWidth={1.75} />
+            <Apple size={17} className="shrink-0 text-food" strokeWidth={1.75} />
             <div className="min-w-0">
               <p className="truncate font-display text-title font-semibold text-ink leading-none tabular">
                 {todayNutrition?.kcal != null ? todayNutrition.kcal.toLocaleString(dateLocale()) : '–'}
@@ -224,7 +224,7 @@ export function DashboardPage() {
           </Link>
 
           <Link to="/today" className="flex items-center gap-2.5 rounded-control bg-raised px-3 py-2.5 hover:bg-line transition-colors">
-            <Footprints size={15} className="shrink-0 text-move" strokeWidth={1.75} />
+            <Footprints size={17} className="shrink-0 text-move" strokeWidth={1.75} />
             <div className="min-w-0">
               <p className="truncate font-display text-title font-semibold text-ink leading-none tabular">
                 {todayActivity?.steps != null ? todayActivity.steps.toLocaleString(dateLocale()) : '–'}
@@ -234,7 +234,7 @@ export function DashboardPage() {
           </Link>
 
           <Link to="/today" className="flex items-center gap-2.5 rounded-control bg-raised px-3 py-2.5 hover:bg-line transition-colors">
-            <Moon size={15} className="shrink-0 text-sleep" strokeWidth={1.75} />
+            <Moon size={17} className="shrink-0 text-sleep" strokeWidth={1.75} />
             <div className="min-w-0">
               <p className="truncate font-display text-title font-semibold text-ink leading-none tabular">
                 {lastNightMinutes != null ? formatDuration(lastNightMinutes) : '–'}
@@ -244,7 +244,7 @@ export function DashboardPage() {
           </Link>
 
           <Link to="/today" className="flex items-center gap-2.5 rounded-control bg-raised px-3 py-2.5 hover:bg-line transition-colors">
-            <Scale size={15} className="shrink-0 text-body" strokeWidth={1.75} />
+            <Scale size={17} className="shrink-0 text-body" strokeWidth={1.75} />
             <div className="min-w-0">
               <p className="truncate font-display text-title font-semibold text-ink leading-none tabular">
                 {weighed[0]?.weightKg != null ? `${weighed[0].weightKg} kg` : '–'}
@@ -356,7 +356,7 @@ export function DashboardPage() {
             {` · ${lastWorkout.setCount} Sets`}
           </p>
         </div>
-        <ChevronRight size={15} className="text-ink-faint" />
+        <ChevronRight size={17} className="text-ink-faint" />
       </Link>
     ) : null,
   }
@@ -408,7 +408,7 @@ export function DashboardPage() {
                 aria-label={t('dashboard.hidden')}
                 className="flex h-8 w-8 items-center justify-center rounded-chip text-ink-mute hover:bg-raised"
               >
-                {widget.visible ? <Eye size={15} /> : <EyeOff size={15} />}
+                {widget.visible ? <Eye size={19} /> : <EyeOff size={19} />}
               </button>
               <button
                 onClick={() => move(widget.key, -1)}
@@ -416,7 +416,7 @@ export function DashboardPage() {
                 aria-label="↑"
                 className="flex h-8 w-8 items-center justify-center rounded-chip text-ink-mute hover:bg-raised disabled:opacity-30"
               >
-                <ChevronUp size={15} />
+                <ChevronUp size={19} />
               </button>
               <button
                 onClick={() => move(widget.key, 1)}
@@ -424,7 +424,7 @@ export function DashboardPage() {
                 aria-label="↓"
                 className="flex h-8 w-8 items-center justify-center rounded-chip text-ink-mute hover:bg-raised disabled:opacity-30"
               >
-                <ChevronDown size={15} />
+                <ChevronDown size={19} />
               </button>
             </div>
           ))}

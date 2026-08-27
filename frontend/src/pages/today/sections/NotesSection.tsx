@@ -47,7 +47,7 @@ export function NotesSection({ date }: { date: string }) {
   const summary = note?.text ? note.text.split('\n')[0].slice(0, 40) : undefined
 
   return (
-    <Section module="mind" title={t('notes.title')} icon={<NotebookPen size={15} />} summary={summary}>
+    <Section module="mind" title={t('notes.title')} icon={<NotebookPen size={17} />} summary={summary}>
       {isLoading
         ? <p className="py-4 text-center text-body text-ink-mute">{t('common.loading')}</p>
         : <NoteForm key={date} date={date} initial={note?.text ?? ''} />}

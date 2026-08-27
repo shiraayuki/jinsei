@@ -70,7 +70,7 @@ export function SleepSection({ days }: { days: number }) {
   const nights = defined(minutes)
   if (nights.length === 0) {
     return (
-      <Block module="sleep" icon={<Moon size={15} />} title={t('sleep.title')}>
+      <Block module="sleep" icon={<Moon size={17} />} title={t('sleep.title')}>
         <EmptyHint text={t('metrics.empty')} />
       </Block>
     )
@@ -139,7 +139,7 @@ export function SleepSection({ days }: { days: number }) {
 
   return (
     <>
-      <Block module="sleep" icon={<Moon size={15} />} title={t('metrics.sleep.duration')}>
+      <Block module="sleep" icon={<Moon size={17} />} title={t('metrics.sleep.duration')}>
         <div className="grid grid-cols-2 gap-2">
           <StatTile
             label={t('sleep.avgDuration')}
@@ -182,7 +182,7 @@ export function SleepSection({ days }: { days: number }) {
       </Block>
 
       {phaseMeans.length > 0 && (
-        <Block module="sleep" icon={<Moon size={15} />} title={t('sleep.phases')} summary={t('metrics.perNight')}>
+        <Block module="sleep" icon={<Moon size={17} />} title={t('sleep.phases')} summary={t('metrics.perNight')}>
           <div className="space-y-2">
             {phaseMeans.map(p => (
               <BarRow
@@ -203,7 +203,7 @@ export function SleepSection({ days }: { days: number }) {
       )}
 
       {hasShares && (
-        <Block module="sleep" icon={<Moon size={15} />} title={t('metrics.sleep.shares')}>
+        <Block module="sleep" icon={<Moon size={17} />} title={t('metrics.sleep.shares')}>
           {/* The bands are the range a healthy adult night usually falls in —
               13–23 % deep, 20–25 % REM. They are a reference, not a goal: a
               night outside them is worth a look, not a verdict. */}
@@ -225,7 +225,7 @@ export function SleepSection({ days }: { days: number }) {
         </Block>
       )}
 
-      <Block module="sleep" icon={<Clock size={15} />} title={t('metrics.sleep.clockChart')}>
+      <Block module="sleep" icon={<Clock size={17} />} title={t('metrics.sleep.clockChart')}>
         {hasTimes ? (
           <>
             <div className="grid grid-cols-3 gap-2">
@@ -268,7 +268,7 @@ export function SleepSection({ days }: { days: number }) {
         )}
       </Block>
 
-      <Block module="sleep" icon={<Moon size={15} />} title={t('metrics.sleep.byWeekday')}>
+      <Block module="sleep" icon={<Moon size={17} />} title={t('metrics.sleep.byWeekday')}>
         <div className="space-y-1.5">
           {weekday.map((value, i) => (
             <BarRow

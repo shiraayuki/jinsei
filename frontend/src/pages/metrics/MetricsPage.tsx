@@ -105,7 +105,7 @@ export function MetricsPage() {
                     <span className={key === tab ? 'font-medium text-ink' : 'text-ink-soft'}>
                       {t(`metrics.tabs.${key}`)}
                     </span>
-                    {key === tab && <Check size={15} className="ml-auto shrink-0 text-accent" />}
+                    {key === tab && <Check size={17} className="ml-auto shrink-0 text-accent" />}
                   </button>
                 ))}
               </div>

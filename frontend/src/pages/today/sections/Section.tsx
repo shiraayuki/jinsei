@@ -54,7 +54,7 @@ export function SaveStatus({ pending, savedAt, error }: StatusProps) {
     const queued = error instanceof QueuedOfflineError
     return (
       <p className={`flex items-center gap-1.5 text-meta ${queued ? 'text-warn' : 'text-bad'}`}>
-        {queued ? <CloudOff size={13} /> : null}
+        {queued ? <CloudOff size={15} /> : null}
         {queued ? t('outbox.queued') : error.message || t('common.saveFailed')}
       </p>
     )
@@ -63,7 +63,7 @@ export function SaveStatus({ pending, savedAt, error }: StatusProps) {
   if (pending) {
     return (
       <p className="flex items-center gap-1.5 text-meta text-ink-faint">
-        <Loader2 size={13} className="animate-spin" /> {t('common.saving')}
+        <Loader2 size={15} className="animate-spin" /> {t('common.saving')}
       </p>
     )
   }
@@ -71,7 +71,7 @@ export function SaveStatus({ pending, savedAt, error }: StatusProps) {
   if (showSaved) {
     return (
       <p className="flex items-center gap-1.5 text-meta text-good">
-        <Check size={13} /> {t('common.saved')}
+        <Check size={15} /> {t('common.saved')}
       </p>
     )
   }

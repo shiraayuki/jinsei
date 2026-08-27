@@ -60,13 +60,18 @@ interface Props {
   empty?: string
 }
 
+/*
+ * The drawing is 320 units wide and stretches to the container, so everything
+ * in here is a ratio rather than a pixel: on a 390 pt phone a unit lands at
+ * about 1.2 px, which is why the type sizes below look small for what they are.
+ */
 const W = 320
 const PAD_X = 6
-const PAD_TOP = 12
+const PAD_TOP = 14
 /** Room under the plot for the date labels on the x axis. */
-const PAD_BOTTOM = 16
+const PAD_BOTTOM = 20
 /** Room on the right for the grid labels, which sit inside the plot. */
-const GUTTER = 34
+const GUTTER = 40
 
 function formatDate(iso: string) {
   return new Date(`${iso}T00:00:00`).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' })
@@ -81,7 +86,7 @@ function niceStep(range: number): number {
   return 10 * magnitude
 }
 
-export function Chart({ series, height = 108, goal, zeroBased, format, empty }: Props) {
+export function Chart({ series, height = 140, goal, zeroBased, format, empty }: Props) {
   const [hover, setHover] = useState<number | null>(null)
 
   const withData = series.filter(s => s.points.some(p => p.value != null))
@@ -203,8 +208,8 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
               style={{ stroke: 'var(--line)' }} strokeWidth="0.5" strokeDasharray="2 3"
             />
             <text
-              x={PAD_X + plotW + 4} y={yPrimary(v) + 3}
-              className="fill-[var(--ink-faint)]" style={{ fontSize: 9 }}
+              x={PAD_X + plotW + 5} y={yPrimary(v) + 4}
+              className="fill-[var(--ink-mute)]" style={{ fontSize: 11 }}
             >
               {fmt(v)}{v === gridValues[gridValues.length - 1] ? unit : ''}
             </text>
@@ -283,7 +288,7 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
                   key={i}
                   points={seg.map(c => `${c.x},${c.y}`).join(' ')}
                   fill="none"
-                  strokeWidth={avg.length > 0 ? 1.25 : 2}
+                  strokeWidth={avg.length > 0 ? 1.5 : 2.5}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   style={{ stroke: s.color, strokeOpacity: avg.length > 0 ? 0.3 : 1 }}
@@ -293,11 +298,11 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
                 <polyline
                   key={`avg-${i}`}
                   points={seg.map(c => `${c.x},${c.y}`).join(' ')}
-                  fill="none" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"
+                  fill="none" strokeWidth="2.75" strokeLinecap="round" strokeLinejoin="round"
                   style={{ stroke: s.color }}
                 />
               ))}
-              {end && <circle cx={end.x} cy={end.y} r="3" style={{ fill: s.color }} />}
+              {end && <circle cx={end.x} cy={end.y} r="3.5" style={{ fill: s.color }} />}
             </g>
           )
         })}
@@ -308,10 +313,10 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
           <text
             key={dates[i]}
             x={x(i)}
-            y={height - 3}
+            y={height - 4}
             textAnchor={i === 0 ? 'start' : i === count - 1 ? 'end' : 'middle'}
-            className="fill-[var(--ink-faint)]"
-            style={{ fontSize: 9 }}
+            className="fill-[var(--ink-mute)]"
+            style={{ fontSize: 11 }}
           >
             {formatDate(dates[i])}
           </text>
@@ -321,7 +326,7 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
           <g>
             <line
               x1={x(hover)} x2={x(hover)} y1={PAD_TOP} y2={PAD_TOP + plotH}
-              strokeWidth="1" style={{ stroke: 'var(--ink-faint)' }}
+              strokeWidth="1.25" style={{ stroke: 'var(--ink-faint)' }}
             />
             {withData.map(s => {
               const value = s.points[hover]?.value
@@ -331,8 +336,8 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
                   key={s.label}
                   cx={x(hover)}
                   cy={yFor(s.scaleWith ?? s.label)(value)}
-                  r="3.5"
-                  strokeWidth="2"
+                  r="4"
+                  strokeWidth="2.5"
                   style={{ fill: s.color, stroke: 'var(--surface)' }}
                 />
               )
@@ -343,7 +348,7 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
 
       {readout && (
         <div
-          className="pointer-events-none absolute top-0 z-10 rounded-control px-2.5 py-1.5 text-label text-ink shadow-xl tabular"
+          className="pointer-events-none absolute top-0 z-10 rounded-control px-3 py-2 text-meta text-ink shadow-xl tabular"
           style={{
             // Material rather than a panel, like every floating surface on iOS.
             background: 'color-mix(in srgb, var(--surface) 88%, transparent)',
@@ -370,10 +375,10 @@ export function Chart({ series, height = 108, goal, zeroBased, format, empty }: 
         </div>
       )}
 
-      <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-label text-ink-faint tabular">
+      <div className="mt-2.5 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-meta text-ink-mute tabular">
         {withData.map(s => (
           <span key={s.label} className="flex items-center gap-1">
-            <span className="inline-block h-0.5 w-3 rounded-full" style={{ background: s.color }} />
+            <span className="inline-block h-1 w-3.5 rounded-full" style={{ background: s.color }} />
             {s.label}
           </span>
         ))}

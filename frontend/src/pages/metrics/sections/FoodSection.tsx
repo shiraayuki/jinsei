@@ -26,7 +26,7 @@ export function FoodSection({ days }: { days: number }) {
 
   if (defined(kcal).length === 0 && defined(protein).length === 0) {
     return (
-      <Block module="food" icon={<Apple size={15} />} title={t('nutrition.title')}>
+      <Block module="food" icon={<Apple size={17} />} title={t('nutrition.title')}>
         <EmptyHint text={t('metrics.empty')} />
       </Block>
     )
@@ -53,7 +53,7 @@ export function FoodSection({ days }: { days: number }) {
 
   return (
     <>
-      <Block module="food" icon={<Apple size={15} />} title={t('metrics.food.calories')}>
+      <Block module="food" icon={<Apple size={17} />} title={t('metrics.food.calories')}>
         <div className="grid grid-cols-2 gap-2">
           <StatTile
             // The unit rides in the label: four digits plus "kcal" is wider
@@ -83,7 +83,7 @@ export function FoodSection({ days }: { days: number }) {
         />
       </Block>
 
-      <Block module="food" icon={<Apple size={15} />} title={t('metrics.food.macroSplit')}>
+      <Block module="food" icon={<Apple size={17} />} title={t('metrics.food.macroSplit')}>
         <MacroSplit
           proteinG={mean(defined(protein)) ?? 0}
           carbsG={mean(defined(carbs)) ?? 0}
@@ -111,7 +111,7 @@ export function FoodSection({ days }: { days: number }) {
       </Block>
 
       {defined(weightPoints).length >= 4 && defined(kcal).length >= 7 && (
-        <Block module="food" icon={<Apple size={15} />} title={t('metrics.food.caloriesVsWeight')}>
+        <Block module="food" icon={<Apple size={17} />} title={t('metrics.food.caloriesVsWeight')}>
           <Chart
             series={[
               { label: t('nutrition.calories'), color: moduleColor.food, points: kcal, unit: ' kcal', averageOver: 7 },
@@ -132,7 +132,7 @@ export function FoodSection({ days }: { days: number }) {
       {defined(water).length > 0 && (
         <Block
           module="food"
-          icon={<Droplet size={15} />}
+          icon={<Droplet size={17} />}
           title={t('nutrition.water')}
           summary={waterBars.weekly ? t('metrics.weekly') : undefined}
         >

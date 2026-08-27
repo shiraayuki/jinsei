@@ -34,8 +34,8 @@ export function BarRow({
 
   return (
     <div className="flex items-center gap-2">
-      <span className="w-24 shrink-0 truncate text-meta text-ink-soft">{label}</span>
-      <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-raised">
+      <span className="w-24 shrink-0 truncate text-body text-ink-soft">{label}</span>
+      <div className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-raised">
         <div className="flex h-full rounded-full" style={{ width: `${pct}%`, background: color }}>
           {segments?.map(seg => (
             <div
@@ -45,7 +45,7 @@ export function BarRow({
           ))}
         </div>
       </div>
-      {hint && <span className={`w-20 shrink-0 text-right text-label tabular ${hintClass}`}>{hint}</span>}
+      {hint && <span className={`w-24 shrink-0 text-right text-meta tabular ${hintClass}`}>{hint}</span>}
     </div>
   )
 }

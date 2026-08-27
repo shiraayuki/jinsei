@@ -22,14 +22,14 @@ export function MacroSplit({ proteinG, carbsG, fatG }: { proteinG: number; carbs
 
   return (
     <div className="space-y-2">
-      <div className="flex h-3 overflow-hidden rounded-full bg-raised">
+      <div className="flex h-3.5 overflow-hidden rounded-full bg-raised">
         {parts.map(p => (
           <div key={p.key} style={{ width: `${(p.kcal / total) * 100}%`, background: p.color }} />
         ))}
       </div>
       <div className="flex flex-wrap gap-x-4 gap-y-1">
         {parts.map(p => (
-          <span key={p.key} className="flex items-center gap-1.5 text-label text-ink-mute tabular">
+          <span key={p.key} className="flex items-center gap-1.5 text-meta text-ink-mute tabular">
             <span className="inline-block h-2 w-2 rounded-full" style={{ background: p.color }} />
             {p.label} {Math.round((p.kcal / total) * 100)}%
             <span className="text-ink-faint">

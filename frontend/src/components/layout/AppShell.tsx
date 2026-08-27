@@ -61,12 +61,12 @@ export function AppShell() {
               {({ isActive }) => (
                 <>
                   <Icon
-                    size={25}
+                    size={27}
                     strokeWidth={isActive ? 2.1 : 1.8}
                     className={isActive ? 'text-accent' : 'text-ink-mute'}
                   />
                   <span
-                    className={`text-[10px] font-medium leading-none ${isActive ? 'text-accent' : 'text-ink-mute'}`}
+                    className={`text-[11px] font-medium leading-none ${isActive ? 'text-accent' : 'text-ink-mute'}`}
                   >
                     {label}
                   </span>

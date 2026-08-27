@@ -37,7 +37,7 @@ export function TodayPage() {
           <button
             onClick={() => setDate(d => shiftIso(d, -1))}
             aria-label={t('today.previousDay')}
-            className="flex h-10 w-10 items-center justify-center rounded-control text-accent active:opacity-40"
+            className="flex h-11 w-11 items-center justify-center rounded-control text-accent active:opacity-40"
           >
             <ChevronLeft size={22} strokeWidth={2.2} />
           </button>
@@ -45,7 +45,7 @@ export function TodayPage() {
             onClick={() => summary.mutate({ scope: 'day', date })}
             disabled={summary.isPending}
             aria-label={t('today.exportTitle')}
-            className="flex h-10 w-10 items-center justify-center rounded-control text-accent disabled:opacity-30 active:opacity-40"
+            className="flex h-11 w-11 items-center justify-center rounded-control text-accent disabled:opacity-30 active:opacity-40"
           >
             <FileText size={19} strokeWidth={1.9} />
           </button>
@@ -70,7 +70,7 @@ export function TodayPage() {
             onClick={() => summary.mutate({ scope: 'week', date })}
             disabled={summary.isPending}
             aria-label={t('today.exportWeekTitle')}
-            className="flex h-10 w-10 items-center justify-center rounded-control text-accent disabled:opacity-30 active:opacity-40"
+            className="flex h-11 w-11 items-center justify-center rounded-control text-accent disabled:opacity-30 active:opacity-40"
           >
             <CalendarRange size={19} strokeWidth={1.9} />
           </button>
@@ -78,7 +78,7 @@ export function TodayPage() {
             onClick={() => setDate(d => shiftIso(d, 1))}
             disabled={isToday}
             aria-label={t('today.nextDay')}
-            className="flex h-10 w-10 items-center justify-center rounded-control text-accent disabled:opacity-25 active:opacity-40"
+            className="flex h-11 w-11 items-center justify-center rounded-control text-accent disabled:opacity-25 active:opacity-40"
           >
             <ChevronRight size={22} strokeWidth={2.2} />
           </button>

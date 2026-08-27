@@ -8,8 +8,8 @@ import { movingAverage, type Point } from '../../lib/stats'
 export function Sparkline({
   points,
   color,
-  width = 64,
-  height = 20,
+  width = 72,
+  height = 24,
   smooth,
 }: {
   points: Point[]
@@ -43,7 +43,7 @@ export function Sparkline({
       <polyline
         points={coords.map(c => `${c.x},${c.y}`).join(' ')}
         fill="none"
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
         style={{ stroke: color, strokeOpacity: 0.85 }}

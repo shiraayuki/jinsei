@@ -356,17 +356,18 @@ html[data-theme='catppuccin'].dark {
   --color-mind: var(--c-mind);
 
   /*
-   * The steps are iOS text styles: caption2, footnote, callout, headline,
-   * title2, title1, largeTitle. Body sits at 16 rather than 17 because this is
-   * a form-heavy app on a phone, and 17 pushed the two-column fields to wrap.
+   * The steps are iOS text styles: caption1, subhead, body, title3, title2,
+   * title1, largeTitle. The scale was a size below this and read as a desktop
+   * app shrunk onto a phone — 13 pt hints and 16 pt body are what a browser
+   * does, not what a phone held at arm's length wants.
    */
-  --text-label: 0.6875rem;
-  --text-meta: 0.8125rem;
-  --text-body: 1rem;
-  --text-title: 1.0625rem;
-  --text-value: 1.375rem;
-  --text-head: 1.75rem;
-  --text-lead: 2.125rem;
+  --text-label: 0.75rem;
+  --text-meta: 0.875rem;
+  --text-body: 1.0625rem;
+  --text-title: 1.25rem;
+  --text-value: 1.5rem;
+  --text-head: 1.875rem;
+  --text-lead: 2.25rem;
 
   /* Continuous-ish corners at the radii iOS uses: control, then card. */
   --radius-chip: 8px;

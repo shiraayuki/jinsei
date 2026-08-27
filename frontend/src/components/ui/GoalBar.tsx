@@ -21,13 +21,13 @@ export function GoalBar({ value, goal, unit = '', color }: {
 
   return (
     <div className="space-y-1">
-      <div className="h-1.5 overflow-hidden rounded-full bg-raised">
+      <div className="h-2 overflow-hidden rounded-full bg-raised">
         <div
           className="h-full rounded-full transition-all"
           style={{ width: `${pct}%`, background: over ? 'var(--warn)' : color ?? 'var(--accent)' }}
         />
       </div>
-      <p className="text-label text-ink-mute tabular">
+      <p className="text-meta text-ink-mute tabular">
         {current.toLocaleString(dateLocale())}{unit} {t('goals.of', { goal: goal.toLocaleString(dateLocale()) + unit })} · {pct}%
       </p>
     </div>

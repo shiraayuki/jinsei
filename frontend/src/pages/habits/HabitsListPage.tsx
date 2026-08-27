@@ -30,7 +30,7 @@ function HabitRow({ habit }: { habit: Habit }) {
           ? { background: habit.color, borderColor: habit.color, color: 'white' }
           : { borderColor: 'var(--line-strong)', color: 'var(--ink-faint)' }}
       >
-        <Check size={15} strokeWidth={1.75} />
+        <Check size={17} strokeWidth={1.75} />
       </button>
 
       <Link to={`/habits/${habit.id}`} className="flex min-w-0 flex-1 flex-col justify-center self-stretch py-1">

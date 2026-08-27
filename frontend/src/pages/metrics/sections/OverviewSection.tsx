@@ -103,7 +103,7 @@ export function OverviewSection({ period }: { period: Period }) {
 
   if (nothing) {
     return (
-      <Block module="train" icon={<Activity size={15} />} title={t('metrics.tabs.overview')}>
+      <Block module="train" icon={<Activity size={17} />} title={t('metrics.tabs.overview')}>
         <p className="py-8 text-center text-body text-ink-mute">{t('metrics.empty')}</p>
       </Block>
     )
@@ -112,7 +112,7 @@ export function OverviewSection({ period }: { period: Period }) {
   return (
     <Block
       module="train"
-      icon={<Activity size={15} />}
+      icon={<Activity size={17} />}
       title={t(`metrics.periods.${period}`)}
       summary={`${formatDay(range.from)} – ${formatDay(range.to)}`}
     >

@@ -115,7 +115,7 @@ export function ActivitySection({ date }: { date: string }) {
       : undefined
 
   return (
-    <Section module="move" title={t('activity.title')} icon={<Footprints size={15} />} summary={summary}>
+    <Section module="move" title={t('activity.title')} icon={<Footprints size={17} />} summary={summary}>
       {isLoading
         ? <p className="py-4 text-center text-body text-ink-mute">{t('common.loading')}</p>
         : <ActivityForm key={date} date={date} entry={entry} />}

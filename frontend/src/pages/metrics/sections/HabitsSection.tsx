@@ -19,7 +19,7 @@ export function HabitsSection({ days }: { days: number }) {
   const active = habits.filter(h => !h.archived)
   if (!overview || active.length === 0) {
     return (
-      <Block module="mind" icon={<CheckSquare size={15} />} title={t('nav.habits')}>
+      <Block module="mind" icon={<CheckSquare size={17} />} title={t('nav.habits')}>
         <EmptyHint text={t('dashboard.addHabits')} />
       </Block>
     )
@@ -42,7 +42,7 @@ export function HabitsSection({ days }: { days: number }) {
 
   return (
     <>
-      <Block module="mind" icon={<CheckSquare size={15} />} title={t('metrics.habits.daily')}>
+      <Block module="mind" icon={<CheckSquare size={17} />} title={t('metrics.habits.daily')}>
         <div className="grid grid-cols-2 gap-2">
           <StatTile
             label={t('metrics.habits.completion')}
@@ -69,7 +69,7 @@ export function HabitsSection({ days }: { days: number }) {
         />
       </Block>
 
-      <Block module="mind" icon={<CheckSquare size={15} />} title={t('metrics.habits.byWeekday')}>
+      <Block module="mind" icon={<CheckSquare size={17} />} title={t('metrics.habits.byWeekday')}>
         <div className="space-y-1.5">
           {overview.weekdayRates.map((value, i) => (
             <BarRow
@@ -84,7 +84,7 @@ export function HabitsSection({ days }: { days: number }) {
         </div>
       </Block>
 
-      <Block module="mind" icon={<Flame size={15} />} title={t('metrics.habits.openStreaks')}>
+      <Block module="mind" icon={<Flame size={17} />} title={t('metrics.habits.openStreaks')}>
         <div className="space-y-1.5">
           {[...active]
             .sort((a, b) => b.streak - a.streak)

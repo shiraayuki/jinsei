@@ -24,7 +24,7 @@ export function PageHeader({ title, back, action }: Props) {
         <button
           onClick={() => navigate(-1)}
           aria-label="Zurück"
-          className="-ml-2 flex h-10 w-10 items-center justify-center text-accent"
+          className="-ml-2 flex h-11 w-11 items-center justify-center text-accent"
         >
           <ArrowLeft size={22} strokeWidth={2.2} />
         </button>

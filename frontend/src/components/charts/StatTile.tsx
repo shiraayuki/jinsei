@@ -52,7 +52,7 @@ export function StatTile({
         </p>
         {spark && color && (
           <span className="hidden shrink-0 min-[340px]:block">
-            <Sparkline points={spark} color={color} smooth={smooth} width={52} />
+            <Sparkline points={spark} color={color} smooth={smooth} width={58} />
           </span>
         )}
       </div>

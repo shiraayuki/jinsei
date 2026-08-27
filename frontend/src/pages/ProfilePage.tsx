@@ -337,7 +337,7 @@ export function ProfilePage() {
             onClick={toggle}
             className="flex h-9 w-9 items-center justify-center rounded-control bg-raised text-ink-soft hover:bg-line transition-colors"
           >
-            {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+            {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
           </button>
         </Card>
 

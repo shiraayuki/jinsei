@@ -28,7 +28,7 @@ export function WorkoutsListPage() {
             disabled={sync.isPending || !configured}
             className="flex items-center gap-1.5 rounded-chip bg-raised px-3 py-2.5 text-meta font-medium text-ink-soft hover:bg-line disabled:opacity-40 transition-colors"
           >
-            <RefreshCw size={13} className={sync.isPending ? 'animate-spin' : undefined} />
+            <RefreshCw size={15} className={sync.isPending ? 'animate-spin' : undefined} />
             {t('workouts.sync')}
           </button>
         }

@@ -90,7 +90,7 @@ export function WeightSection({ date }: { date: string }) {
   ].filter(Boolean).join(' · ')
 
   return (
-    <Section module="body" title={t('weight.title')} icon={<Scale size={15} />} summary={summary || undefined}>
+    <Section module="body" title={t('weight.title')} icon={<Scale size={17} />} summary={summary || undefined}>
       <div className="space-y-3">
         {isLoading
           ? <p className="py-4 text-center text-body text-ink-mute">{t('common.loading')}</p>

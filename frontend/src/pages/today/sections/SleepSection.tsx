@@ -109,7 +109,7 @@ function SleepForm({ date, entry, onSelectDate }: {
       <div className="grid grid-cols-2 gap-3">
         <label className="flex flex-col gap-1">
           <span className="flex items-center gap-1 text-meta text-ink-mute">
-            <Bed size={13} /> {t('sleep.bedTime')}
+            <Bed size={15} /> {t('sleep.bedTime')}
           </span>
           <input
             type="time"
@@ -123,7 +123,7 @@ function SleepForm({ date, entry, onSelectDate }: {
         </label>
         <label className="flex flex-col gap-1">
           <span className="flex items-center gap-1 text-meta text-ink-mute">
-            <Sunrise size={13} /> {t('sleep.wakeTime')}
+            <Sunrise size={15} /> {t('sleep.wakeTime')}
           </span>
           <input
             type="time"
@@ -139,14 +139,14 @@ function SleepForm({ date, entry, onSelectDate }: {
 
       <DurationField
         label={t('sleep.timeInBed')}
-        icon={<Bed size={13} />}
+        icon={<Bed size={15} />}
         minutes={inBed}
         onChange={setInBed}
       />
 
       <DurationField
         label={t('sleep.actualSleep')}
-        icon={<Moon size={13} />}
+        icon={<Moon size={15} />}
         minutes={asleep}
         onChange={setAsleep}
       />
@@ -209,7 +209,7 @@ export function SleepSection({ date, onSelectDate }: {
   const summary = entry ? formatDuration(entry.actualSleepMinutes ?? entry.timeInBedMinutes) : undefined
 
   return (
-    <Section module="sleep" title={t('sleep.title')} icon={<Moon size={15} />} summary={summary || undefined}>
+    <Section module="sleep" title={t('sleep.title')} icon={<Moon size={17} />} summary={summary || undefined}>
       {isLoading
         ? <p className="py-4 text-center text-body text-ink-mute">{t('common.loading')}</p>
         : <SleepForm key={date} date={date} entry={entry} onSelectDate={onSelectDate} />}

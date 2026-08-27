@@ -167,7 +167,7 @@ function NutritionForm({ date, entry }: {
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
           <span className="flex items-center gap-1.5 text-meta text-ink-mute">
-            <Droplet size={13} /> {t('nutrition.water')}
+            <Droplet size={15} /> {t('nutrition.water')}
           </span>
           <div className="flex items-baseline gap-1 rounded-control border border-line bg-raised px-3 py-2">
             <input
@@ -194,7 +194,7 @@ function NutritionForm({ date, entry }: {
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
           <span className="flex items-center gap-1.5 text-meta text-ink-mute">
-            <Coffee size={13} /> {t('nutrition.coffee')}
+            <Coffee size={15} /> {t('nutrition.coffee')}
           </span>
           <div className="flex items-baseline gap-1 rounded-control border border-line bg-raised px-3 py-2">
             <input
@@ -243,7 +243,7 @@ export function NutritionSection({ date }: { date: string }) {
   const summary = entry?.kcal != null ? `${entry.kcal.toLocaleString(dateLocale())} kcal` : undefined
 
   return (
-    <Section module="food" title={t('nutrition.title')} icon={<Apple size={15} />} summary={summary}>
+    <Section module="food" title={t('nutrition.title')} icon={<Apple size={17} />} summary={summary}>
       {isLoading
         ? <p className="py-4 text-center text-body text-ink-mute">{t('common.loading')}</p>
         : <NutritionForm key={date} date={date} entry={entry} />}

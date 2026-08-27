@@ -46,7 +46,7 @@ export function BodySection({ days }: { days: number }) {
   const readings = defined(weightPoints)
   if (readings.length === 0) {
     return (
-      <Block module="body" icon={<Scale size={15} />} title={t('weight.title')}>
+      <Block module="body" icon={<Scale size={17} />} title={t('weight.title')}>
         <EmptyHint text={t('metrics.empty')} />
       </Block>
     )
@@ -109,7 +109,7 @@ export function BodySection({ days }: { days: number }) {
 
   return (
     <>
-      <Block module="body" icon={<Scale size={15} />} title={t('weight.title')}>
+      <Block module="body" icon={<Scale size={17} />} title={t('weight.title')}>
         <div className="grid grid-cols-2 gap-2">
           <StatTile
             label={t('weight.weightKg')}
@@ -154,7 +154,7 @@ export function BodySection({ days }: { days: number }) {
 
       <Block
         module="body"
-        icon={<Flame size={15} />}
+        icon={<Flame size={17} />}
         title={t('metrics.body.tdee')}
         summary={tdee != null ? t('metrics.body.measured') : undefined}
       >
@@ -251,7 +251,7 @@ export function BodySection({ days }: { days: number }) {
       </Block>
 
       {defined(waistPoints).length > 0 && (
-        <Block module="body" icon={<Scale size={15} />} title={t('metrics.body.waist')}>
+        <Block module="body" icon={<Scale size={17} />} title={t('metrics.body.waist')}>
           <Chart
             series={[{ label: t('weight.waistCm'), color: moduleColor.mind, points: waistPoints, unit: ' cm', averageOver: 3 }]}
             format={v => num(v, 1)}
