@@ -67,9 +67,13 @@ public class WorkoutSyncService
             row.SyncedAt = DateTimeOffset.UtcNow;
         }
 
-        var cardioDays = await FillCardioAsync(userId, workouts, ct);
-
+        // The sessions are saved on their own before the cardio fill, which
+        // writes the one row per day that the phone's step push also writes and
+        // may therefore have to be retried. A retry must not drag the sessions
+        // through a second time.
         await _db.SaveChangesAsync(ct);
+
+        var cardioDays = await FillCardioAsync(userId, workouts, ct);
         return new SyncResult(added, updated, workouts.Count, cardioDays);
     }
 
@@ -91,32 +95,51 @@ public class WorkoutSyncService
                     .Sum(s => s.DurationSeconds ?? 0) / 60.0));
 
         if (byDay.Count == 0) return 0;
-
         var days = byDay.Keys.ToList();
-        var existing = await _db.ActivityEntries
-            .Where(a => a.UserId == userId && days.Contains(a.Date))
-            .ToDictionaryAsync(a => a.Date, ct);
 
-        var filled = 0;
-        foreach (var (day, minutes) in byDay)
+        // Read, decide, write — and the phone's nightly step push writes the
+        // same one-row-per-day table. Two writers that both find no row insert
+        // two, and the unique index on (user, date) rejects the second. So the
+        // whole read is done again on a failed write: the row that appeared in
+        // between is then an update, not an insert.
+        for (var attempt = 0; ; attempt++)
         {
-            if (existing.TryGetValue(day, out var entry))
+            var existing = await _db.ActivityEntries
+                .Where(a => a.UserId == userId && days.Contains(a.Date))
+                .ToDictionaryAsync(a => a.Date, ct);
+
+            var filled = 0;
+            foreach (var (day, minutes) in byDay)
             {
-                if (entry.Cardio is not null) continue;
-            }
-            else
-            {
-                entry = new ActivityEntry { Id = Guid.NewGuid(), UserId = userId, Date = day };
-                _db.ActivityEntries.Add(entry);
+                if (existing.TryGetValue(day, out var entry))
+                {
+                    if (entry.Cardio is not null) continue;
+                }
+                else
+                {
+                    entry = new ActivityEntry { Id = Guid.NewGuid(), UserId = userId, Date = day };
+                    _db.ActivityEntries.Add(entry);
+                }
+
+                entry.Cardio = true;
+                if (minutes > 0) entry.CardioMinutes = minutes;
+                entry.LoggedAt = DateTimeOffset.UtcNow;
+                filled++;
             }
 
-            entry.Cardio = true;
-            if (minutes > 0) entry.CardioMinutes = minutes;
-            entry.LoggedAt = DateTimeOffset.UtcNow;
-            filled++;
+            if (filled == 0) return 0;
+
+            try
+            {
+                await _db.SaveChangesAsync(ct);
+                return filled;
+            }
+            catch (DbUpdateException) when (attempt == 0)
+            {
+                foreach (var tracked in _db.ChangeTracker.Entries<ActivityEntry>().ToList())
+                    tracked.State = EntityState.Detached;
+            }
         }
-
-        return filled;
     }
 
     /// <summary>Readable rendering of a session, in the shape Hevy's share text uses.</summary>

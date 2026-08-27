@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
@@ -33,6 +34,17 @@ public class HevyClient
 
     public bool IsConfigured => ApiKey is not null;
 
+    /// <summary>
+    /// The oldest day worth pulling. Everything before it is a different
+    /// training life — imported history, a phase logged in another app — and it
+    /// would only skew the analytics, which read the log as one series. Unset
+    /// means no floor.
+    /// </summary>
+    private DateOnly? SyncFrom =>
+        DateOnly.TryParse(_config["Hevy:SyncFrom"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var day)
+            ? day
+            : null;
+
     private TimeZoneInfo LocalZone
     {
         get
@@ -43,7 +55,12 @@ public class HevyClient
         }
     }
 
-    /// <summary>Fetches the most recent sessions, newest first.</summary>
+    /// <summary>
+    /// Fetches the most recent sessions, newest first, down to
+    /// <c>Hevy:SyncFrom</c>. Hevy pages newest first, so reaching a session
+    /// older than the floor means every page after it is older too — the walk
+    /// stops there rather than reading pages it will throw away.
+    /// </summary>
     public async Task<List<HevyWorkout>> FetchRecentAsync(int maxPages, CancellationToken ct = default)
     {
         if (ApiKey is null)
@@ -92,8 +109,19 @@ public class HevyClient
                 if (!doc.RootElement.TryGetProperty("workouts", out var workouts) || workouts.GetArrayLength() == 0)
                     break;
 
+                var reachedFloor = false;
                 foreach (var raw in workouts.EnumerateArray())
-                    result.Add(Convert(raw));
+                {
+                    var workout = Convert(raw);
+                    if (SyncFrom is DateOnly floor && workout.Date < floor)
+                    {
+                        reachedFloor = true;
+                        continue;
+                    }
+                    result.Add(workout);
+                }
+
+                if (reachedFloor) break;
 
                 var pageCount = doc.RootElement.TryGetProperty("page_count", out var pc) ? pc.GetInt32() : page;
                 if (page >= pageCount) break;

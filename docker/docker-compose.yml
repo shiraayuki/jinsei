@@ -22,6 +22,11 @@ services:
       # itself as unconfigured and nothing else changes.
       Hevy__ApiKey: ${HEVY_API_KEY:-}
       Hevy__TimeZone: ${TZ:-Europe/Vienna}
+      # The log starts here; sessions before it are never pulled. Unset means
+      # everything Hevy still has.
+      Hevy__SyncFrom: ${HEVY_SYNC_FROM:-2026-08-17}
+      # One pull a day, at this local time, plus one on startup.
+      Hevy__SyncAtLocal: ${HEVY_SYNC_AT:-19:30}
       # Reads screenshots of Sleep Cycle / FatSecret into a draft. Without a
       # key the import button stays hidden and everything is entered by hand.
       Gemini__ApiKey: ${GEMINI_API_KEY:-}

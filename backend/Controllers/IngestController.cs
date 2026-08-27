@@ -41,32 +41,49 @@ public class IngestController : ControllerBase
         if (req.Entries.Count > 400) return BadRequest(new { message = "Too many entries in one request." });
 
         var days = req.Entries.Select(e => e.Date).Distinct().ToList();
-        var existing = await _db.ActivityEntries
-            .Where(a => a.UserId == user.Id && days.Contains(a.Date))
-            .ToDictionaryAsync(a => a.Date, ct);
 
-        var written = 0;
-        foreach (var entry in req.Entries)
+        // The scheduled Hevy sync fills the cardio answer on the same one row
+        // per day, and both run in the evening. Two writers that both find no
+        // row insert two, and the unique index on (user, date) rejects the
+        // second — so a failed write reads the day again, where the row that
+        // appeared in between is an update rather than an insert.
+        for (var attempt = 0; ; attempt++)
         {
-            if (entry.Steps is < 0 or > 200_000) continue;
+            var existing = await _db.ActivityEntries
+                .Where(a => a.UserId == user.Id && days.Contains(a.Date))
+                .ToDictionaryAsync(a => a.Date, ct);
 
-            if (!existing.TryGetValue(entry.Date, out var row))
+            var written = 0;
+            foreach (var entry in req.Entries)
             {
-                row = new ActivityEntry { Id = Guid.NewGuid(), UserId = user.Id, Date = entry.Date };
-                _db.ActivityEntries.Add(row);
-                existing[entry.Date] = row;
+                if (entry.Steps is < 0 or > 200_000) continue;
+
+                if (!existing.TryGetValue(entry.Date, out var row))
+                {
+                    row = new ActivityEntry { Id = Guid.NewGuid(), UserId = user.Id, Date = entry.Date };
+                    _db.ActivityEntries.Add(row);
+                    existing[entry.Date] = row;
+                }
+
+                // Steps are the only field this touches: whether the day had
+                // cardio is an answer given by hand, and a step count is no
+                // reason to overwrite it.
+                row.Steps = entry.Steps;
+                row.LoggedAt = DateTimeOffset.UtcNow;
+                written++;
             }
 
-            // Steps are the only field this touches: whether the day had cardio
-            // is an answer given by hand, and a step count is no reason to
-            // overwrite it.
-            row.Steps = entry.Steps;
-            row.LoggedAt = DateTimeOffset.UtcNow;
-            written++;
+            try
+            {
+                await _db.SaveChangesAsync(ct);
+                return Ok(new { written, days = days.Count });
+            }
+            catch (DbUpdateException) when (attempt == 0)
+            {
+                foreach (var tracked in _db.ChangeTracker.Entries<ActivityEntry>().ToList())
+                    tracked.State = EntityState.Detached;
+            }
         }
-
-        await _db.SaveChangesAsync(ct);
-        return Ok(new { written, days = days.Count });
     }
 
     /// <summary>
