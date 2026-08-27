@@ -79,7 +79,9 @@ export function WorkoutsListPage() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate font-semibold text-ink">{w.title}</p>
-              <p className="text-meta text-ink-mute tabular">
+              {/* Four facts on one line: it stays one line. Wrapping put "kg"
+                  alone under the row and made every card two lines tall. */}
+              <p className="truncate text-label text-ink-mute tabular">
                 {formatDate(w.date)} · {t('workouts.setCount', { count: w.setCount })}
                 {w.durationMinutes != null && ` · ${w.durationMinutes} min`}
                 {w.volumeKg > 0 && ` · ${Math.round(w.volumeKg).toLocaleString(dateLocale())} kg`}
