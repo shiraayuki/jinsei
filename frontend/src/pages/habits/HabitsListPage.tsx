@@ -64,9 +64,9 @@ export function HabitsListPage() {
         action={
           <Link
             to="/habits/new"
-            className="flex items-center gap-1.5 rounded-chip bg-raised px-3 py-2.5 text-meta font-medium text-ink-soft hover:bg-line transition-colors"
+            className="-mr-2 flex items-center gap-1 px-2 py-2 text-body font-medium text-accent active:opacity-50"
           >
-            <Plus size={14} />
+            <Plus size={18} strokeWidth={2.2} />
             {t('common.new')}
           </Link>
         }

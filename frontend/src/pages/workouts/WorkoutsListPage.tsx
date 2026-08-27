@@ -26,9 +26,9 @@ export function WorkoutsListPage() {
           <button
             onClick={() => sync.mutate()}
             disabled={sync.isPending || !configured}
-            className="flex items-center gap-1.5 rounded-chip bg-raised px-3 py-2.5 text-meta font-medium text-ink-soft hover:bg-line disabled:opacity-40 transition-colors"
+            className="-mr-2 flex items-center gap-1 px-2 py-2 text-body font-medium text-accent disabled:opacity-40 active:opacity-50"
           >
-            <RefreshCw size={15} className={sync.isPending ? 'animate-spin' : undefined} />
+            <RefreshCw size={17} className={sync.isPending ? 'animate-spin' : undefined} />
             {t('workouts.sync')}
           </button>
         }
