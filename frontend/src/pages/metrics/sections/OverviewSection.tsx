@@ -1,6 +1,7 @@
 import { Activity } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { StatTile } from '../../../components/charts/StatTile'
+import { MacroSplit } from '../../../components/charts/MacroSplit'
 import { useActivity } from '../../../features/activity/hooks'
 import { useNutrition } from '../../../features/nutrition/hooks'
 import { useSleep } from '../../../features/sleep/hooks'
@@ -65,6 +66,13 @@ export function OverviewSection({ period }: { period: Period }) {
   const kcalBefore = meanOf(nutrition, e => e.kcal, inPrevious)
   const stepsNow = meanOf(activity, e => e.steps, inPeriod)
   const stepsBefore = meanOf(activity, e => e.steps, inPrevious)
+
+  // Averaged one macro at a time rather than off the mean day: a day that
+  // logged calories but no macros would otherwise drag all three down.
+  const proteinNow = meanOf(nutrition, e => e.proteinG, inPeriod)
+  const carbsNow = meanOf(nutrition, e => e.carbsG, inPeriod)
+  const fatNow = meanOf(nutrition, e => e.fatG, inPeriod)
+  const hasMacros = proteinNow != null || carbsNow != null || fatNow != null
 
   // The trend weight, not the last weigh-in: a single morning swings by more
   // than a week of eating does. The delta is the trend at the end of the period
@@ -164,6 +172,16 @@ export function OverviewSection({ period }: { period: Period }) {
             smooth={7}
           />
         </div>
+        {hasMacros && (
+          <div className="col-span-2 rounded-control bg-raised p-3">
+            <p className="mb-2 text-meta text-ink-mute">
+              {t('metrics.macrosAvg')} <span className="text-ink-faint">{t('metrics.perDay')}</span>
+            </p>
+            {/* Shares by calories, not by grams — the split is what the tile is
+                for, and the grams stand next to it. */}
+            <MacroSplit proteinG={proteinNow ?? 0} carbsG={carbsNow ?? 0} fatG={fatNow ?? 0} />
+          </div>
+        )}
       </div>
 
       <p className="text-label text-ink-faint">{t('metrics.comparedWithBefore')}</p>

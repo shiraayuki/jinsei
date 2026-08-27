@@ -194,6 +194,7 @@ export default {
       year: '1 Jahr',
     },
     overPeriod: 'im Zeitraum, geglättet',
+    macrosAvg: 'Ø Makros',
     periodTotal: 'im Zeitraum',
     comparedWithBefore: 'Verglichen mit dem gleich langen Zeitraum davor.',
     tabs: {
