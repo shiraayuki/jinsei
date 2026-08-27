@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { dateLocale } from '../../i18n'
 import { movingAverage, type Point } from '../../lib/stats'
 
@@ -88,6 +88,19 @@ function niceStep(range: number): number {
 
 export function Chart({ series, height = 140, goal, zeroBased, format, empty }: Props) {
   const [hover, setHover] = useState<number | null>(null)
+  const box = useRef<HTMLDivElement>(null)
+
+  // A finger lifting keeps the reading on screen, so something else has to
+  // take it away again: the next touch anywhere that is not this chart. Without
+  // it the card from one chart stays up while another is being read.
+  useEffect(() => {
+    if (hover == null) return
+    function dismiss(event: PointerEvent) {
+      if (!box.current?.contains(event.target as Node)) setHover(null)
+    }
+    document.addEventListener('pointerdown', dismiss)
+    return () => document.removeEventListener('pointerdown', dismiss)
+  }, [hover])
 
   const withData = series.filter(s => s.points.some(p => p.value != null))
   const dates = withData[0]?.points.map(p => p.date) ?? []
@@ -183,7 +196,7 @@ export function Chart({ series, height = 140, goal, zeroBased, format, empty }: 
   const readout = hover != null && dates[hover] ? { index: hover, ratio: x(hover) / W } : null
 
   return (
-    <div className="relative">
+    <div ref={box} className="relative">
       {/*
         `touch-pan-y` and not `touch-none`: a finger dragged sideways scrubs the
         chart, one dragged down still scrolls the page. A chart that eats the

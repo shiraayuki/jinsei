@@ -32,7 +32,7 @@ export function CardSection({ module, title, icon, summary, action, children }: 
           as a plate: the colour is the title's, and the icon rides with it. */}
       <div className="mb-3 flex items-center gap-1.5">
         <span style={{ color: moduleColor[module] }}>{icon}</span>
-        <h2 className="text-body font-semibold" style={{ color: moduleColor[module] }}>{title}</h2>
+        <h2 className="text-title font-semibold" style={{ color: moduleColor[module] }}>{title}</h2>
         {summary && <span className="ml-auto truncate text-meta text-ink-mute">{summary}</span>}
         {action}
       </div>
