@@ -7,7 +7,7 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
-import { LogOut, Sun, Moon } from 'lucide-react'
+import { Download, LogOut, Sun, Moon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { RATE_PRESETS, rateKeyFor } from '../lib/energy'
 import { api } from '../lib/api'
@@ -281,6 +281,68 @@ function IngestCard() {
   )
 }
 
+/** The areas offered, in the order they are shown. Mirrors `ExportController.Areas`. */
+const EXPORT_AREAS = ['weight', 'sleep', 'nutrition', 'activity', 'workouts', 'habits', 'notes'] as const
+
+/**
+ * The data, in a file.
+ *
+ * The whole argument for running this yourself is that the rows are yours, and
+ * until now the only way to them was pg_dump over SSH. Plain links rather than
+ * a fetch and a blob: the response carries Content-Disposition, so the browser
+ * files it away by itself, and that is the one path that also works inside the
+ * installed app on a phone.
+ */
+function ExportCard() {
+  const { t } = useTranslation()
+  const [format, setFormat] = useState<'csv' | 'json'>('csv')
+
+  return (
+    <Card className="space-y-3 p-4">
+      <div>
+        <p className="text-body font-medium text-ink-soft">{t('export.title')}</p>
+        <p className="mt-0.5 text-meta text-ink-mute">{t('export.hint')}</p>
+      </div>
+
+      <div className="segmented flex">
+        {(['csv', 'json'] as const).map(f => (
+          <button
+            key={f}
+            onClick={() => setFormat(f)}
+            aria-pressed={format === f}
+            className="segmented-item flex-1 py-1.5 text-meta uppercase"
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        {EXPORT_AREAS.map(area => (
+          <a
+            key={area}
+            href={`/api/export/${area}?format=${format}`}
+            className="flex items-center gap-2 rounded-control bg-raised px-3 py-2.5 text-meta text-ink-soft transition-colors hover:bg-line"
+          >
+            <Download size={15} className="shrink-0 text-ink-mute" />
+            <span className="min-w-0 truncate">{t(`export.areas.${area}`)}</span>
+          </a>
+        ))}
+      </div>
+
+      {/* The bundle is JSON whatever the switch says: a spreadsheet has no way
+          to hold seven tables in one sheet, and the server refuses it. */}
+      <a
+        href="/api/export/all"
+        className="flex items-center justify-center gap-2 rounded-control bg-accent-soft px-3 py-2.5 text-meta font-medium text-accent"
+      >
+        <Download size={15} />
+        {t('export.bundle')}
+      </a>
+    </Card>
+  )
+}
+
 export function ProfilePage() {
   const { user, logout, updateProfile } = useAuth()
   const { theme, preference, palette, setPreference, setPalette } = useTheme()
@@ -310,6 +372,7 @@ export function ProfilePage() {
         <GoalsCard />
         <RateCard />
         <IngestCard />
+        <ExportCard />
 
         <Card className="space-y-4 p-4">
           <div>

@@ -390,6 +390,20 @@ export default {
     daily: 'Per day',
     training: 'Training and body',
   },
+  export: {
+    title: 'Export data',
+    hint: 'Everything this app holds about you, as a file you can open.',
+    bundle: 'Everything, in one JSON file',
+    areas: {
+      weight: 'Body',
+      sleep: 'Sleep',
+      nutrition: 'Nutrition',
+      activity: 'Activity',
+      workouts: 'Workouts',
+      habits: 'Habits',
+      notes: 'Notes',
+    },
+  },
   profile: {
     title: 'Profile',
     email: 'Email',
