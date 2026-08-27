@@ -143,10 +143,15 @@ function RateCard() {
   const [saving, setSaving] = useState<string | null>(null)
   const active = rateKeyFor(user?.weeklyRatePercent ?? null)
 
-  async function choose(percent: number | null, key: string) {
+  async function choose(percent: number | null, key: string, auto?: boolean) {
     setSaving(key)
     try {
-      await updateProfile({ weeklyRatePercent: percent })
+      // Clearing the pace clears the following with it: there is nothing left
+      // for a Monday job to compute a target from.
+      await updateProfile({
+        weeklyRatePercent: percent,
+        autoKcalGoal: percent == null ? false : (auto ?? user?.autoKcalGoal ?? false),
+      })
     } finally {
       setSaving(null)
     }
@@ -189,6 +194,30 @@ function RateCard() {
       </div>
 
       <p className="text-label text-ink-faint">{t('rate.anchor')}</p>
+
+      {/* The loop that makes a pace worth choosing: as the weight falls the
+          need falls with it, and a target that stays where it was stops being
+          a deficit. Off unless it is asked for — a goal that changes by itself
+          is not something to discover. */}
+      <label
+        className={`flex items-center gap-3 rounded-control bg-raised p-3 ${
+          user?.weeklyRatePercent == null ? 'opacity-50' : ''
+        }`}
+      >
+        <input
+          type="checkbox"
+          checked={user?.autoKcalGoal ?? false}
+          disabled={user?.weeklyRatePercent == null || saving != null}
+          onChange={e => choose(user?.weeklyRatePercent ?? null, 'auto', e.target.checked)}
+          className="h-5 w-5 shrink-0 accent-[var(--accent)]"
+        />
+        <span className="min-w-0">
+          <span className="block text-meta text-ink-soft">{t('rate.autoTitle')}</span>
+          <span className="block text-label text-ink-faint">
+            {user?.weeklyRatePercent == null ? t('rate.autoNeedsPace') : t('rate.autoHint')}
+          </span>
+        </span>
+      </label>
     </Card>
   )
 }

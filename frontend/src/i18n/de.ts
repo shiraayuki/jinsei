@@ -228,7 +228,7 @@ export default {
       noRate: 'Tempo im Profil wählen, dann rechnet die App das Ziel.',
       anchorWeight: 'Basis: {{value}} kg vom Montag',
       tdee: 'Erhaltungsbedarf',
-      tdeeHint: 'Aus Zufuhr und Gewichtstrend',
+      tdeeHint: 'Aus Zufuhr und Gewichtstrend, über {{days}} Tage',
       tdeeNeeds: 'Wird aus Zufuhr und Gewichtstrend berechnet, sobald genug Tage erfasst sind.',
       waist: 'Taille',
     },
@@ -361,6 +361,9 @@ export default {
       aggressive: 'Fettfreie Masse geht mit runter',
     },
     anchor: 'Gerechnet vom Trendgewicht am Montag, nicht von der letzten Wiegung. Nochmal tippen hebt die Wahl auf.',
+    autoTitle: 'Jeden Montag der Messung folgen',
+    autoHint: 'Schreibt das Wochenziel von selbst ins Kalorienziel. Fällt das Gewicht, fällt der Bedarf mit.',
+    autoNeedsPace: 'Erst ein Tempo wählen — sonst gibt es nichts zu rechnen.',
   },
   ingest: {
     title: 'Automatisch erfassen',

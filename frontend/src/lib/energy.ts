@@ -1,35 +1,18 @@
 /**
- * What maintenance actually is, measured rather than modelled.
+ * What is left of the energy arithmetic on this side.
  *
- * There was a formula here once — resting rate, an occupation factor, the cost
- * of the steps walked and the minutes trained. It was removed because it
- * answered the same question twice with two different numbers, and the reader
- * then had to decide which to believe. The measurement below needs two weeks of
- * patience and is right; a formula is available immediately and is not.
+ * Maintenance, the anchor weight and the week's target used to be worked out
+ * here, over whatever range the chart above them happened to be showing — so
+ * the target moved when the range switch did, and the button then wrote a
+ * different figure than a weekly job would have. That calculation now lives in
+ * `EnergyService` on the server, over one fixed four-week window, and is read
+ * through `features/energy/hooks`. What stays here is the pace, which is a
+ * decision rather than a measurement, and the two constants a screen needs to
+ * say what a number means.
  */
-
-import { latest, mondayOf, movingAverage, type Point } from './stats'
 
 /** A kilogram of body mass is roughly this many kilocalories of stored energy. */
 export const KCAL_PER_KG = 7700
-
-/** Logged calorie days and weigh-ins before the estimate is worth showing. */
-export const MIN_KCAL_DAYS = 14
-export const MIN_WEIGH_INS = 8
-
-/**
- * Maintenance from what actually happened: average intake plus the energy that
- * came out of, or went into, storage.
- *
- * `ratePerWeek` is the trend line's slope in kilograms per week, not the
- * difference between two weigh-ins — a salty dinner moves the scale by more
- * than a week of deficit does. Because the slope carries every cost there is,
- * including the ones no model has a term for, this needs nothing about your
- * height, your age or how you spend your day.
- */
-export function measuredTdee(meanKcal: number, ratePerWeek: number): number {
-  return meanKcal - (ratePerWeek / 7) * KCAL_PER_KG
-}
 
 /** The weekly weight change a given daily gap would produce, in kilograms. */
 export function weeklyChangeFor(dailyGapKcal: number): number {
@@ -63,31 +46,4 @@ export function rateKeyFor(percent: number | null): RateKey | null {
         : best,
     RATE_PRESETS[0].key,
   )
-}
-
-/**
- * The weight the week's target is computed from.
- *
- * Not the last weigh-in: that swings by a kilo on salt and water alone, which
- * would move the calorie target by sixty kilocalories from one morning to the
- * next. The trend weight, frozen at this week's Monday — so the number holds
- * still for seven days and then steps down on its own as the trend does.
- */
-export function anchorWeight(weightPoints: Point[], today: string): number | null {
-  const trend = movingAverage(weightPoints, 7, 3)
-  const monday = mondayOf(today)
-  const settled = trend.filter(p => p.date <= monday)
-  // A first week with nothing behind it falls back to what is known, rather
-  // than withholding a target until next Monday.
-  return latest(settled) ?? latest(trend)
-}
-
-/** What the chosen pace works out to in kilograms for this week. */
-export function weeklyLossKg(anchorKg: number, percent: number): number {
-  return anchorKg * (percent / 100)
-}
-
-/** The intake that pace calls for, given what maintenance actually is. */
-export function targetIntake(tdee: number, weeklyKg: number): number {
-  return tdee - (weeklyKg * KCAL_PER_KG) / 7
 }

@@ -13,6 +13,12 @@ export interface Goals {
   weeklySetsGoal: number | null
   /** Pace of the cut as a percentage of body weight per week. */
   weeklyRatePercent: number | null
+  /**
+   * Whether the measured target is written into `kcalGoal` on its own every
+   * Monday. Off unless it was asked for: a goal that changes by itself is not
+   * something to discover.
+   */
+  autoKcalGoal: boolean
 }
 
 /** What an energy formula needs and the daily logs cannot supply. */
@@ -26,6 +32,8 @@ export interface BodyProfileFields {
 }
 
 export interface User extends Goals, BodyProfileFields {
+  /** When the calorie goal was last written from the measurement, by hand or by the job. */
+  kcalGoalUpdatedAt: string | null
   /** Whether a phone shortcut can currently post data; the token itself is never returned. */
   hasIngestToken: boolean
   id: string
@@ -106,6 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       weeklyWorkoutsGoal: user?.weeklyWorkoutsGoal ?? null,
       weeklySetsGoal: user?.weeklySetsGoal ?? null,
       weeklyRatePercent: user?.weeklyRatePercent ?? null,
+      autoKcalGoal: user?.autoKcalGoal ?? false,
       birthDate: user?.birthDate ?? null,
       heightCm: user?.heightCm ?? null,
       sex: user?.sex ?? null,

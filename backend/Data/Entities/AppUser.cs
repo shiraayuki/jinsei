@@ -46,6 +46,22 @@ public class AppUser : IdentityUser
     public decimal? WeeklyRatePercent { get; set; }
 
     /// <summary>
+    /// Whether the week's calorie target is written into <see cref="KcalGoal"/>
+    /// on its own every Monday, rather than waiting for the button under
+    /// Metrics → Body to be pressed. Off unless it was asked for: a goal that
+    /// changes by itself is not something to discover.
+    /// </summary>
+    public bool AutoKcalGoal { get; set; }
+
+    /// <summary>
+    /// When the goal was last written from the measured target — by the button
+    /// or by the weekly job. It is also how the job knows a week has been
+    /// handled, so a container that was down on Monday catches up on Tuesday
+    /// instead of skipping the week.
+    /// </summary>
+    public DateTimeOffset? KcalGoalUpdatedAt { get; set; }
+
+    /// <summary>
     /// SHA-256 of the ingest token, which lets a phone shortcut post steps
     /// without a session. The token itself is never stored: it is shown once
     /// when it is created and can only be replaced, not recovered.

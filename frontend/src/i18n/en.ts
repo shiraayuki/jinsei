@@ -228,7 +228,7 @@ export default {
       noRate: 'Pick a pace in your profile and the target computes itself.',
       anchorWeight: 'From {{value}} kg on Monday',
       tdee: 'Est. maintenance',
-      tdeeHint: 'From intake and weight trend',
+      tdeeHint: 'From intake and weight trend, over {{days}} days',
       tdeeNeeds: 'Calculated from intake against the weight trend once enough days are logged.',
       waist: 'Waist',
     },
@@ -361,6 +361,9 @@ export default {
       aggressive: 'Fat-free mass comes off too',
     },
     anchor: 'Computed from Monday\'s trend weight, not the last weigh-in. Tap again to clear the choice.',
+    autoTitle: 'Follow the measurement every Monday',
+    autoHint: 'Writes the week\'s target into the calorie goal on its own. As the weight falls the need falls with it.',
+    autoNeedsPace: 'Choose a pace first — there is nothing to compute a target from.',
   },
   ingest: {
     title: 'Automatic logging',

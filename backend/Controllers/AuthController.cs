@@ -105,6 +105,7 @@ public class AuthController : ControllerBase
         user.WeeklyWorkoutsGoal = req.WeeklyWorkoutsGoal;
         user.WeeklySetsGoal = req.WeeklySetsGoal;
         user.WeeklyRatePercent = req.WeeklyRatePercent;
+        user.AutoKcalGoal = req.AutoKcalGoal ?? false;
         user.BirthDate = req.BirthDate;
         user.HeightCm = req.HeightCm;
         user.Sex = req.Sex;
@@ -160,6 +161,8 @@ public class AuthController : ControllerBase
         u.WeeklyWorkoutsGoal,
         u.WeeklySetsGoal,
         u.WeeklyRatePercent,
+        u.AutoKcalGoal,
+        u.KcalGoalUpdatedAt,
         HasIngestToken = u.IngestTokenHash != null,
         BirthDate = u.BirthDate?.ToString("yyyy-MM-dd"),
         u.HeightCm,
@@ -182,6 +185,7 @@ public record UpdateProfileRequest(
     int? WeeklyWorkoutsGoal,
     int? WeeklySetsGoal,
     decimal? WeeklyRatePercent,
+    bool? AutoKcalGoal,
     DateOnly? BirthDate,
     int? HeightCm,
     string? Sex,

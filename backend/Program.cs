@@ -54,7 +54,9 @@ builder.Services.AddHttpClient<HevyClient>();
 builder.Services.AddScoped<WorkoutSyncService>();
 builder.Services.AddHttpClient<GeminiClient>();
 builder.Services.AddScoped<ScreenshotImportService>();
+builder.Services.AddScoped<EnergyService>();
 builder.Services.AddHostedService<HevySyncScheduler>();
+builder.Services.AddHostedService<CalorieTargetScheduler>();
 builder.Services.AddControllers();
 
 var app = builder.Build();
