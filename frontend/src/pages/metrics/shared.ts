@@ -36,6 +36,24 @@ export function series<T extends { date: string }>(
   )
 }
 
+/**
+ * The same, but between two given days — what the period switch needs, since
+ * its window is anchored to a Monday or a first of the month rather than to
+ * however many days fit behind today.
+ */
+export function seriesBetween<T extends { date: string }>(
+  rows: T[],
+  pick: (row: T) => number | null,
+  from: string,
+  to: string,
+): Point[] {
+  return densify(
+    rows.filter(r => r.date >= from && r.date <= to).map(r => ({ date: r.date, value: pick(r) })),
+    from,
+    to,
+  )
+}
+
 /** Splits a series into the current window and the one before it, for deltas. */
 export function splitWindow(points: Point[], windowDays: number) {
   const current = points.slice(-windowDays)
