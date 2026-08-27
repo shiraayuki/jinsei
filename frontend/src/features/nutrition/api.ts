@@ -7,7 +7,6 @@ export interface NutritionEntry {
   proteinG: number | null
   carbsG: number | null
   fatG: number | null
-  fiberG: number | null
   waterL: number | null
   coffeeMl: number | null
   /** "HH:mm" of the last coffee of the day. */

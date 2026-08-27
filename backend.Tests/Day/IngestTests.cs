@@ -186,7 +186,7 @@ public class IngestTests
         {
             entries = new[]
             {
-                new { date = "2026-08-25", kcal = 2310, proteinG = 194, carbsG = 197, fatG = 71, fiberG = 33, waterL = 3.0 },
+                new { date = "2026-08-25", kcal = 2310, proteinG = 194, carbsG = 197, fatG = 71, waterL = 3.0 },
             },
         }));
         res.EnsureSuccessStatusCode();
@@ -196,7 +196,6 @@ public class IngestTests
         Assert.Equal(194, day.GetProperty("proteinG").GetInt32());
         Assert.Equal(197, day.GetProperty("carbsG").GetInt32());
         Assert.Equal(71, day.GetProperty("fatG").GetInt32());
-        Assert.Equal(33, day.GetProperty("fiberG").GetInt32());
         Assert.Equal(3.0m, day.GetProperty("waterL").GetDecimal());
     }
 

@@ -109,7 +109,6 @@ export function DashboardPage() {
       proteinG: todayNutrition?.proteinG ?? null,
       carbsG: todayNutrition?.carbsG ?? null,
       fatG: todayNutrition?.fatG ?? null,
-      fiberG: todayNutrition?.fiberG ?? null,
       waterL: patch.waterL ?? todayNutrition?.waterL ?? null,
       coffeeMl: patch.coffeeMl ?? todayNutrition?.coffeeMl ?? null,
       lastCoffee: patch.lastCoffee ?? todayNutrition?.lastCoffee ?? null,

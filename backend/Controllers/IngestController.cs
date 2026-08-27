@@ -97,9 +97,8 @@ public class IngestController : ControllerBase
             var protein = InRange(entry.ProteinG, 0, 1_000);
             var carbs = InRange(entry.CarbsG, 0, 2_000);
             var fat = InRange(entry.FatG, 0, 1_000);
-            var fiber = InRange(entry.FiberG, 0, 500);
             var water = InRange(entry.WaterL, 0m, 30m);
-            if (kcal is null && protein is null && carbs is null && fat is null && fiber is null && water is null)
+            if (kcal is null && protein is null && carbs is null && fat is null && water is null)
                 continue;
 
             if (!existing.TryGetValue(entry.Date, out var row))
@@ -113,7 +112,6 @@ public class IngestController : ControllerBase
             row.ProteinG = protein ?? row.ProteinG;
             row.CarbsG = carbs ?? row.CarbsG;
             row.FatG = fat ?? row.FatG;
-            row.FiberG = fiber ?? row.FiberG;
             // Water is in Health too, but only when it was logged there; a day
             // without it must not wipe what was tapped into the app.
             row.WaterL = water ?? row.WaterL;
@@ -161,7 +159,6 @@ public record IngestNutritionEntry(
     int? ProteinG,
     int? CarbsG,
     int? FatG,
-    int? FiberG,
     decimal? WaterL);
 
 public record IngestNutritionRequest(List<IngestNutritionEntry> Entries);

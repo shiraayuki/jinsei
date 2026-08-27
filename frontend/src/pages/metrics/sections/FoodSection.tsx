@@ -21,7 +21,6 @@ export function FoodSection({ days }: { days: number }) {
   const protein = series(nutrition, e => e.proteinG, days)
   const carbs = series(nutrition, e => e.carbsG, days)
   const fat = series(nutrition, e => e.fatG, days)
-  const fiber = series(nutrition, e => e.fiberG, days)
   const water = series(nutrition, e => e.waterL, days)
   const weightPoints = series(weight, e => e.weightKg, days)
 
@@ -51,7 +50,6 @@ export function FoodSection({ days }: { days: number }) {
   const bodyWeight = latest(movingAverage(weightPoints, 7, 1))
   const proteinMean = mean(defined(protein))
   const proteinPerKg = proteinMean != null && bodyWeight ? proteinMean / bodyWeight : null
-  const fiberMean = mean(defined(fiber))
 
   return (
     <>
@@ -109,18 +107,6 @@ export function FoodSection({ days }: { days: number }) {
             value={proteinPerKg != null ? `${num(proteinPerKg, 2)} g/kg` : '–'}
             hint={t('metrics.perDay')}
           />
-          {fiberMean != null && (
-            // Fibre is not part of the split — it is already counted inside the
-            // carbs — so it sits beside it as its own number.
-            <StatTile
-              label={t('metrics.food.fiber')}
-              value={`${num(fiberMean)} g`}
-              hint={t('metrics.perDay')}
-              spark={fiber}
-              color={moduleColor.food}
-              smooth={7}
-            />
-          )}
         </div>
       </Block>
 

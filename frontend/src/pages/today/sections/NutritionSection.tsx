@@ -1,13 +1,11 @@
 import { useState } from 'react'
-import { Apple, Coffee, Droplet, Wheat } from 'lucide-react'
+import { Apple, Coffee, Droplet } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { dateLocale } from '../../../i18n'
 import { useNutritionDay, useUpsertNutrition } from '../../../features/nutrition/hooks'
 import type { NutritionEntry } from '../../../features/nutrition/api'
 import { Section, SaveStatus } from './Section'
 import { useAutosave } from '../../../lib/useAutosave'
-import { ScreenshotImport } from '../../../components/ui/ScreenshotImport'
-import type { NutritionDraftFields } from '../../../features/import/api'
 import { GoalBar } from '../../../components/ui/GoalBar'
 import { moduleColor } from '../../../lib/modules'
 import { useAuth } from '../../../app/auth/AuthProvider'
@@ -82,10 +80,9 @@ function Chips({ amounts, unit, onAdd, onReset }: {
  * Remounted by the parent whenever the loaded day changes, so the fields can be
  * seeded from the entry once instead of being synced in an effect.
  */
-function NutritionForm({ date, entry, onSelectDate }: {
+function NutritionForm({ date, entry }: {
   date: string
   entry?: NutritionEntry
-  onSelectDate?: (date: string) => void
 }) {
   const { t } = useTranslation()
   const upsert = useUpsertNutrition()
@@ -97,7 +94,6 @@ function NutritionForm({ date, entry, onSelectDate }: {
   const [protein, setProtein] = useState(str(entry?.proteinG))
   const [carbs, setCarbs] = useState(str(entry?.carbsG))
   const [fat, setFat] = useState(str(entry?.fatG))
-  const [fiber, setFiber] = useState(str(entry?.fiberG))
   const [water, setWater] = useState(str(entry?.waterL))
   const [coffee, setCoffee] = useState(str(entry?.coffeeMl))
   const [lastCoffee, setLastCoffee] = useState(entry?.lastCoffee ?? '')
@@ -118,7 +114,6 @@ function NutritionForm({ date, entry, onSelectDate }: {
       proteinG: numOrNull(protein),
       carbsG: numOrNull(carbs),
       fatG: numOrNull(fat),
-      fiberG: numOrNull(fiber),
       waterL: numOrNull(water),
       coffeeMl: numOrNull(coffee),
       lastCoffee: lastCoffee || null,
@@ -129,21 +124,6 @@ function NutritionForm({ date, entry, onSelectDate }: {
 
   return (
     <div className="space-y-5">
-      <ScreenshotImport<NutritionDraftFields>
-        kind="nutrition"
-        date={date}
-        onSelectDate={onSelectDate}
-        // Water and coffee are not in a FatSecret screenshot, so they are left
-        // to the chips below; a macro the screenshot did not show stays as it is.
-        onApply={f => {
-          if (f.kcal != null) setKcal(String(f.kcal))
-          if (f.proteinG != null) setProtein(String(f.proteinG))
-          if (f.carbsG != null) setCarbs(String(f.carbsG))
-          if (f.fatG != null) setFat(String(f.fatG))
-          if (f.fiberG != null) setFiber(String(f.fiberG))
-        }}
-      />
-
       <div>
         <label className="mb-1 block text-meta text-ink-mute">{t('nutrition.calories')}</label>
         <div className="flex items-baseline gap-2 rounded-control bg-raised px-3 py-2.5">
@@ -182,23 +162,6 @@ function NutritionForm({ date, entry, onSelectDate }: {
             </p>
           </>
         )}
-      </div>
-
-      <div className="flex items-center justify-between gap-3">
-        <span className="flex items-center gap-1.5 text-meta text-ink-mute">
-          <Wheat size={13} /> {t('nutrition.fiber')}
-        </span>
-        <div className="flex items-baseline gap-1 rounded-control bg-raised px-3 py-2">
-          <input
-            type="number"
-            inputMode="numeric"
-            placeholder="–"
-            value={fiber}
-            onChange={e => setFiber(e.target.value)}
-            className="w-20 min-w-0 bg-transparent text-right text-body font-semibold text-ink outline-none"
-          />
-          <span className="text-meta text-ink-mute">g</span>
-        </div>
       </div>
 
       <div className="space-y-2">
@@ -273,10 +236,7 @@ function NutritionForm({ date, entry, onSelectDate }: {
   )
 }
 
-export function NutritionSection({ date, onSelectDate }: {
-  date: string
-  onSelectDate?: (date: string) => void
-}) {
+export function NutritionSection({ date }: { date: string }) {
   const { t } = useTranslation()
   const { data: entry, isLoading } = useNutritionDay(date)
 
@@ -286,7 +246,7 @@ export function NutritionSection({ date, onSelectDate }: {
     <Section module="food" title={t('nutrition.title')} icon={<Apple size={15} />} summary={summary}>
       {isLoading
         ? <p className="py-4 text-center text-body text-ink-mute">{t('common.loading')}</p>
-        : <NutritionForm key={date} date={date} entry={entry} onSelectDate={onSelectDate} />}
+        : <NutritionForm key={date} date={date} entry={entry} />}
     </Section>
   )
 }

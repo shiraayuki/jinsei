@@ -1,19 +1,16 @@
 import { api } from '../../lib/api'
 
-export type ImportKind = 'sleep' | 'nutrition'
+/**
+ * Sleep only. The nutrition screenshot path was dropped from the form — the
+ * numbers are four fields that are quicker typed than photographed — and the
+ * backend still understands the kind, so bringing it back is a UI change.
+ */
+export type ImportKind = 'sleep'
 
 export interface SleepDraftFields {
   timeInBedMinutes: number | null
   actualSleepMinutes: number | null
   quality: number | null
-}
-
-export interface NutritionDraftFields {
-  kcal: number | null
-  proteinG: number | null
-  carbsG: number | null
-  fatG: number | null
-  fiberG: number | null
 }
 
 export interface ImportDraft<F> {
