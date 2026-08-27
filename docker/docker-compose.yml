@@ -31,6 +31,15 @@ services:
       # key the import button stays hidden and everything is entered by hand.
       Gemini__ApiKey: ${GEMINI_API_KEY:-}
       Gemini__Model: ${GEMINI_MODEL:-gemini-3.6-flash}
+      # Web Push. Without a VAPID pair the notification card hides itself and
+      # the scheduler does nothing; generate one with `-- vapid`.
+      Push__VapidPublicKey: ${VAPID_PUBLIC_KEY:-}
+      Push__VapidPrivateKey: ${VAPID_PRIVATE_KEY:-}
+      Push__Subject: ${VAPID_SUBJECT:-}
+      Notifications__EveningCheckAtLocal: ${NOTIFY_EVENING_CHECK_AT:-21:00}
+      Notifications__WeeklyReviewAtLocal: ${NOTIFY_WEEKLY_REVIEW_AT:-20:00}
+      # The weekly calorie-target update, in the same zone as everything else.
+      Energy__RunAtLocal: ${ENERGY_RUN_AT:-04:30}
     volumes:
       - dataprotection_keys:/root/.aspnet/DataProtection-Keys
     depends_on:

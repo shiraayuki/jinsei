@@ -52,6 +52,7 @@ public class HabitsController : ControllerBase
                 TargetCount = req.Schedule.TargetCount,
                 DaysOfWeek = req.Schedule.DaysOfWeek,
                 IntervalDays = req.Schedule.IntervalDays,
+                RemindAtLocal = req.Schedule.RemindAtLocal,
                 ActiveFrom = DateOnly.FromDateTime(DateTime.Today),
             },
         };
@@ -83,6 +84,7 @@ public class HabitsController : ControllerBase
             habit.Schedule.TargetCount = req.Schedule.TargetCount;
             habit.Schedule.DaysOfWeek = req.Schedule.DaysOfWeek;
             habit.Schedule.IntervalDays = req.Schedule.IntervalDays;
+            habit.Schedule.RemindAtLocal = req.Schedule.RemindAtLocal;
         }
 
         await _db.SaveChangesAsync();
@@ -177,7 +179,7 @@ public class HabitsController : ControllerBase
             var done = 0;
             foreach (var habit in habits)
             {
-                if (!IsScheduledOn(habit.Schedule, day)) continue;
+                if (!HabitSchedules.IsScheduledOn(habit.Schedule, day)) continue;
                 due++;
                 var target = habit.Schedule?.TargetCount ?? 1;
                 if (habit.Entries.Any(e => e.Date == day && e.CompletedCount >= target)) done++;
@@ -198,22 +200,6 @@ public class HabitsController : ControllerBase
             daily,
             weekdayDue.Select((due, i) => due == 0 ? 0.0 : Math.Round(weekdayDone[i] / (double)due * 100, 1)).ToArray(),
             totalDue == 0 ? 0.0 : Math.Round(daily.Sum(d => d.Done) / (double)totalDue * 100, 1)));
-    }
-
-    /// <summary>Whether a habit was due on a day, by its schedule.</summary>
-    private static bool IsScheduledOn(HabitSchedule? schedule, DateOnly day)
-    {
-        if (schedule is null) return true;
-        if (day < schedule.ActiveFrom) return false;
-        return schedule.ScheduleType switch
-        {
-            ScheduleType.Daily => true,
-            ScheduleType.Weekly when schedule.DaysOfWeek is { Length: > 0 } =>
-                schedule.DaysOfWeek.Contains((int)day.DayOfWeek),
-            ScheduleType.Interval when schedule.IntervalDays is > 0 =>
-                (day.DayNumber - schedule.ActiveFrom.DayNumber) % schedule.IntervalDays.Value == 0,
-            _ => true,
-        };
     }
 
     // GET /api/habits/{id}/stats?days=90
@@ -295,7 +281,8 @@ public class HabitsController : ControllerBase
                 schedule.TargetCount,
                 schedule.DaysOfWeek,
                 schedule.IntervalDays,
-                schedule.ActiveFrom
+                schedule.ActiveFrom,
+                schedule.RemindAtLocal
             ),
             habit.Archived,
             habit.CreatedAt,
@@ -432,7 +419,9 @@ public record ScheduleDto(
     int TargetCount,
     int[]? DaysOfWeek,
     int? IntervalDays,
-    DateOnly ActiveFrom
+    DateOnly ActiveFrom,
+    /// <summary>"HH:mm" to be reminded at, or null for no reminder.</summary>
+    TimeOnly? RemindAtLocal
 );
 
 public record UpsertHabitRequest(

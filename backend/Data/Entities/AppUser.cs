@@ -62,6 +62,14 @@ public class AppUser : IdentityUser
     public DateTimeOffset? KcalGoalUpdatedAt { get; set; }
 
     /// <summary>
+    /// The two notifications that are about the account rather than about one
+    /// habit. Both off until asked for, and both useless without a registered
+    /// device — the switches live next to the one that registers it.
+    /// </summary>
+    public bool NotifyEveningCheck { get; set; }
+    public bool NotifyWeeklyReview { get; set; }
+
+    /// <summary>
     /// SHA-256 of the ingest token, which lets a phone shortcut post steps
     /// without a session. The token itself is never stored: it is shown once
     /// when it is created and can only be replaced, not recovered.

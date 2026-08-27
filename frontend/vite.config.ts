@@ -8,7 +8,18 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
+      // injectManifest rather than generateSW: the generated worker has no
+      // room for a push listener, and a push listener is the only place a
+      // notification can be received.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'autoUpdate',
+      injectManifest: {
+        // The bundle is comfortably over Workbox's 2 MB default; the whole
+        // app is meant to be available offline.
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+      },
       manifest: {
         name: 'Jinsei',
         short_name: 'Jinsei',

@@ -1,5 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 
+// One-shot: `dotnet run -- vapid` prints a fresh key pair for configuration.
+// It belongs on the command line rather than behind an endpoint — it is run
+// once, and its output is pasted into a config file by hand.
+if (args.Length > 0 && args[0] == "vapid")
+{
+    var (publicKey, privateKey) = PushService.GenerateKeys();
+    Console.WriteLine($"Push:VapidPublicKey  {publicKey}");
+    Console.WriteLine($"Push:VapidPrivateKey {privateKey}");
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -55,8 +66,12 @@ builder.Services.AddScoped<WorkoutSyncService>();
 builder.Services.AddHttpClient<GeminiClient>();
 builder.Services.AddScoped<ScreenshotImportService>();
 builder.Services.AddScoped<EnergyService>();
+builder.Services.AddHttpClient<Lib.Net.Http.WebPush.PushServiceClient>();
+builder.Services.AddScoped<PushService>();
+builder.Services.AddScoped<WeekReviewService>();
 builder.Services.AddHostedService<HevySyncScheduler>();
 builder.Services.AddHostedService<CalorieTargetScheduler>();
+builder.Services.AddHostedService<NotificationScheduler>();
 builder.Services.AddControllers();
 
 var app = builder.Build();

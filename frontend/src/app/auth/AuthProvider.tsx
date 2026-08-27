@@ -19,6 +19,9 @@ export interface Goals {
    * something to discover.
    */
   autoKcalGoal: boolean
+  /** The two notifications that are about the account rather than about one habit. */
+  notifyEveningCheck: boolean
+  notifyWeeklyReview: boolean
 }
 
 /** What an energy formula needs and the daily logs cannot supply. */
@@ -115,6 +118,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       weeklySetsGoal: user?.weeklySetsGoal ?? null,
       weeklyRatePercent: user?.weeklyRatePercent ?? null,
       autoKcalGoal: user?.autoKcalGoal ?? false,
+      notifyEveningCheck: user?.notifyEveningCheck ?? false,
+      notifyWeeklyReview: user?.notifyWeeklyReview ?? false,
       birthDate: user?.birthDate ?? null,
       heightCm: user?.heightCm ?? null,
       sex: user?.sex ?? null,

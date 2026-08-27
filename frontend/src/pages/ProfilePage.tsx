@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../app/auth/AuthProvider'
 import { useTheme } from '../app/theme/ThemeProvider'
 import { THEME_PREFERENCES } from '../lib/theme'
@@ -7,10 +7,12 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
-import { Download, LogOut, Sun, Moon } from 'lucide-react'
+import { Bell, Download, LogOut, Sun, Moon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { RATE_PRESETS, rateKeyFor } from '../lib/energy'
 import { api } from '../lib/api'
+import { currentEndpoint, pushBlocker } from '../lib/push'
+import { usePushConfig, useSubscribePush, useTestPush, useUnsubscribePush } from '../features/push/hooks'
 import { dateLocale } from '../i18n'
 
 function numOrNull(value: string): number | null {
@@ -372,6 +374,121 @@ function ExportCard() {
   )
 }
 
+/**
+ * Notifications: this browser, and what it should be told about.
+ *
+ * The device and the switches are one card on purpose — a switch that is on
+ * while no device is registered is a promise the app cannot keep, so the
+ * switches only appear once there is somewhere to send to.
+ *
+ * The whole card is hidden when the server holds no VAPID pair, the same way
+ * the screenshot import hides itself without a Gemini key.
+ */
+function NotificationsCard() {
+  const { user, updateProfile } = useAuth()
+  const { t } = useTranslation()
+  const { data: config } = usePushConfig()
+  const subscribe = useSubscribePush()
+  const unsubscribe = useUnsubscribePush()
+  const test = useTestPush()
+  const [thisDevice, setThisDevice] = useState<string | null>(null)
+  const [denied, setDenied] = useState(false)
+
+  // Whether *this* browser holds a subscription, which the device count on the
+  // server cannot answer: the count may be a phone that is not the one in your
+  // hand right now.
+  useEffect(() => {
+    currentEndpoint().then(setThisDevice).catch(() => setThisDevice(null))
+  }, [config?.devices])
+
+  if (!config?.configured || !config.publicKey) return null
+
+  const blocker = denied ? 'denied' : pushBlocker()
+
+  async function enable() {
+    if (!config?.publicKey) return
+    try {
+      await subscribe.mutateAsync(config.publicKey)
+      setDenied(false)
+    } catch {
+      // The only failure worth a word of its own: the prompt was refused, and
+      // no button of ours can ask again — that is a browser setting now.
+      setDenied(true)
+    }
+    setThisDevice(await currentEndpoint())
+  }
+
+  async function disable() {
+    await unsubscribe.mutateAsync()
+    setThisDevice(null)
+  }
+
+  return (
+    <Card className="space-y-3 p-4">
+      <div>
+        <p className="text-body font-medium text-ink-soft">{t('notifications.title')}</p>
+        <p className="mt-0.5 text-meta text-ink-mute">{t('notifications.hint')}</p>
+      </div>
+
+      {blocker != null ? (
+        <p className="rounded-control bg-raised p-3 text-label text-ink-mute">
+          {t(`notifications.blocked.${blocker === 'needs-install' ? 'needsInstall' : blocker}`)}
+        </p>
+      ) : thisDevice == null ? (
+        <Button onClick={enable} loading={subscribe.isPending} className="w-full">
+          <Bell size={16} />
+          {t('notifications.enable')}
+        </Button>
+      ) : (
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <button
+              onClick={() => test.mutate()}
+              disabled={test.isPending}
+              className="flex-1 rounded-chip bg-line py-2 text-meta font-medium text-ink hover:bg-line-strong"
+            >
+              {test.isSuccess ? t('notifications.testSent') : t('notifications.test')}
+            </button>
+            <button
+              onClick={disable}
+              disabled={unsubscribe.isPending}
+              className="flex-1 rounded-chip bg-raised py-2 text-meta font-medium text-ink-mute hover:bg-line"
+            >
+              {t('notifications.disable')}
+            </button>
+          </div>
+
+          {config.devices > 1 && (
+            <p className="text-label text-ink-faint">
+              {t('notifications.otherDevices', { count: config.devices - 1 })}
+            </p>
+          )}
+
+          {/* Habit reminders are set per habit, where the habit is edited —
+              a list of every habit here would be the same screen twice. */}
+          {([
+            ['weeklyReview', user?.notifyWeeklyReview ?? false, (on: boolean) => updateProfile({ notifyWeeklyReview: on })],
+            ['eveningCheck', user?.notifyEveningCheck ?? false, (on: boolean) => updateProfile({ notifyEveningCheck: on })],
+          ] as const).map(([key, checked, set]) => (
+            <label key={key} className="flex items-center gap-3 rounded-control bg-raised p-3">
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={e => set(e.target.checked)}
+                className="h-5 w-5 shrink-0 accent-[var(--accent)]"
+              />
+              <span className="min-w-0">
+                <span className="block text-meta text-ink-soft">{t(`notifications.${key}.title`)}</span>
+                <span className="block text-label text-ink-faint">{t(`notifications.${key}.hint`)}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
+    </Card>
+  )
+}
+
 export function ProfilePage() {
   const { user, logout, updateProfile } = useAuth()
   const { theme, preference, palette, setPreference, setPalette } = useTheme()
@@ -401,6 +518,7 @@ export function ProfilePage() {
         <GoalsCard />
         <RateCard />
         <IngestCard />
+        <NotificationsCard />
         <ExportCard />
 
         <Card className="space-y-4 p-4">

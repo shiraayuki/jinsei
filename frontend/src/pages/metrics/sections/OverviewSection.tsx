@@ -1,4 +1,5 @@
-import { Activity } from 'lucide-react'
+import { Activity, CalendarDays, ChevronRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { StatTile } from '../../../components/charts/StatTile'
 import { MacroSplit } from '../../../components/charts/MacroSplit'
@@ -155,6 +156,17 @@ export function OverviewSection({ period }: { period: Period }) {
       </div>
 
       <p className="text-label text-ink-faint">{t('metrics.comparedWithBefore')}</p>
+
+      {/* The way in to the week's review. It is a screen of its own rather than
+          a seventh tab: it is read once a week, not switched between. */}
+      <Link
+        to="/week"
+        className="flex items-center gap-2 rounded-control bg-raised px-3 py-2.5 text-meta font-medium text-accent hover:bg-line"
+      >
+        <CalendarDays size={15} className="shrink-0" />
+        {t('review.title')}
+        <ChevronRight size={15} className="ml-auto shrink-0 text-ink-faint" />
+      </Link>
     </Block>
   )
 }

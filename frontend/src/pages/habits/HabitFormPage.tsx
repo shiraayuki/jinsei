@@ -21,6 +21,8 @@ const schema = z.object({
   targetCount: z.coerce.number().int().min(1).default(1),
   daysOfWeek: z.array(z.number()).optional(),
   intervalDays: z.coerce.number().int().min(1).optional(),
+  /** Empty means no reminder, which is what the field starts as. */
+  remindAt: z.string().optional(),
 })
 
 type Fields = z.infer<typeof schema>
@@ -49,6 +51,7 @@ export function HabitFormPage() {
       color: '#5b5be8',
       scheduleType: 'daily',
       targetCount: 1,
+      remindAt: '',
     },
   })
 
@@ -63,6 +66,8 @@ export function HabitFormPage() {
         targetCount: existing.schedule?.targetCount ?? 1,
         daysOfWeek: existing.schedule?.daysOfWeek,
         intervalDays: existing.schedule?.intervalDays,
+        // Stored as "HH:mm:ss"; the input wants "HH:mm".
+        remindAt: existing.schedule?.remindAtLocal?.slice(0, 5) ?? '',
       })
     }
   }, [existing, reset])
@@ -81,6 +86,9 @@ export function HabitFormPage() {
         targetCount: data.targetCount,
         daysOfWeek: data.scheduleType === 'weekly' ? data.daysOfWeek : undefined,
         intervalDays: data.scheduleType === 'interval' ? data.intervalDays : undefined,
+        // Cleared rather than omitted: an empty field means the reminder was
+        // switched off, and the row has to hear about it.
+        remindAtLocal: data.remindAt ? data.remindAt : null,
         activeFrom: todayIso(),
       },
     }
@@ -217,6 +225,20 @@ export function HabitFormPage() {
             {...register('targetCount')}
           />
         )}
+
+        {/* The reminder only goes out on a day the habit is due and still
+            open, so an empty field is the normal state rather than an
+            omission. */}
+        <div>
+          <Input
+            label="Erinnerung"
+            type="time"
+            {...register('remindAt')}
+          />
+          <p className="mt-1 text-label text-ink-faint">
+            Leer lassen heißt keine Erinnerung. Kommt nur an Tagen, an denen sie fällig und noch offen ist.
+          </p>
+        </div>
 
         <Button type="submit" size="lg" loading={isPending || isSubmitting} className="w-full">
           {isEdit ? 'Speichern' : 'Erstellen'}

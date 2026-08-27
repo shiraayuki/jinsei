@@ -14,6 +14,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<ActivityEntry> ActivityEntries => Set<ActivityEntry>();
     public DbSet<DayNote> DayNotes => Set<DayNote>();
     public DbSet<WorkoutLog> WorkoutLogs => Set<WorkoutLog>();
+    public DbSet<PushDevice> PushDevices => Set<PushDevice>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -45,6 +46,13 @@ public class AppDbContext : IdentityDbContext<AppUser>
 
         builder.Entity<DayNote>()
             .HasIndex(x => new { x.UserId, x.Date })
+            .IsUnique();
+
+        // The push service's endpoint identifies the browser: re-subscribing
+        // returns the same one, so this is what turns a second permission
+        // prompt into an update rather than a duplicate device.
+        builder.Entity<PushDevice>()
+            .HasIndex(x => x.Endpoint)
             .IsUnique();
 
         // A workout is identified by the provider's id, which makes a re-sync

@@ -18,11 +18,13 @@ public class SummaryController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly UserManager<AppUser> _users;
+    private readonly WeekReviewService _review;
 
-    public SummaryController(AppDbContext db, UserManager<AppUser> users)
+    public SummaryController(AppDbContext db, UserManager<AppUser> users, WeekReviewService review)
     {
         _db = db;
         _users = users;
+        _review = review;
     }
 
     private string UserId => _users.GetUserId(User)!;
@@ -46,6 +48,20 @@ public class SummaryController : ControllerBase
 
         var text = Render(day, weight, food, move, sleep, note, workouts);
         return Content(text, "text/plain; charset=utf-8");
+    }
+
+    /// <summary>
+    /// The week against the week before it, as numbers rather than as text.
+    ///
+    /// Beside the plain-text week log rather than instead of it: that one is
+    /// for pasting somewhere, this one is for reading. Rendered by the client,
+    /// which already speaks both languages.
+    /// </summary>
+    [HttpGet("week/{date}/review")]
+    public async Task<IActionResult> Review(string date, CancellationToken ct)
+    {
+        if (!DateOnly.TryParse(date, out var anyDay)) return BadRequest("Invalid date.");
+        return Ok(await _review.BuildAsync(UserId, anyDay, ct));
     }
 
     /// <summary>

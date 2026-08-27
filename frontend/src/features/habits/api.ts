@@ -6,6 +6,8 @@ export interface Schedule {
   daysOfWeek?: number[]
   intervalDays?: number
   activeFrom: string
+  /** "HH:mm:ss" to be reminded at, or null for no reminder. */
+  remindAtLocal?: string | null
 }
 
 export interface Habit {
@@ -40,6 +42,7 @@ export interface UpsertHabitPayload {
     daysOfWeek?: number[]
     intervalDays?: number
     activeFrom: string
+    remindAtLocal?: string | null
   }
 }
 
