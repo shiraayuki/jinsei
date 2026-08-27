@@ -403,6 +403,12 @@ export default {
       catppuccin: 'Catppuccin',
     },
     appearance: 'Design',
+    appearanceModes: {
+      system: 'Automatisch',
+      light: 'Hell',
+      dark: 'Dunkel',
+    },
+    followsSystem: 'Folgt dem System — gerade {{mode}}',
     dark: 'Dunkles Design',
     light: 'Helles Design',
     language: 'Sprache',

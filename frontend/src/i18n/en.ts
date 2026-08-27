@@ -403,6 +403,12 @@ export default {
       catppuccin: 'Catppuccin',
     },
     appearance: 'Appearance',
+    appearanceModes: {
+      system: 'Automatic',
+      light: 'Light',
+      dark: 'Dark',
+    },
+    followsSystem: 'Follows the system — currently {{mode}}',
     dark: 'Dark mode',
     light: 'Light mode',
     language: 'Language',

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../app/auth/AuthProvider'
 import { useTheme } from '../app/theme/ThemeProvider'
+import { THEME_PREFERENCES } from '../lib/theme'
 import { PALETTES } from '../lib/palettes'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Input } from '../components/ui/Input'
@@ -282,7 +283,7 @@ function IngestCard() {
 
 export function ProfilePage() {
   const { user, logout, updateProfile } = useAuth()
-  const { theme, palette, toggle, setPalette } = useTheme()
+  const { theme, preference, palette, setPreference, setPalette } = useTheme()
   const { t } = useTranslation()
   const [displayName, setDisplayName] = useState(user?.displayName ?? '')
   const [language, setLanguage] = useState(user?.language ?? 'en')
@@ -328,17 +329,35 @@ export function ProfilePage() {
           </Button>
         </Card>
 
-        <Card className="flex items-center justify-between p-4">
-          <div>
+        {/* Three states rather than a switch: light, dark, and the one every
+            other app on the phone has — whatever the system is doing right
+            now. The line underneath says which that turned out to be, so
+            "automatic" is not a state you have to guess the effect of. */}
+        <Card className="space-y-3 p-4">
+          <div className="flex items-baseline gap-2">
             <p className="text-body font-medium text-ink-soft">{t('profile.appearance')}</p>
-            <p className="text-meta text-ink-mute">{theme === 'dark' ? t('profile.dark') : t('profile.light')}</p>
+            {preference === 'system' ? (
+              <p className="ml-auto min-w-0 truncate text-meta text-ink-mute">
+                {t('profile.followsSystem', { mode: t(`profile.appearanceModes.${theme}`) })}
+              </p>
+            ) : (
+              <span className="ml-auto shrink-0 text-ink-mute">
+                {theme === 'dark' ? <Moon size={17} /> : <Sun size={17} />}
+              </span>
+            )}
           </div>
-          <button
-            onClick={toggle}
-            className="flex h-9 w-9 items-center justify-center rounded-control bg-raised text-ink-soft hover:bg-line transition-colors"
-          >
-            {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
-          </button>
+          <div className="segmented flex">
+            {THEME_PREFERENCES.map(mode => (
+              <button
+                key={mode}
+                onClick={() => setPreference(mode)}
+                aria-pressed={preference === mode}
+                className="segmented-item flex-1 py-1.5 text-meta"
+              >
+                {t(`profile.appearanceModes.${mode}`)}
+              </button>
+            ))}
+          </div>
         </Card>
 
         {/* The palette is its own choice, independent of light and dark: each
