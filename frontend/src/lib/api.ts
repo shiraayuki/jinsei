@@ -51,7 +51,9 @@ async function request<T>(path: string, init?: RequestInit, opts?: Options): Pro
     let message = res.statusText
     try {
       const body = await res.json()
-      message = Array.isArray(body) ? body.join(', ') : String(body)
+      if (Array.isArray(body)) message = body.join(', ')
+      else if (body && typeof body === 'object' && 'message' in body) message = String(body.message)
+      else message = String(body)
     } catch {
       // Not every error carries a JSON body; the status text will do.
     }
