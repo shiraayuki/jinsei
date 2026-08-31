@@ -15,9 +15,11 @@ public class GeminiClient
     {
         _http = http;
         _config = config;
-        // Reading a screenshot takes a few seconds; the default 100 is far more
-        // than the request ever needs and would leave the browser hanging.
-        _http.Timeout = TimeSpan.FromSeconds(60);
+        // A screenshot with thinking enabled measured at ~80s for a trivial
+        // read; a real screenshot with more to reason about runs longer, so
+        // this needs real headroom rather than the "a few seconds" a plain
+        // text call would need.
+        _http.Timeout = TimeSpan.FromSeconds(150);
     }
 
     private string? ApiKey => _config["Gemini:ApiKey"] is { Length: > 0 } key ? key : null;
@@ -45,22 +47,27 @@ public class GeminiClient
 
         var body = new
         {
-            model = Model,
-            system_instruction = systemInstruction,
-            input = new object[]
+            system_instruction = new { parts = new[] { new { text = systemInstruction } } },
+            contents = new[]
             {
-                new { type = "image", data = base64Image, mime_type = mediaType },
-                new { type = "text", text = prompt },
+                new
+                {
+                    role = "user",
+                    parts = new object[]
+                    {
+                        new { inline_data = new { mime_type = mediaType, data = base64Image } },
+                        new { text = prompt },
+                    },
+                },
             },
-            response_format = new
+            generationConfig = new
             {
-                type = "text",
-                mime_type = "application/json",
-                schema = responseSchema,
+                responseMimeType = "application/json",
+                responseSchema,
             },
         };
 
-        using var req = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/v1beta/interactions")
+        using var req = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/v1beta/models/{Model}:generateContent")
         {
             Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json"),
         };
@@ -106,11 +113,7 @@ public class GeminiClient
         return payload.Length > 400 ? payload[..400] : payload;
     }
 
-    /// <summary>
-    /// Digs the generated text out of the response. A completed interaction is
-    /// a list of steps; the reasoning steps carry no text, so only the model
-    /// output is collected.
-    /// </summary>
+    /// <summary>Digs the generated text out of the first candidate's parts.</summary>
     private static string ExtractText(string payload)
     {
         JsonElement root;
@@ -123,13 +126,16 @@ public class GeminiClient
             throw new GeminiException($"Antwort war kein JSON: {exc.Message}", exc);
         }
 
-        if (!root.TryGetProperty("steps", out var steps) || steps.ValueKind != JsonValueKind.Array)
-            throw new GeminiException($"Antwort hatte keine Schritte: {Describe(payload)}");
+        if (!root.TryGetProperty("candidates", out var candidates) || candidates.ValueKind != JsonValueKind.Array
+            || candidates.GetArrayLength() == 0)
+            throw new GeminiException($"Antwort hatte keine Kandidaten: {Describe(payload)}");
 
-        var text = string.Concat(steps.EnumerateArray()
-            .Where(step => step.TryGetProperty("type", out var type) && type.GetString() == "model_output")
-            .Where(step => step.TryGetProperty("content", out var content) && content.ValueKind == JsonValueKind.Array)
-            .SelectMany(step => step.GetProperty("content").EnumerateArray())
+        var first = candidates[0];
+        if (!first.TryGetProperty("content", out var content)
+            || !content.TryGetProperty("parts", out var parts) || parts.ValueKind != JsonValueKind.Array)
+            throw new GeminiException($"Antwort hatte keinen Inhalt: {Describe(payload)}");
+
+        var text = string.Concat(parts.EnumerateArray()
             .Where(part => part.TryGetProperty("text", out var t) && t.ValueKind == JsonValueKind.String)
             .Select(part => part.GetProperty("text").GetString()!));
 

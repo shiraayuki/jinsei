@@ -125,13 +125,15 @@ public class ScreenshotImportService
 
     private static object NullableInt(string description) => new
     {
-        type = new[] { "integer", "null" },
+        type = "integer",
+        nullable = true,
         description,
     };
 
     private static object NullableString(string description) => new
     {
-        type = new[] { "string", "null" },
+        type = "string",
+        nullable = true,
         description,
     };
 
