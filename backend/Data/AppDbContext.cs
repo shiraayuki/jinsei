@@ -15,6 +15,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<DayNote> DayNotes => Set<DayNote>();
     public DbSet<WorkoutLog> WorkoutLogs => Set<WorkoutLog>();
     public DbSet<PushDevice> PushDevices => Set<PushDevice>();
+    public DbSet<DailyReport> DailyReports => Set<DailyReport>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -47,6 +48,12 @@ public class AppDbContext : IdentityDbContext<AppUser>
         builder.Entity<DayNote>()
             .HasIndex(x => new { x.UserId, x.Date })
             .IsUnique();
+
+        builder.Entity<DailyReport>(e =>
+        {
+            e.Property(x => x.Source).HasConversion<string>();
+            e.HasIndex(x => new { x.UserId, x.Date }).IsUnique();
+        });
 
         // The push service's endpoint identifies the browser: re-subscribing
         // returns the same one, so this is what turns a second permission

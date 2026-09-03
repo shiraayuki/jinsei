@@ -293,6 +293,15 @@ export default {
     title: 'Notes',
     placeholder: 'How was the day? (optional)',
   },
+  dailyReport: {
+    title: 'Daily report',
+    empty: 'No report yet for this day.',
+    generate: 'Generate report',
+    regenerate: 'Regenerate',
+    generatedAt: 'generated {{time}}',
+    sourceManual: 'manual',
+    sourceScheduled: 'scheduled',
+  },
   outbox: {
     pending_one: '{{count}} entry waiting for a connection',
     pending_other: '{{count}} entries waiting for a connection',

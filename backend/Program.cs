@@ -69,9 +69,12 @@ builder.Services.AddScoped<EnergyService>();
 builder.Services.AddHttpClient<Lib.Net.Http.WebPush.PushServiceClient>();
 builder.Services.AddScoped<PushService>();
 builder.Services.AddScoped<WeekReviewService>();
+builder.Services.AddScoped<ClaudeCliClient>();
+builder.Services.AddScoped<DailyReportService>();
 builder.Services.AddHostedService<HevySyncScheduler>();
 builder.Services.AddHostedService<CalorieTargetScheduler>();
 builder.Services.AddHostedService<NotificationScheduler>();
+builder.Services.AddHostedService<DailyReportScheduler>();
 builder.Services.AddControllers();
 
 var app = builder.Build();

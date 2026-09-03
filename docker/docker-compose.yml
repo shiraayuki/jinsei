@@ -40,8 +40,15 @@ services:
       Notifications__WeeklyReviewAtLocal: ${NOTIFY_WEEKLY_REVIEW_AT:-20:00}
       # The weekly calorie-target update, in the same zone as everything else.
       Energy__RunAtLocal: ${ENERGY_RUN_AT:-04:30}
+      # The nightly daily-report generation, skipped if one already exists.
+      Reports__RunAtLocal: ${REPORTS_RUN_AT:-23:30}
     volumes:
       - dataprotection_keys:/root/.aspnet/DataProtection-Keys
+      # Claude Code's own login state (OAuth session, not an API key). Named
+      # volume rather than a host bind mount, so it survives rebuilds without
+      # the compose file needing to know a host path — log in once with
+      # `docker compose exec backend claude login` after the first deploy.
+      - claude_home:/root
     depends_on:
       - postgres
     restart: unless-stopped
@@ -61,3 +68,4 @@ services:
 volumes:
   postgres_data:
   dataprotection_keys:
+  claude_home:

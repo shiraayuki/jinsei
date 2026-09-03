@@ -293,6 +293,15 @@ export default {
     title: 'Notizen',
     placeholder: 'Wie war der Tag? (optional)',
   },
+  dailyReport: {
+    title: 'Tagesbericht',
+    empty: 'Noch kein Bericht für diesen Tag.',
+    generate: 'Bericht generieren',
+    regenerate: 'Neu generieren',
+    generatedAt: 'generiert {{time}}',
+    sourceManual: 'manuell',
+    sourceScheduled: 'automatisch',
+  },
   outbox: {
     pending_one: '{{count}} Eintrag wartet auf Verbindung',
     pending_other: '{{count}} Einträge warten auf Verbindung',
