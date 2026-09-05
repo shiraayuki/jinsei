@@ -23,8 +23,7 @@ namespace backend.Data.Migrations
             migrationBuilder.DropTable(
                 name: "meal_entries");
 
-            migrationBuilder.DropTable(
-                name: "routine_exercises");
+            migrationBuilder.Sql("DROP TABLE IF EXISTS routine_exercises;");
 
             migrationBuilder.DropTable(
                 name: "workout_sets");
@@ -35,8 +34,7 @@ namespace backend.Data.Migrations
             migrationBuilder.DropTable(
                 name: "food_items");
 
-            migrationBuilder.DropTable(
-                name: "routines");
+            migrationBuilder.Sql("DROP TABLE IF EXISTS routines;");
 
             migrationBuilder.DropTable(
                 name: "workout_exercises");
