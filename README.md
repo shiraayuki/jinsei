@@ -116,6 +116,24 @@ docker compose -f docker/docker-compose.yml up -d
 Frontend nginx serves the SPA and reverse-proxies `/api/` to the backend container. The
 stack is bound to `127.0.0.1:8092` only — nothing is published to the LAN or the internet.
 
+`./deploy.sh` pulls main and rebuilds the stack in place.
+
+### Upgrading a database older than `53eef16`
+
+Run once, on the host, **before** the first deploy that carries that commit:
+
+```bash
+./scripts/mark-weightandsleep-applied.sh
+```
+
+`AddWeightAndSleep` used to be invisible to EF — no `[Migration]` attribute, so it was
+never applied and never recorded, though `weight_entries` and `sleep_entries` were
+created anyway and have been in use ever since. The commit gives it its attribute, which
+is what lets the chain run from an empty database; on a database that predates it, the
+same change makes EF think the migration is pending and try to create tables that hold
+live data, and the backend crash-loops. The script writes the history row that should
+always have been there. It is idempotent and does nothing on a fresh database.
+
 ### Exposure via Tailscale
 
 Access is Tailscale-only; TLS is terminated by `tailscale serve` using the tailnet cert.
